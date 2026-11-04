@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1600px;height:1040px;background:#f4f1ea;font-family:"Leelawadee UI","Tahoma",sans-serif;color:#1d2330;padding:40px 48px}
+h1{font-size:40px;font-weight:700;letter-spacing:-.3px}
+.sub{font-size:20px;color:#5b6170;margin-top:6px}
+.flow{display:flex;align-items:center;gap:10px;margin:26px 0 22px;font-size:19px;font-weight:600}
+.flow span{background:#1d2330;color:#fff;padding:8px 16px;border-radius:999px}
+.flow i{font-style:normal;color:#9aa0ab;font-size:22px}
+.groups{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.group{border-radius:18px;padding:16px;border:2px solid}
+.group h2{font-size:21px;margin:0 4px 12px;display:flex;justify-content:space-between}
+.group h2 small{font-size:16px;font-weight:500;opacity:.75}
+.A{background:#e6f1ec;border-color:#2e8a5f}.A h2{color:#1f6b48}
+.B{background:#e8eef8;border-color:#3d6cc0}.B h2{color:#2c519a}
+.C{background:#f6e9e6;border-color:#c0533d}.C h2{color:#9a3a28}
+.card{background:#fff;border-radius:12px;padding:14px 16px;margin-top:12px;display:grid;grid-template-columns:52px 1fr;gap:4px 12px}
+.num{grid-row:span 4;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:24px;font-weight:700;color:#fff}
+.A .num{background:#2e8a5f}.B .num{background:#3d6cc0}.C .num{background:#c0533d}
+.role{font-size:20px;font-weight:700}
+.do{font-size:16.5px;line-height:1.45;color:#333a48}
+.out{font-size:15.5px;color:#5b6170}.out b{color:#1d2330}
+.tool{font-size:14px;color:#7a808c}
+.hub{margin-top:22px;background:#fdf3d8;border:2px solid #c99a1e;border-radius:18px;padding:16px 20px;display:grid;grid-template-columns:52px 1fr 1fr;gap:16px;align-items:center}
+.hub .num{background:#c99a1e;grid-row:auto}
+.hub .role{color:#7d5d08}
+.foot{display:grid;grid-template-columns:1.5fr 1fr;gap:22px;margin-top:22px}
+.box{background:#fff;border-radius:14px;padding:14px 20px;font-size:16.5px;line-height:1.6}
+.box h3{font-size:18px;margin-bottom:4px}
+.wk{display:grid;grid-template-columns:110px 1fr}
+.wk b{color:#1d2330}
+</style></head><body>
+<h1>ใครทำอะไร · ระบบตรวจจับข่าวปลอมภาษาไทย</h1>
+<div class="sub">โปรเจกต์วิชา NLP · 7 คน · ทำงานเป็นคู่ ถ้าใครติด คู่ของตัวเองช่วยได้ทันที</div>
+
+<div class="flow"><span>① ข้อมูลข่าว</span><i>→</i><span>② ตัดคำ + ทำความสะอาด</span><i>→</i><span>③ สอนโมเดลจำแนกข่าว</span><i>→</i><span>④ วัดผล + อธิบายผล</span><i>→</i><span>⑤ เดโม + นำเสนอ</span></div>
+
+<div class="groups">
+ <div class="group A"><h2>คู่ A · ข้อมูลและ NER <small>เริ่มก่อน ทุกคนรอข้อมูลจากคู่นี้</small></h2>
+  <div class="card"><div class="num">1</div>
+   <div class="role">ผู้ดูแลข้อมูล</div>
+   <div class="do">ทำความสะอาดข่าวด้วยโค้ดที่เตรียมไว้ ลบข่าวซ้ำ แบ่ง train/test แล้วแจกให้ทุกคน จากนั้นทำสถิติและ word cloud</div>
+   <div class="out"><b>ส่ง:</b> ไฟล์ข้อมูลที่ใช้ร่วมกัน + กราฟสถิติ</div>
+   <div class="tool">PyThaiNLP · pandas</div></div>
+  <div class="card"><div class="num">6</div>
+   <div class="role">นักดึงชื่อเฉพาะ (NER)</div>
+   <div class="do">ดึงชื่อคน องค์กร สถานที่ และคำทางการแพทย์ออกจากข่าว แล้วนับว่าข่าวปลอมกับข่าวจริงอ้างถึงอะไรบ่อย</div>
+   <div class="out"><b>ส่ง:</b> กราฟเทียบประเภทชื่อเฉพาะ</div>
+   <div class="tool">PyThaiNLP NER</div></div>
+ </div>
+
+ <div class="group B"><h2>คู่ B · โมเดลแบบดั้งเดิม <small>เส้นฐานไว้เทียบ</small></h2>
+  <div class="card"><div class="num">2</div>
+   <div class="role">โมเดล TF-IDF</div>
+   <div class="do">แปลงข้อความเป็นตัวเลขด้วย TF-IDF แล้วจำแนกด้วย Logistic Regression จากนั้นลองปรับค่า 2–3 แบบแล้วจดผล</div>
+   <div class="out"><b>ส่ง:</b> ตาราง F1 ของ baseline</div>
+   <div class="tool">scikit-learn</div></div>
+  <div class="card"><div class="num">3</div>
+   <div class="role">ผู้เทียบโมเดลดั้งเดิม</div>
+   <div class="do">ใช้ notebook เดียวกับคนที่ 2 แต่เปลี่ยนเป็น Naive Bayes และ SVM (แก้แค่บรรทัดเดียว) แล้วดูว่าตัวไหนดีที่สุด</div>
+   <div class="out"><b>ส่ง:</b> ตารางเทียบ 3 โมเดล</div>
+   <div class="tool">scikit-learn</div></div>
+ </div>
+
+ <div class="group C"><h2>คู่ C · Transformer <small>โมเดลหลักของงาน</small></h2>
+  <div class="card"><div class="num">4</div>
+   <div class="role">ผู้สอนโมเดลหลัก</div>
+   <div class="do">fine-tune WangchanBERTa บน Colab ด้วย notebook สำเร็จรูป ได้โมเดลที่ดีที่สุดไว้ใช้ทำเดโม (เหมาะกับคนที่เขียนโค้ดคล่องสุด)</div>
+   <div class="out"><b>ส่ง:</b> โมเดลที่ดีที่สุด + ผล F1</div>
+   <div class="tool">Transformers · Colab GPU</div></div>
+  <div class="card"><div class="num">5</div>
+   <div class="role">ผู้เทียบ Transformer</div>
+   <div class="do">ใช้ notebook ของคนที่ 4 แค่เปลี่ยนชื่อโมเดลเป็น XLM-RoBERTa แล้วตอบว่าโมเดลภาษาไทยเก่งกว่าโมเดลหลายภาษาไหม</div>
+   <div class="out"><b>ส่ง:</b> ตารางเทียบ 2 Transformer</div>
+   <div class="tool">Transformers · Colab GPU</div></div>
+ </div>
+</div>
+
+<div class="hub"><div class="num">7</div>
+ <div><div class="role">คนกลาง · ผู้วิเคราะห์ผลและรวมงาน</div>
+  <div class="do">รวมผลทุกคนเป็นตารางเดียว เลือกข่าวที่โมเดลทายผิด 10–20 ข่าวมาอ่านแล้วจัดกลุ่มว่าผิดเพราะอะไร จากนั้นทำเดโมร่วมกับคนที่ 4</div></div>
+ <div class="out"><b>ส่ง:</b> ตารางผลรวม · บทวิเคราะห์ข้อผิดพลาด · เดโมเว็บ<br><span class="tool">Gradio · ทำงานกับทุกคู่</span></div>
+</div>
+
+<div class="foot">
+ <div class="box"><h3>ไทม์ไลน์</h3>
+  <div class="wk"><b>สัปดาห์ 1</b><span>คู่ A เตรียมข้อมูล · คนอื่นลองรัน notebook ของตัวเองกับข้อมูลตัวอย่าง</span></div>
+  <div class="wk"><b>สัปดาห์ 2–3</b><span>ทุกคนรันงานจริงบนข้อมูลชุดเดียวกัน แล้วส่งภาพหน้าจอผลเข้ากลุ่มทุกสัปดาห์</span></div>
+  <div class="wk"><b>สัปดาห์ 4</b><span>คนที่ 7 รวมผล · ทำเดโม · เขียนรายงานคนละส่วน · ซ้อมนำเสนอ</span></div>
+ </div>
+ <div class="box"><h3>ทุกคนส่งเหมือนกัน 3 อย่าง</h3>
+  ✓ notebook ของตัวเอง<br>✓ รายงานส่วนของตัวเอง 1–2 หน้า<br>✓ สไลด์ของตัวเอง และนำเสนอเอง
+ </div>
+</div>
+</body></html>

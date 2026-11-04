@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+# โมเดลไฟล์ใหญ่ ไม่เก็บใน git (แชร์ผ่าน Google Drive / Hugging Face แทน)
+models/*
+!models/.gitkeep
+# ข้อมูลจริงไม่เก็บใน repo
+data/*
+!data/.gitkeep

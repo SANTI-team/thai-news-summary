@@ -1,0 +1,8 @@
+gradio
+pythainlp
+scikit-learn
+pandas
+# ใช้ตอนสลับไปโมเดล WangchanBERTa
+transformers
+torch
+sentencepiece
