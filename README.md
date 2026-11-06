@@ -13,6 +13,7 @@
 | 5 | เทียบ XLM-RoBERTa | `notebooks/05-xlmr.ipynb` |
 | 6 | NER | `notebooks/06-ner.ipynb` |
 | 7 | รวมผล + วิเคราะห์ข้อผิดพลาด + เดโม | `app.py`, `reports/` |
+| 8 | ทำเว็ปไซต์ + UI | `UI`, `WEBAPP` |
 
 ดูภาพรวมได้ที่ `team-roles/team-roles.png`
 
