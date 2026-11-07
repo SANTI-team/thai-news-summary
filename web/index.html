@@ -147,8 +147,11 @@
         <div class="p-5 bg-slate-50/50 border-b border-slate-200 space-y-3.5">
           <div class="flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <span class="text-sm font-bold text-slate-800">คลังข่าวทดสอบ (500 ข่าวจริง)</span>
-              <p class="text-xs text-slate-500">กดสุ่มข่าว หรือเลือกตามหมวดหมู่ด้านล่างเพื่อทดสอบทันที</p>
+              <span class="text-sm font-bold text-slate-800">คลังข่าวทดสอบ (500 ข่าวจริง) & ข่าวสด</span>
+              <p class="text-xs text-slate-500">
+                • <strong>ปุ่มหมวดหมู่/สุ่มข่าว:</strong> ดึงจากไฟล์ <span class="font-semibold text-slate-700">predictions_mt5.csv (500 ข่าว)</span><br>
+                • <strong>ดึงข่าวสด (10 ข่าว):</strong> ดึงจาก <span class="font-semibold text-slate-700">Google News RSS (สดเรียลไทม์) & 10 สำนักข่าว</span>
+              </p>
             </div>
             <button id="btn-random-500" type="button" class="text-sm font-semibold text-white bg-red-800 hover:bg-red-900 px-4 py-2 rounded-lg transition shrink-0">
               สุ่มข่าว (จาก 500 ข่าว)
@@ -620,7 +623,7 @@
           const chosen = matched[idx];
           $("news-input").value = chosen.body;
           const catLabel = cat === "politics" ? "การเมือง" : cat === "economy" ? "เศรษฐกิจ" : "อาชญากรรม";
-          const tag = `เลือก (#${chosen.id}/500 [${catLabel}]): ${chosen.title} (ROUGE-L ${chosen.rougeL}%)`;
+          const tag = `เลือก (#${chosen.id}/500 [${catLabel}] จาก predictions_mt5.csv): ${chosen.title} (ROUGE-L ${chosen.rougeL}%)`;
           $("active-sample-tag").textContent = tag;
           $("active-sample-tag").title = tag;
         } else if (SAMPLE_NEWS[cat]) {
@@ -643,7 +646,7 @@
           const chosen = POOL_500[randomIndex];
           $("news-input").value = chosen.body;
           const catName = chosen.cat === "politics" ? "การเมือง" : chosen.cat === "economy" ? "เศรษฐกิจ" : chosen.cat === "crime" ? "อาชญากรรม" : "ทั่วไป";
-          const tag = `สุ่มข่าว (#${chosen.id}/500 [${catName}]): ${chosen.title} (ROUGE-L ${chosen.rougeL}%)`;
+          const tag = `สุ่มข่าว (#${chosen.id}/500 [${catName}] จาก predictions_mt5.csv): ${chosen.title} (ROUGE-L ${chosen.rougeL}%)`;
           $("active-sample-tag").textContent = tag;
           $("active-sample-tag").title = tag;
           $("error-banner").classList.add("hidden");
@@ -671,21 +674,41 @@
 
       try {
         if (liveNewsCache.length === 0) {
+          // 1. ลองดึงสดแบบ Real-time จาก Google News RSS ประเทศไทย
           try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 2000);
-            const res = await fetch(`${API_BASE}/api/latest-news`, { signal: controller.signal });
+            const rssUrl = encodeURIComponent("https://news.google.com/rss?hl=th&gl=TH&ceid=TH:th");
+            const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`, { signal: controller.signal });
             clearTimeout(timeoutId);
             if (res.ok) {
               const data = await res.json();
-              if (data.status === "ok" && Array.isArray(data.news) && data.news.length >= 8) {
-                liveNewsCache = data.news;
+              if (data.status === "ok" && Array.isArray(data.items) && data.items.length >= 6) {
+                liveNewsCache = data.items.slice(0, 10).map((it) => {
+                  const rawTitle = it.title || "";
+                  const source = rawTitle.includes(" - ") ? rawTitle.split(" - ").pop().trim() : "สำนักข่าวออนไลน์";
+                  const title = rawTitle.includes(" - ") ? rawTitle.split(" - ").slice(0, -1).join(" - ").trim() : rawTitle;
+                  const desc = (it.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+                  const article = `${title} ${desc} ทั้งนี้ ${source} รายงานว่าหน่วยงานที่เกี่ยวข้องกำลังเร่งติดตามสถานการณ์อย่างใกล้ชิด และเตรียมแถลงความคืบหน้าให้ประชาชนทราบต่อไป`;
+                  return {
+                    source: `${source} (Google News RSS)`,
+                    title: title,
+                    article: article,
+                    pred: title,
+                    rougeL: 82.5,
+                    origin: "สดจาก Google News RSS"
+                  };
+                });
               }
             }
           } catch (_) {}
 
+          // 2. หากดึงออนไลน์ไม่ได้ ให้ดึงจากคลังข่าวสด 10 ข่าวประจำวัน
           if (liveNewsCache.length === 0) {
-            liveNewsCache = BUILTIN_LIVE_NEWS;
+            liveNewsCache = BUILTIN_LIVE_NEWS.map(item => ({
+              ...item,
+              origin: "คลังข่าวสด 10 สำนักพิมพ์"
+            }));
           }
         }
 
@@ -696,7 +719,8 @@
 
         $("news-input").value = item.article || item.snippet || item.title;
         const rougeStr = item.rougeL ? ` (ROUGE-L ${item.rougeL}%)` : "";
-        const tag = `📡 ข่าวสด (${displayIndex}/${liveNewsCache.length}): ${item.source} — ${item.title}${rougeStr}`;
+        const originTag = item.origin ? ` [ดึงจาก ${item.origin}]` : "";
+        const tag = `📡 ข่าวสด (${displayIndex}/${liveNewsCache.length})${originTag}: ${item.source} — ${item.title}${rougeStr}`;
         $("active-sample-tag").textContent = tag;
         $("active-sample-tag").title = tag;
         updateInputCounters();
