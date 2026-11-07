@@ -38,19 +38,19 @@
       overflow-wrap: break-word;
     }
     .thai-text {
-      line-height: 1.85;
+      line-height: 1.75;
       text-rendering: optimizeLegibility;
       -webkit-font-smoothing: antialiased;
     }
     /* NER Highlighting Inside Text */
     .ent-mark {
-      padding: 1px 5px;
+      padding: 0px 4px;
       margin: 0 1px;
-      border-radius: 4px;
+      border-radius: 3px;
       font-weight: 600;
       border-bottom-width: 2px;
       display: inline-block;
-      line-height: 1.4;
+      line-height: 1.35;
     }
     .ent-PERSON {
       background-color: #dcfce7;
@@ -72,237 +72,286 @@
       color: #581c87;
       border-bottom-color: #9333ea;
     }
-    textarea::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+    textarea::-webkit-scrollbar, .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
     }
-    textarea::-webkit-scrollbar-thumb {
+    textarea::-webkit-scrollbar-thumb, .custom-scroll::-webkit-scrollbar-thumb {
       background-color: #d4d4d8;
       border-radius: 3px;
     }
   </style>
   <script src="news_500.js"></script>
 </head>
-<body class="min-h-full flex flex-col bg-zinc-100 text-zinc-900 antialiased">
+<body class="min-h-screen flex flex-col bg-zinc-100 text-zinc-900 antialiased">
 
-  <!-- Header -->
+  <!-- Compact Header -->
   <header class="bg-white border-b border-zinc-300 sticky top-0 z-30">
-    <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-lg bg-red-800 flex items-center justify-center text-white font-bold text-sm shrink-0">
+    <div class="max-w-[1920px] mx-auto px-3 sm:px-5 py-2 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded bg-red-800 flex items-center justify-center text-white font-bold text-xs shrink-0">
           TS
         </div>
-        <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <h1 class="text-lg sm:text-xl font-bold tracking-tight text-zinc-900">ระบบสรุปข่าวภาษาไทย</h1>
-            <span class="px-2 py-0.5 text-xs font-semibold rounded bg-zinc-100 text-zinc-800 border border-zinc-300">
-              mT5-ThaiSum
-            </span>
-            <span class="px-2 py-0.5 text-xs font-semibold rounded bg-zinc-100 text-zinc-700 border border-zinc-300">
-              ROUGE-L 63.2%
-            </span>
-          </div>
-          <p class="text-xs text-zinc-600 hidden sm:block">
-            เปรียบเทียบผลสรุปข่าวระหว่างโมเดล mT5 และ Lead-3 พร้อมสกัดชื่อเฉพาะ (NER)
-          </p>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-zinc-900">ระบบสรุปข่าวภาษาไทย</h1>
+          <span class="px-1.5 py-0.5 text-[11px] font-semibold rounded bg-zinc-100 text-zinc-800 border border-zinc-300">
+            mT5-ThaiSum
+          </span>
+          <span class="px-1.5 py-0.5 text-[11px] font-semibold rounded bg-emerald-50 text-emerald-800 border border-emerald-300">
+            ROUGE-L 63.2%
+          </span>
         </div>
       </div>
 
-      <div class="flex items-center gap-2.5 text-xs">
-        <div id="current-date" class="hidden md:flex items-center gap-1.5 font-medium text-zinc-600 bg-zinc-100 px-3 py-1.5 rounded border border-zinc-300">
+      <!-- Inline Summary Metrics in Header so right column saves vertical height -->
+      <div class="flex flex-wrap items-center gap-2 text-[11px]">
+        <div class="bg-zinc-50 border border-zinc-300 rounded px-2 py-0.5 flex items-center gap-1">
+          <span class="text-zinc-500">ต้นฉบับ:</span>
+          <span id="metric-orig-chars" class="font-bold text-zinc-900">—</span>
+          <span class="text-zinc-500">ตัวอักษร</span>
+          <span id="metric-orig-words" class="text-zinc-400">(— คำ)</span>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded px-2 py-0.5 flex items-center gap-1">
+          <span class="text-red-800">ย่อลง:</span>
+          <span id="metric-mt5-reduction" class="font-bold text-red-800">—%</span>
+          <span id="metric-mt5-counts" class="text-red-700">(เหลือ —)</span>
+        </div>
+        <div class="bg-zinc-50 border border-zinc-300 rounded px-2 py-0.5 flex items-center gap-1">
+          <span class="text-zinc-500">เวลา:</span>
+          <span id="metric-total-time" class="font-bold text-zinc-900">—</span>
+          <span class="text-zinc-500">วินาที</span>
+          <span id="metric-time-detail" class="hidden"></span>
+        </div>
+        <div id="current-date" class="hidden xl:flex items-center font-medium text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-300">
           <span></span>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Main Workspace (50% / 50%) -->
-  <main class="flex-1 max-w-[1920px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+  <!-- Main Single-Screen Workspace (Fits Above the Fold at 150% scale) -->
+  <main class="flex-1 max-w-[1920px] w-full mx-auto px-3 sm:px-5 py-2.5">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
 
-      <!-- LEFT COLUMN: Input -->
-      <section class="bg-white rounded-lg border border-zinc-300 flex flex-col justify-between overflow-hidden">
-        <div>
-          <!-- Card Header -->
-          <div class="px-5 py-3.5 border-b border-zinc-200 flex items-center justify-between">
-            <h2 class="text-base font-bold text-zinc-900">ต้นฉบับข่าวภาษาไทย</h2>
-            <button id="btn-clear" type="button" class="text-xs font-medium text-zinc-600 hover:text-red-700 px-2.5 py-1 rounded border border-zinc-300 hover:border-red-700 bg-white transition">
-              ล้างข้อความ
+      <!-- ================================================================ -->
+      <!-- LEFT COLUMN (5 cols): News Input & 500-News Controls             -->
+      <!-- ================================================================ -->
+      <section class="lg:col-span-5 bg-white rounded-lg border border-zinc-300 flex flex-col overflow-hidden">
+        
+        <!-- Header & Clear -->
+        <div class="px-3.5 py-2 border-b border-zinc-200 bg-zinc-50 flex items-center justify-between">
+          <h2 class="text-sm font-bold text-zinc-900">ต้นฉบับข่าวภาษาไทย (News Input)</h2>
+          <button id="btn-clear" type="button" class="text-[11px] font-medium text-zinc-600 hover:text-red-700 px-2 py-0.5 rounded border border-zinc-300 hover:border-red-700 bg-white transition">
+            ล้างข้อความ
+          </button>
+        </div>
+
+        <!-- 500 Real News Selector -->
+        <div class="p-2.5 bg-zinc-50/60 border-b border-zinc-200 space-y-2">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-zinc-800">คลังทดสอบ 500 ข่าวจริง</span>
+              <span class="px-1.5 py-0.2 text-[10px] font-semibold bg-white text-zinc-700 border border-zinc-300 rounded">Test Set</span>
+            </div>
+            <button id="btn-random-500" type="button" class="text-xs font-semibold text-white bg-red-800 hover:bg-red-900 px-2.5 py-1 rounded transition">
+              สุ่มข่าว (จาก 500 ข่าว)
             </button>
           </div>
 
-          <!-- Test Set Selector -->
-          <div class="p-4 bg-zinc-50 border-b border-zinc-200">
-            <div class="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-zinc-800">คลังทดสอบ 500 ข่าวจริง</span>
-                <span class="px-2 py-0.5 text-[10px] font-semibold bg-white text-zinc-700 border border-zinc-300 rounded">Test Set</span>
-              </div>
-              <button id="btn-random-500" type="button" class="text-xs font-semibold text-white bg-red-800 hover:bg-red-900 px-3 py-1.5 rounded transition">
-                สุ่มข่าว (จาก 500 ข่าว)
-              </button>
-            </div>
-
-            <!-- Category Buttons -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <button type="button" data-sample="politics" class="sample-btn flex items-center justify-center gap-1.5 px-2.5 py-2 rounded border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold text-xs transition whitespace-nowrap">
-                <span class="w-2 h-2 rounded-full bg-blue-700 shrink-0"></span>
-                <span>การเมือง</span>
-              </button>
-              <button type="button" data-sample="economy" class="sample-btn flex items-center justify-center gap-1.5 px-2.5 py-2 rounded border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold text-xs transition whitespace-nowrap">
-                <span class="w-2 h-2 rounded-full bg-emerald-700 shrink-0"></span>
-                <span>เศรษฐกิจ</span>
-              </button>
-              <button type="button" data-sample="crime" class="sample-btn flex items-center justify-center gap-1.5 px-2.5 py-2 rounded border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold text-xs transition whitespace-nowrap">
-                <span class="w-2 h-2 rounded-full bg-amber-600 shrink-0"></span>
-                <span>อาชญากรรม</span>
-              </button>
-              <button id="btn-fetch-live" type="button" class="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold text-xs transition whitespace-nowrap">
-                <svg class="w-3.5 h-3.5 animate-spin hidden shrink-0" id="spinner-live" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
-                <span>ดึงข่าวสด</span>
-              </button>
-            </div>
-
-            <!-- Active News Tag (No truncation) -->
-            <div class="mt-2.5 min-h-[1.75rem] flex items-center">
-              <span id="active-sample-tag" class="text-xs font-medium text-zinc-800 bg-white border border-zinc-300 px-3 py-1.5 rounded w-full block leading-relaxed"></span>
-            </div>
+          <!-- Category Buttons -->
+          <div class="grid grid-cols-4 gap-1.5">
+            <button type="button" data-sample="politics" class="sample-btn flex items-center justify-center gap-1 px-2 py-1.5 rounded border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold text-xs transition whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-700 shrink-0"></span>
+              <span>การเมือง</span>
+            </button>
+            <button type="button" data-sample="economy" class="sample-btn flex items-center justify-center gap-1 px-2 py-1.5 rounded border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold text-xs transition whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-700 shrink-0"></span>
+              <span>เศรษฐกิจ</span>
+            </button>
+            <button type="button" data-sample="crime" class="sample-btn flex items-center justify-center gap-1 px-2 py-1.5 rounded border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold text-xs transition whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0"></span>
+              <span>อาชญากรรม</span>
+            </button>
+            <button id="btn-fetch-live" type="button" class="flex items-center justify-center gap-1 px-2 py-1.5 rounded border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold text-xs transition whitespace-nowrap">
+              <svg class="w-3 h-3 animate-spin hidden shrink-0" id="spinner-live" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+              <span>ดึงข่าวสด</span>
+            </button>
           </div>
 
-          <!-- Textarea -->
-          <div class="p-4 flex flex-col">
-            <label for="news-input" class="sr-only">เนื้อหาข่าวภาษาไทย</label>
-            <textarea
-              id="news-input"
-              rows="13"
-              placeholder="วางเนื้อหาข่าวภาษาไทยที่นี่ หรือกดปุ่มด้านบนเพื่อเลือกข่าวจากคลังทดสอบ 500 ข่าว..."
-              class="w-full rounded border border-zinc-300 bg-white p-3.5 text-sm sm:text-base leading-relaxed text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-800 transition resize-y thai-text"
-            ></textarea>
-
-            <!-- Counter & Length Selector -->
-            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-600">
-              <div class="flex items-center gap-2 font-medium">
-                <span id="char-count" class="bg-zinc-100 text-zinc-800 border border-zinc-300 px-2 py-0.5 rounded">0 ตัวอักษร</span>
-                <span id="sentence-count" class="text-zinc-500">~0 ประโยค</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <label for="max-length" class="font-medium text-zinc-700">ระดับการสรุป:</label>
-                <select id="max-length" class="rounded border border-zinc-300 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-red-800">
-                  <option value="64">สั้นกระชับ (1 ประโยค)</option>
-                  <option value="96" selected>มาตรฐาน (2 ประโยค)</option>
-                  <option value="140">ละเอียด (3-4 ประโยค)</option>
-                </select>
-              </div>
-            </div>
+          <!-- Active Selected News Tag (Full Text, Never Truncated) -->
+          <div>
+            <span id="active-sample-tag" class="text-[11px] font-medium text-zinc-800 bg-white border border-zinc-300 px-2.5 py-1 rounded w-full block leading-snug"></span>
           </div>
         </div>
 
-        <!-- Submit Button -->
-        <div class="p-4 bg-zinc-50 border-t border-zinc-200">
+        <!-- Textarea & Action -->
+        <div class="p-2.5 flex flex-col gap-2">
+          <label for="news-input" class="sr-only">เนื้อหาข่าวภาษาไทย</label>
+          <textarea
+            id="news-input"
+            rows="7"
+            placeholder="วางเนื้อหาข่าวภาษาไทยที่นี่ หรือกดปุ่มด้านบนเพื่อเลือกข่าวจากคลังทดสอบ 500 ข่าว..."
+            class="w-full rounded border border-zinc-300 bg-white p-2.5 text-xs sm:text-sm leading-relaxed text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-800 transition resize-y thai-text"
+          ></textarea>
+
+          <!-- Counter & Length Selector -->
+          <div class="flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-zinc-600">
+            <div class="flex items-center gap-1.5 font-medium">
+              <span id="char-count" class="bg-zinc-100 text-zinc-800 border border-zinc-300 px-1.5 py-0.5 rounded">0 ตัวอักษร</span>
+              <span id="sentence-count" class="text-zinc-500">~0 ประโยค</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <label for="max-length" class="font-medium text-zinc-700">ระดับการสรุป:</label>
+              <select id="max-length" class="rounded border border-zinc-300 bg-white px-2 py-0.5 text-[11px] font-semibold text-zinc-800 focus:outline-none focus:border-red-800">
+                <option value="64">สั้นกระชับ (1 ประโยค)</option>
+                <option value="96" selected>มาตรฐาน (2 ประโยค)</option>
+                <option value="140">ละเอียด (3-4 ประโยค)</option>
+              </select>
+            </div>
+          </div>
+
           <button
             id="btn-summarize"
             type="button"
-            class="w-full py-3 px-4 rounded bg-red-800 hover:bg-red-900 text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition disabled:opacity-60 disabled:cursor-wait"
+            class="w-full py-2 px-3 rounded bg-red-800 hover:bg-red-900 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition disabled:opacity-60 disabled:cursor-wait"
           >
             <svg id="btn-spinner" class="hidden animate-spin w-4 h-4 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
             </svg>
-            <span id="btn-text">สรุปข่าวและสกัดชื่อเฉพาะ</span>
+            <span id="btn-text">สรุปข่าวและสกัดชื่อเฉพาะ (Summarize & NER)</span>
           </button>
-          <p id="error-banner" class="hidden mt-2 text-xs font-medium text-red-800 bg-red-50 border border-red-300 rounded px-3 py-2"></p>
+          <p id="error-banner" class="hidden text-[11px] font-medium text-red-800 bg-red-50 border border-red-300 rounded px-2.5 py-1.5"></p>
         </div>
       </section>
 
-      <!-- RIGHT COLUMN: Output -->
-      <section class="flex flex-col gap-4">
+      <!-- ================================================================ -->
+      <!-- RIGHT COLUMN (7 cols): NER First + Summary Comparison (No Scroll)-->
+      <!-- ================================================================ -->
+      <section class="lg:col-span-7 flex flex-col gap-2.5">
 
-        <!-- 1. Metrics Bar -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <div class="bg-white rounded-lg border border-zinc-300 p-3">
-            <div class="text-[11px] font-semibold text-zinc-500">ความยาวต้นฉบับ</div>
-            <div class="mt-0.5 flex items-baseline gap-1">
-              <span id="metric-orig-chars" class="text-xl font-bold text-zinc-900">—</span>
-              <span class="text-[11px] text-zinc-600">ตัวอักษร</span>
+        <!-- Loading Banner -->
+        <div id="loading-card" class="hidden bg-white rounded-lg border border-zinc-300 p-3 text-center">
+          <p class="text-xs font-semibold text-zinc-800">กำลังประมวลผลสรุปข่าวและสกัดชื่อเฉพาะ...</p>
+        </div>
+
+        <!-- 1. TOP OF RIGHT COLUMN: Named Entity Recognition (NER) — Visible Immediately Without Scrolling -->
+        <div class="bg-white rounded-lg border border-zinc-300 overflow-hidden">
+          <div class="px-3.5 py-2 border-b border-zinc-200 bg-zinc-50 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-sm font-bold text-zinc-900">ชื่อเฉพาะที่ตรวจพบ (Named Entity Recognition — NER)</h2>
+              <span class="text-[11px] font-bold text-emerald-900 bg-emerald-100 border border-emerald-300 px-2 py-0.2 rounded">
+                พบ <span id="metric-ner-count">0</span> รายการ (<span id="metric-ner-preserved">พบในสรุป: 0</span>)
+              </span>
+              <span id="ner-time-pill" class="text-[10px] font-medium text-zinc-600 bg-zinc-100 border border-zinc-300 px-1.5 py-0.2 rounded">
+                — ms
+              </span>
             </div>
-            <div id="metric-orig-words" class="text-[11px] text-zinc-500">จำนวนคำ: — คำ</div>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none text-xs font-semibold text-zinc-800">
+              <input id="toggle-highlight" type="checkbox" checked class="rounded border-zinc-300 text-red-800 focus:ring-red-800">
+              <span>ไฮไลต์สีในบทสรุป</span>
+            </label>
           </div>
 
-          <div class="bg-white rounded-lg border border-zinc-300 p-3">
-            <div class="text-[11px] font-semibold text-zinc-500">อัตราการย่อ (mT5)</div>
-            <div class="mt-0.5 flex items-baseline gap-1">
-              <span id="metric-mt5-reduction" class="text-xl font-bold text-red-800">—%</span>
-              <span class="text-[11px] text-zinc-600">ย่อลง</span>
+          <!-- 4 NER Categories in 4 Columns Side-by-Side (Compact & Visible at a Glance) -->
+          <div class="p-2.5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2" id="ner-categories-grid">
+            <!-- PERSON -->
+            <div class="rounded border border-emerald-200 bg-emerald-50/40 p-2">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-bold text-emerald-900 flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                  บุคคล (Person)
+                </span>
+                <span id="count-PERSON" class="text-[10px] font-bold text-emerald-900 bg-white border border-emerald-300 px-1.5 rounded">0</span>
+              </div>
+              <div id="badges-PERSON" class="flex flex-wrap gap-1 min-h-[24px] items-center">
+                <span class="text-[10px] text-zinc-400">ยังไม่มีข้อมูล</span>
+              </div>
             </div>
-            <div id="metric-mt5-counts" class="text-[11px] text-zinc-500">เหลือ — ตัวอักษร</div>
-          </div>
 
-          <div class="bg-white rounded-lg border border-zinc-300 p-3">
-            <div class="text-[11px] font-semibold text-zinc-500">เวลาประมวลผล</div>
-            <div class="mt-0.5 flex items-baseline gap-1">
-              <span id="metric-total-time" class="text-xl font-bold text-zinc-900">—</span>
-              <span class="text-[11px] text-zinc-600">วินาที</span>
+            <!-- LOCATION -->
+            <div class="rounded border border-amber-200 bg-amber-50/40 p-2">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+                  สถานที่ (Location)
+                </span>
+                <span id="count-LOCATION" class="text-[10px] font-bold text-amber-900 bg-white border border-amber-300 px-1.5 rounded">0</span>
+              </div>
+              <div id="badges-LOCATION" class="flex flex-wrap gap-1 min-h-[24px] items-center">
+                <span class="text-[10px] text-zinc-400">ยังไม่มีข้อมูล</span>
+              </div>
             </div>
-            <div id="metric-time-detail" class="text-[10px] text-zinc-500">mT5: — ms</div>
-          </div>
 
-          <div class="bg-white rounded-lg border border-zinc-300 p-3">
-            <div class="text-[11px] font-semibold text-zinc-500">ชื่อเฉพาะ (NER)</div>
-            <div class="mt-0.5 flex items-baseline gap-1">
-              <span id="metric-ner-count" class="text-xl font-bold text-zinc-900">—</span>
-              <span class="text-[11px] text-zinc-600">รายการ</span>
+            <!-- ORGANIZATION -->
+            <div class="rounded border border-blue-200 bg-blue-50/40 p-2">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-bold text-blue-900 flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                  องค์กร (Org)
+                </span>
+                <span id="count-ORGANIZATION" class="text-[10px] font-bold text-blue-900 bg-white border border-blue-300 px-1.5 rounded">0</span>
+              </div>
+              <div id="badges-ORGANIZATION" class="flex flex-wrap gap-1 min-h-[24px] items-center">
+                <span class="text-[10px] text-zinc-400">ยังไม่มีข้อมูล</span>
+              </div>
             </div>
-            <div id="metric-ner-preserved" class="text-[10px] text-zinc-500">พบในสรุป: —</div>
+
+            <!-- DATE & TIME -->
+            <div class="rounded border border-purple-200 bg-purple-50/40 p-2">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-bold text-purple-900 flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+                  วัน/เวลา (Date)
+                </span>
+                <span id="count-DATETIME" class="text-[10px] font-bold text-purple-900 bg-white border border-purple-300 px-1.5 rounded">0</span>
+              </div>
+              <div id="badges-DATETIME" class="flex flex-wrap gap-1 min-h-[24px] items-center">
+                <span class="text-[10px] text-zinc-400">ยังไม่มีข้อมูล</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Loading Card -->
-        <div id="loading-card" class="hidden bg-white rounded-lg border border-zinc-300 p-5 text-center">
-          <p class="text-sm font-semibold text-zinc-800">กำลังประมวลผลสรุปข่าวและสกัดชื่อเฉพาะ...</p>
-        </div>
-
-        <!-- 2. Comparison Card -->
+        <!-- 2. Summary Comparison Card (mT5 vs Lead-3) -->
         <div id="comparison-section" class="bg-white rounded-lg border border-zinc-300 overflow-hidden">
-          <div class="px-4 py-3 border-b border-zinc-200 bg-zinc-50 flex flex-wrap items-center justify-between gap-2">
+          <div class="px-3.5 py-2 border-b border-zinc-200 bg-zinc-50 flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
-              <h2 class="text-sm sm:text-base font-bold text-zinc-900">เปรียบเทียบผลลัพธ์การสรุปข่าว</h2>
-              <span id="truncation-badge" class="hidden px-2 py-0.5 text-[10px] font-semibold rounded bg-amber-100 text-amber-900 border border-amber-300">
+              <h2 class="text-sm font-bold text-zinc-900">เปรียบเทียบผลลัพธ์การสรุปข่าว (mT5 vs Lead-3)</h2>
+              <span id="truncation-badge" class="hidden px-1.5 py-0.2 text-[10px] font-semibold rounded bg-amber-100 text-amber-900 border border-amber-300">
                 ข่าวยาวเกิน 512 tokens
               </span>
             </div>
-            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none text-xs font-medium text-zinc-700">
-              <input id="toggle-highlight" type="checkbox" checked class="rounded border-zinc-300 text-red-800 focus:ring-red-800">
-              <span>ไฮไลต์ชื่อเฉพาะ (NER)</span>
-            </label>
+            <span class="text-[11px] text-zinc-500">เครื่องหมาย <strong class="text-emerald-800">✓ สรุป</strong> ในตารางด้านบน คือคำที่ปรากฏในบทสรุป mT5</span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-zinc-200">
             <!-- Box A: mT5 -->
-            <div class="p-4 flex flex-col justify-between">
+            <div class="p-3.5 flex flex-col justify-between">
               <div>
-                <div class="flex items-center justify-between gap-1.5 mb-2.5">
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-bold bg-red-50 text-red-900 border border-red-200">
+                <div class="flex items-center justify-between gap-1.5 mb-2">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-red-50 text-red-900 border border-red-200">
                     mT5 (Abstractive)
                   </span>
                   <div class="flex items-center gap-1.5">
-                    <span id="mt5-time-pill" class="text-[11px] font-medium text-zinc-600 bg-zinc-100 border border-zinc-300 px-2 py-0.5 rounded">
+                    <span id="mt5-time-pill" class="text-[10px] font-medium text-zinc-600 bg-zinc-100 border border-zinc-300 px-1.5 py-0.2 rounded">
                       — ms
                     </span>
-                    <button id="btn-copy-mt5" type="button" title="คัดลอกบทสรุป" class="text-xs text-zinc-500 hover:text-zinc-900 px-1.5 py-0.5 rounded border border-zinc-200 hover:border-zinc-400">
+                    <button id="btn-copy-mt5" type="button" title="คัดลอกบทสรุป" class="text-[11px] text-zinc-600 hover:text-zinc-900 px-1.5 py-0.2 rounded border border-zinc-300 hover:border-zinc-500">
                       คัดลอก
                     </button>
                   </div>
                 </div>
 
-                <div id="mt5-output" class="text-sm sm:text-base leading-relaxed text-zinc-900 min-h-[140px] thai-text">
+                <div id="mt5-output" class="text-xs sm:text-sm leading-relaxed text-zinc-900 min-h-[110px] thai-text">
                   <span class="text-xs text-zinc-400">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์จากโมเดล mT5</span>
                 </div>
               </div>
 
-              <div class="mt-4 pt-3 border-t border-zinc-200">
-                <div class="flex items-center justify-between text-xs text-zinc-600 mb-1">
-                  <span id="mt5-stat-line" class="text-[11px]">ความยาว: — ตัวอักษร</span>
-                  <span id="mt5-ratio-badge" class="font-bold text-red-800 text-xs">ย่อลง —%</span>
+              <div class="mt-3 pt-2 border-t border-zinc-200">
+                <div class="flex items-center justify-between text-[11px] text-zinc-600 mb-1">
+                  <span id="mt5-stat-line">ความยาว: — ตัวอักษร</span>
+                  <span id="mt5-ratio-badge" class="font-bold text-red-800">ย่อลง —%</span>
                 </div>
                 <div class="w-full h-1.5 bg-zinc-200 rounded overflow-hidden">
                   <div id="mt5-bar" class="h-full bg-red-800 transition-all duration-300" style="width: 0%"></div>
@@ -311,110 +360,35 @@
             </div>
 
             <!-- Box B: Lead-3 -->
-            <div class="p-4 flex flex-col justify-between">
+            <div class="p-3.5 flex flex-col justify-between">
               <div>
-                <div class="flex items-center justify-between gap-1.5 mb-2.5">
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-bold bg-zinc-100 text-zinc-800 border border-zinc-300">
+                <div class="flex items-center justify-between gap-1.5 mb-2">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-zinc-100 text-zinc-800 border border-zinc-300">
                     Lead-3 (Baseline)
                   </span>
                   <div class="flex items-center gap-1.5">
-                    <span id="lead3-time-pill" class="text-[11px] font-medium text-zinc-600 bg-zinc-100 border border-zinc-300 px-2 py-0.5 rounded">
+                    <span id="lead3-time-pill" class="text-[10px] font-medium text-zinc-600 bg-zinc-100 border border-zinc-300 px-1.5 py-0.2 rounded">
                       — ms
                     </span>
-                    <button id="btn-copy-lead3" type="button" title="คัดลอกบทสรุป" class="text-xs text-zinc-500 hover:text-zinc-900 px-1.5 py-0.5 rounded border border-zinc-200 hover:border-zinc-400">
+                    <button id="btn-copy-lead3" type="button" title="คัดลอกบทสรุป" class="text-[11px] text-zinc-600 hover:text-zinc-900 px-1.5 py-0.2 rounded border border-zinc-300 hover:border-zinc-500">
                       คัดลอก
                     </button>
                   </div>
                 </div>
 
-                <div id="lead3-output" class="text-sm sm:text-base leading-relaxed text-zinc-900 min-h-[140px] thai-text">
+                <div id="lead3-output" class="text-xs sm:text-sm leading-relaxed text-zinc-900 min-h-[110px] thai-text">
                   <span class="text-xs text-zinc-400">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์จาก Lead-3</span>
                 </div>
               </div>
 
-              <div class="mt-4 pt-3 border-t border-zinc-200">
-                <div class="flex items-center justify-between text-xs text-zinc-600 mb-1">
-                  <span id="lead3-stat-line" class="text-[11px]">ความยาว: — ตัวอักษร</span>
-                  <span id="lead3-ratio-badge" class="font-bold text-zinc-800 text-xs">ย่อลง —%</span>
+              <div class="mt-3 pt-2 border-t border-zinc-200">
+                <div class="flex items-center justify-between text-[11px] text-zinc-600 mb-1">
+                  <span id="lead3-stat-line">ความยาว: — ตัวอักษร</span>
+                  <span id="lead3-ratio-badge" class="font-bold text-zinc-800">ย่อลง —%</span>
                 </div>
                 <div class="w-full h-1.5 bg-zinc-200 rounded overflow-hidden">
                   <div id="lead3-bar" class="h-full bg-zinc-700 transition-all duration-300" style="width: 0%"></div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. NER Section -->
-        <div class="bg-white rounded-lg border border-zinc-300 overflow-hidden">
-          <div class="px-4 py-3 border-b border-zinc-200 bg-zinc-50 flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h2 class="text-sm sm:text-base font-bold text-zinc-900 flex items-center gap-2">
-                <span>ชื่อเฉพาะที่ตรวจพบ (NER)</span>
-                <span id="ner-time-pill" class="text-[11px] font-medium text-zinc-600 bg-zinc-100 border border-zinc-300 px-2 py-0.5 rounded">
-                  — ms
-                </span>
-              </h2>
-              <p class="text-[11px] text-zinc-500 mt-0.5">
-                รายการที่มีเครื่องหมาย <span class="font-semibold text-emerald-800">✓ สรุป</span> คือคำที่ปรากฏอยู่ในบทสรุปของ mT5
-              </p>
-            </div>
-          </div>
-
-          <div class="p-3.5 grid grid-cols-1 sm:grid-cols-2 gap-3" id="ner-categories-grid">
-            <!-- PERSON -->
-            <div class="rounded border border-zinc-200 bg-zinc-50/60 p-3">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="text-xs font-bold text-zinc-800 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                  บุคคล (Person)
-                </span>
-                <span id="count-PERSON" class="text-[11px] font-bold text-zinc-700 bg-white border border-zinc-300 px-2 rounded">0</span>
-              </div>
-              <div id="badges-PERSON" class="flex flex-wrap gap-1 min-h-[28px] items-center">
-                <span class="text-[11px] text-zinc-400">ยังไม่มีข้อมูล</span>
-              </div>
-            </div>
-
-            <!-- LOCATION -->
-            <div class="rounded border border-zinc-200 bg-zinc-50/60 p-3">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="text-xs font-bold text-zinc-800 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-amber-600"></span>
-                  สถานที่ (Location)
-                </span>
-                <span id="count-LOCATION" class="text-[11px] font-bold text-zinc-700 bg-white border border-zinc-300 px-2 rounded">0</span>
-              </div>
-              <div id="badges-LOCATION" class="flex flex-wrap gap-1 min-h-[28px] items-center">
-                <span class="text-[11px] text-zinc-400">ยังไม่มีข้อมูล</span>
-              </div>
-            </div>
-
-            <!-- ORGANIZATION -->
-            <div class="rounded border border-zinc-200 bg-zinc-50/60 p-3">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="text-xs font-bold text-zinc-800 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-                  องค์กร/หน่วยงาน (Organization)
-                </span>
-                <span id="count-ORGANIZATION" class="text-[11px] font-bold text-zinc-700 bg-white border border-zinc-300 px-2 rounded">0</span>
-              </div>
-              <div id="badges-ORGANIZATION" class="flex flex-wrap gap-1 min-h-[28px] items-center">
-                <span class="text-[11px] text-zinc-400">ยังไม่มีข้อมูล</span>
-              </div>
-            </div>
-
-            <!-- DATE & TIME -->
-            <div class="rounded border border-zinc-200 bg-zinc-50/60 p-3">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="text-xs font-bold text-zinc-800 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-purple-600"></span>
-                  วันและเวลา (Date / Time)
-                </span>
-                <span id="count-DATETIME" class="text-[11px] font-bold text-zinc-700 bg-white border border-zinc-300 px-2 rounded">0</span>
-              </div>
-              <div id="badges-DATETIME" class="flex flex-wrap gap-1 min-h-[28px] items-center">
-                <span class="text-[11px] text-zinc-400">ยังไม่มีข้อมูล</span>
               </div>
             </div>
           </div>
@@ -425,15 +399,15 @@
     </div>
   </main>
 
-  <!-- Footer -->
-  <footer class="mt-auto py-3.5 border-t border-zinc-300 bg-white text-xs text-zinc-500">
-    <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-2">
+  <!-- Compact Footer -->
+  <footer class="mt-auto py-2 border-t border-zinc-300 bg-white text-[11px] text-zinc-500">
+    <div class="max-w-[1920px] mx-auto px-3 sm:px-5 flex flex-wrap items-center justify-between gap-2">
       <div>ThaiSum Dataset · Fine-tuned mT5 (ROUGE-L 63.2%) & Lead-3 Baseline</div>
-      <div class="text-zinc-600">ระบบสรุปข่าวภาษาไทยอัตโนมัติ</div>
+      <div class="text-zinc-600">ระบบสรุปข่าวภาษาไทยและสกัดชื่อเฉพาะอัตโนมัติ</div>
     </div>
   </footer>
 
-  <!-- Logic -->
+  <!-- Application Logic -->
   <script>
     let API_BASE = (window.location.protocol === "http:" || window.location.protocol === "https:")
       ? ""
@@ -861,10 +835,10 @@
       });
 
       const badgeStyles = {
-        PERSON: "bg-emerald-50 text-emerald-900 border-emerald-300",
-        LOCATION: "bg-amber-50 text-amber-900 border-amber-300",
-        ORGANIZATION: "bg-blue-50 text-blue-900 border-blue-300",
-        DATETIME: "bg-purple-50 text-purple-900 border-purple-300"
+        PERSON: "bg-white text-emerald-950 border-emerald-300",
+        LOCATION: "bg-white text-amber-950 border-amber-300",
+        ORGANIZATION: "bg-white text-blue-950 border-blue-300",
+        DATETIME: "bg-white text-purple-950 border-purple-300"
       };
 
       Object.keys(buckets).forEach(key => {
@@ -872,21 +846,21 @@
         $(`count-${key}`).textContent = list.length;
         const container = $(`badges-${key}`);
         if (list.length === 0) {
-          container.innerHTML = `<span class="text-[11px] text-zinc-400">ไม่พบในหมวดนี้</span>`;
+          container.innerHTML = `<span class="text-[10px] text-zinc-400">ไม่พบในหมวดนี้</span>`;
           return;
         }
         container.innerHTML = list.map(item => `
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold border ${badgeStyles[key]}">
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-semibold border ${badgeStyles[key]}">
             <span>${escapeHtml(item.text)}</span>
             ${item.inSummary
-              ? `<span class="text-[9px] font-bold px-1 rounded bg-white text-emerald-800 border border-emerald-200" title="ปรากฏอยู่ในบทสรุป mT5">✓ สรุป</span>`
+              ? `<span class="text-[9px] font-bold px-1 rounded bg-emerald-100 text-emerald-900" title="ปรากฏอยู่ในบทสรุป mT5">✓ สรุป</span>`
               : ``}
           </span>
         `).join("");
       });
 
       $("metric-ner-count").textContent = (entities || []).length;
-      $("metric-ner-preserved").textContent = `พบในสรุป: ${preservedCount} จาก ${(entities || []).length}`;
+      $("metric-ner-preserved").textContent = `พบในสรุป ${preservedCount}/${(entities || []).length}`;
     }
 
     function setupCopyButtons() {
@@ -960,13 +934,13 @@
         const t = s.timings || {};
 
         $("metric-orig-chars").textContent = (s.news_chars || text.length).toLocaleString("th-TH");
-        $("metric-orig-words").textContent = `จำนวนคำ: ${(s.news_words || 0).toLocaleString("th-TH")} คำ`;
+        $("metric-orig-words").textContent = `(${(s.news_words || 0).toLocaleString("th-TH")} คำ)`;
 
         const mt5Red = s.model_reduction_pct ?? 0;
         const lead3Red = s.lead3_reduction_pct ?? 0;
 
         $("metric-mt5-reduction").textContent = `${mt5Red}%`;
-        $("metric-mt5-counts").textContent = `เหลือ ${(s.summary_chars || 0).toLocaleString("th-TH")} ตัวอักษร`;
+        $("metric-mt5-counts").textContent = `(เหลือ ${(s.summary_chars || 0).toLocaleString("th-TH")} ตัวอักษร)`;
 
         $("metric-total-time").textContent = (t.total_sec ?? s.seconds ?? 0).toFixed(2);
         $("metric-time-detail").textContent = `mT5: ${t.model_ms ?? 0} ms | Lead: ${t.lead3_ms ?? 0} ms`;
@@ -1001,7 +975,7 @@
         $("loading-card").classList.add("hidden");
         $("btn-summarize").disabled = false;
         $("btn-spinner").classList.add("hidden");
-        $("btn-text").textContent = "สรุปข่าวและสกัดชื่อเฉพาะ";
+        $("btn-text").textContent = "สรุปข่าวและสกัดชื่อเฉพาะ (Summarize & NER)";
       }
     }
 
