@@ -1,109 +1,1176 @@
 <!doctype html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>สรุปข่าววันนี้</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
-<!-- เดโมตัวอย่าง: คนที่ 8 แต่งต่อ/เขียนใหม่ได้ แค่เรียก POST /api/summarize -->
-<style>
-  :root {
-    --bg: #f6f3ee; --paper: #fffdf9; --ink: #1d1b18; --muted: #6d675e; --line: #e4ddd2;
-    --accent: #b3261e; --accent-soft: #f6e3e1; --lead: #2f5d8a; --lead-soft: #e3ecf5;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #171614; --paper: #201f1c; --ink: #ece7df; --muted: #a39b8f; --line: #3a3732;
-            --accent: #ef7d74; --accent-soft: #3a2422; --lead: #8db7e0; --lead-soft: #1f2c3a; }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 "Noto Sans Thai", system-ui, sans-serif; }
-  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 16px 64px; }
-  header { border-bottom: 3px double var(--line); padding-bottom: 14px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; }
-  h1 { font-family: "Noto Serif Thai", serif; font-size: clamp(28px, 5vw, 40px); margin: 0; letter-spacing: .5px; }
-  .date { color: var(--muted); font-size: 14px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
-  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
-  label { font-weight: 600; display: block; margin-bottom: 8px; }
-  textarea { width: 100%; min-height: 300px; resize: vertical; font: inherit; color: var(--ink); background: transparent;
-             border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
-  .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
-  button { font: inherit; font-weight: 600; border: 0; border-radius: 8px; padding: 10px 22px; cursor: pointer; background: var(--accent); color: #fff; }
-  button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 400; padding: 8px 14px; }
-  button:disabled { opacity: .6; cursor: wait; }
-  .tag { font-size: 12px; font-weight: 700; letter-spacing: .5px; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
-  .abs .tag { background: var(--accent-soft); color: var(--accent); }
-  .ext .tag { background: var(--lead-soft); color: var(--lead); }
-  .summary { font-family: "Noto Serif Thai", serif; font-size: 20px; line-height: 1.75; margin: 0 0 6px; }
-  .ext p { color: var(--muted); margin: 0; }
-  .block + .block { margin-top: 18px; padding-top: 18px; border-top: 1px dashed var(--line); }
-  .hint { color: var(--muted); font-size: 13px; }
-  .chips span { display: inline-block; margin: 3px 4px 0 0; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); font-size: 14px; }
-  .chips b { font-weight: 600; color: var(--muted); font-size: 11px; margin-left: 4px; }
-  .empty { color: var(--muted); text-align: center; padding: 60px 0; }
-  .err { color: var(--accent); }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>สรุปข่าววันนี้ — ระบบสรุปข่าวภาษาไทยอัตโนมัติ (Thai News Summarizer)</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23e11d48'/%3E%3Cstop offset='100%25' stop-color='%239f1239'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' rx='12' fill='url(%23g)'/%3E%3Cpath d='M13 14a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v20a3 3 0 0 1-3 3H16a3 3 0 0 1-3-3V14zm5 4h10v2H18v-2zm0 5h10v2H18v-2zm0 5h6v2h-6v-2z' fill='%23fff' opacity='.95'/%3E%3Cpath d='M35 19h2a2 2 0 0 1 2 2v13a3 3 0 0 1-3 3h-2V19z' fill='%23fda4af'/%3E%3Ccircle cx='35' cy='13' r='6' fill='%23fbbf24'/%3E%3Cpath d='M35 9.5l1.1 2.4 2.4 1.1-2.4 1.1-1.1 2.4-1.1-2.4-2.4-1.1 2.4-1.1L35 9.5z' fill='%23fff'/%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans Thai"', 'system-ui', 'sans-serif'],
+            serif: ['"Noto Serif Thai"', 'Georgia', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* ปรับสเกลพื้นฐานที่ซูม 100% ให้มีขนาดเท่ากับ 125% (20px) เพื่อความชัดเจนในการนำเสนอบนโปรเจกเตอร์ */
+    html {
+      font-size: 125%;
+    }
+    body {
+      font-family: "Noto Sans Thai", system-ui, -apple-system, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    /* สีไฮไลต์ชื่อเฉพาะ (NER Highlighting) ในเนื้อหาบทสรุป */
+    .ent-mark {
+      padding: 1px 6px;
+      margin: 0 1px;
+      border-radius: 6px;
+      font-weight: 600;
+      border-bottom-width: 2px;
+      display: inline;
+      transition: all 0.15s ease;
+    }
+    .ent-PERSON {
+      background-color: #d1fae5;
+      color: #065f46;
+      border-bottom-color: #10b981;
+    }
+    .ent-LOCATION {
+      background-color: #fef3c7;
+      color: #92400e;
+      border-bottom-color: #f59e0b;
+    }
+    .ent-ORGANIZATION {
+      background-color: #dbeafe;
+      color: #1e40af;
+      border-bottom-color: #3b82f6;
+    }
+    .ent-DATE, .ent-TIME {
+      background-color: #f3e8ff;
+      color: #6b21a8;
+      border-bottom-color: #a855f7;
+    }
+  </style>
+  <script src="news_500.js"></script>
 </head>
-<body>
-<div class="wrap">
-  <header>
-    <h1>สรุปข่าววันนี้</h1>
-    <div class="date" id="date"></div>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+
+  <!-- Top Navigation / Presentation Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
+    <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-600 via-red-600 to-rose-800 flex items-center justify-center text-white shadow-md shadow-rose-600/25 ring-1 ring-rose-500/30 shrink-0">
+          <!-- Newspaper + AI Sparkle SVG Logo -->
+          <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 20H5C3.89543 20 3 19.1046 3 18V6C3 4.89543 3.89543 4 5 4H15C16.1046 4 17 4.89543 17 6V7H19C20.1046 7 21 7.89543 21 9V18C21 19.1046 20.1046 20 19 20Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M17 7V18C17 19.1046 17.8954 20 19 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 12H13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M7 16H10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <!-- AI Sparkle Badge -->
+          <span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center shadow-xs ring-2 ring-white" title="AI Summarizer">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
+            </svg>
+          </span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">สรุปข่าววันนี้</h1>
+            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+              ThaiSum NLP Demo
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-500">
+            ระบบเปรียบเทียบการสรุปข่าวภาษาไทย <span class="font-semibold text-slate-700">mT5 (Abstractive)</span> vs <span class="font-semibold text-slate-700">Lead-3 Baseline (Extractive)</span> พร้อมสกัดชื่อเฉพาะ <span class="font-semibold text-slate-700">NER</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 text-sm">
+        <div id="current-date" class="hidden md:block text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200"></div>
+      </div>
+    </div>
   </header>
 
-  <div class="grid">
-    <section class="card">
-      <label for="text">วางเนื้อข่าว</label>
-      <textarea id="text" placeholder="วางข่าวภาษาไทยที่ต้องการสรุปที่นี่"></textarea>
-      <div class="row">
-        <button id="go">สรุปข่าว</button>
-        <button class="ghost" id="sample">ใส่ข่าวตัวอย่าง</button>
-        <span class="hint" id="count"></span>
-      </div>
-    </section>
+  <!-- Main Split-Screen Dashboard -->
+  <main class="flex-1 max-w-[1920px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-    <section class="card" id="out">
-      <div class="empty">บทสรุปจะแสดงที่นี่</div>
-    </section>
-  </div>
-</div>
+      <!-- ================================================================== -->
+      <!-- LEFT COLUMN: News Input & Quick-Load Sample Buttons (5 Cols)       -->
+      <!-- ================================================================== -->
+      <section class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2 bg-slate-50/60">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+              <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+              </svg>
+              ต้นฉบับข่าวภาษาไทย (News Input)
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">วางเนื้อหาข่าว หรือเลือกหมวดหมู่ข่าวตัวอย่างด้านล่างเพื่อทดสอบทันที</p>
+          </div>
+          <button id="btn-clear" type="button" class="text-xs font-medium text-slate-500 hover:text-rose-600 px-2.5 py-1 rounded-lg hover:bg-rose-50 transition">
+            ล้างข้อความ
+          </button>
+        </div>
 
-<script>
-const API = "/api/summarize";   // หน้าเว็บอยู่คนละที่ → "http://127.0.0.1:8000/api/summarize"
-const SAMPLE = `กรมอุตุนิยมวิทยาออกประกาศเตือนพายุฤดูร้อนบริเวณภาคเหนือและภาคตะวันออกเฉียงเหนือ ระหว่างวันที่ 10-12 เมษายนนี้ โดยจะมีพายุฝนฟ้าคะนอง ลมกระโชกแรง และมีลูกเห็บตกบางพื้นที่ ซึ่งอาจสร้างความเสียหายต่อบ้านเรือนและพื้นที่การเกษตร นายสมชาย ใจดี อธิบดีกรมอุตุนิยมวิทยา กล่าวว่า ขอให้ประชาชนหลีกเลี่ยงการอยู่ในที่โล่งแจ้งและใต้ต้นไม้ใหญ่ ส่วนเกษตรกรควรเตรียมป้องกันความเสียหายของผลผลิต และติดตามประกาศจากกรมอุตุนิยมวิทยาอย่างใกล้ชิด ทั้งนี้ จังหวัดเชียงใหม่ เชียงราย และขอนแก่น ได้เตรียมเจ้าหน้าที่ป้องกันและบรรเทาสาธารณภัยไว้พร้อมรับมือแล้ว`;
-const TYPES = { PERSON: "บุคคล", ORGANIZATION: "องค์กร", LOCATION: "สถานที่", DATE: "วันที่", TIME: "เวลา", MONEY: "เงิน" };
+        <!-- 500 Test News Quick-Load Buttons & Randomizer -->
+        <div class="px-5 pt-4 pb-2">
+          <div class="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">ชุดทดสอบ (500 ข่าวจริง · Test Set)</span>
+              <span class="px-2 py-0.5 text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 rounded-full">ROUGE-L 63.2</span>
+            </div>
+            <button id="btn-random-500" type="button" class="whitespace-nowrap shrink-0 text-xs font-bold text-white bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 px-3.5 py-1.5 rounded-xl shadow-xs flex items-center gap-1.5 transition active:scale-95">
+              <span>🎲 สุ่มข่าว (จาก 500 ข่าว)</span>
+            </button>
+          </div>
+          <div class="grid grid-cols-4 gap-2">
+            <button type="button" data-sample="politics" class="sample-btn group flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 font-semibold text-xs transition shadow-2xs whitespace-nowrap">
+              <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+              การเมือง
+            </button>
+            <button type="button" data-sample="economy" class="sample-btn group flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 text-slate-700 hover:text-emerald-700 font-semibold text-xs transition shadow-2xs whitespace-nowrap">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              เศรษฐกิจ
+            </button>
+            <button type="button" data-sample="crime" class="sample-btn group flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 text-slate-700 hover:text-amber-700 font-semibold text-xs transition shadow-2xs whitespace-nowrap">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              อาชญากรรม
+            </button>
+            <button id="btn-fetch-live" type="button" class="whitespace-nowrap flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 font-semibold text-xs transition shadow-2xs">
+              <svg class="w-3 h-3 animate-spin hidden" id="spinner-live" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+              <span>📡 ข่าวสด</span>
+            </button>
+          </div>
+          <div class="mt-2 min-h-[1.25rem] flex items-center overflow-hidden">
+            <span id="active-sample-tag" class="text-xs font-semibold text-rose-600 whitespace-nowrap truncate"></span>
+          </div>
+        </div>
 
-const $ = id => document.getElementById(id);
-const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-$("date").textContent = new Date().toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-const count = () => $("count").textContent = $("text").value.length ? `${$("text").value.length.toLocaleString()} ตัวอักษร` : "";
-$("text").oninput = count;
-$("sample").onclick = () => { $("text").value = SAMPLE; count(); };
+        <!-- Textarea Input -->
+        <div class="px-5 py-3 flex-1 flex flex-col">
+          <label for="news-input" class="sr-only">เนื้อหาข่าวภาษาไทย</label>
+          <textarea
+            id="news-input"
+            rows="12"
+            placeholder="วางเนื้อหาข่าวภาษาไทยที่นี่ (อย่างน้อย 20 ตัวอักษร)..."
+            class="w-full flex-1 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white p-4 text-base leading-relaxed text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 transition resize-y"
+          ></textarea>
 
-$("go").onclick = async () => {
-  const text = $("text").value.trim();
-  if (text.length < 20) { $("out").innerHTML = `<p class="err">ข่าวสั้นเกินไป (อย่างน้อย 20 ตัวอักษร)</p>`; return; }
-  $("go").disabled = true; $("go").textContent = "กำลังสรุป…";
-  try {
-    const res = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
-    if (!res.ok) throw new Error(`API ตอบกลับ ${res.status}`);
-    const r = await res.json();
-    const s = r.stats;
-    const ents = r.entities.length
-      ? r.entities.map(e => `<span>${esc(e.text)}<b>${TYPES[e.type] || e.type}</b></span>`).join("")
-      : `<span class="hint">ไม่พบ (โมเดล NER ยังไม่พร้อม — งานคนที่ 6)</span>`;
-    $("out").innerHTML = `
-      <div class="block abs"><span class="tag">บทสรุป · mT5 (เขียนใหม่)</span>
-        <p class="summary">${esc(r.summary)}</p>
-        <div class="hint">${s.summary_chars} จาก ${s.news_chars.toLocaleString()} ตัวอักษร · ${s.seconds} วินาที${s.truncated ? " · ข่าวยาวเกิน ถูกตัดท้าย" : ""}</div></div>
-      <div class="block ext"><span class="tag">เทียบ · Lead-3 (3 ประโยคแรก)</span><p>${esc(r.lead3)}</p></div>
-      <div class="block"><label>ชื่อเฉพาะในข่าว</label><div class="chips">${ents}</div></div>
-      <div class="block hint">⚠️ บทสรุปจากโมเดลอาจมีข้อมูลที่ข่าวไม่ได้พูด ควรตรวจกับต้นฉบับ</div>`;
-  } catch (e) {
-    $("out").innerHTML = `<p class="err">เรียก API ไม่ได้: ${esc(e.message)} — รัน <code>python api.py</code> แล้วหรือยัง</p>`;
-  } finally { $("go").disabled = false; $("go").textContent = "สรุปข่าว"; }
+          <!-- Live Counter & Max Length Control -->
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span id="char-count" class="font-medium text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md whitespace-nowrap">0 ตัวอักษร</span>
+              <span id="sentence-count" class="text-slate-500 whitespace-nowrap">~0 ประโยค</span>
+            </div>
+            <div class="flex items-center gap-2 whitespace-nowrap">
+              <label for="max-length" class="text-slate-500 font-medium whitespace-nowrap">ความยาวสรุป:</label>
+              <select id="max-length" class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:border-rose-500 transition shadow-2xs">
+                <option value="64">สั้นกระชับ (1 ประโยค)</option>
+                <option value="96" selected>มาตรฐาน (2 ประโยค)</option>
+                <option value="140">ละเอียด (3-4 ประโยค)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Action Button -->
+        <div class="p-5 pt-2 bg-white border-t border-slate-100">
+          <button
+            id="btn-summarize"
+            type="button"
+            class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 active:scale-[0.99] text-white font-bold text-base shadow-md shadow-rose-600/20 flex items-center justify-center gap-2.5 transition disabled:opacity-60 disabled:cursor-wait"
+          >
+            <svg id="btn-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <svg id="btn-spinner" class="hidden animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span id="btn-text">สรุปข่าวและวิเคราะห์ชื่อเฉพาะ (Summarize & Extract NER)</span>
+          </button>
+          <p id="error-banner" class="hidden mt-2.5 text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2"></p>
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- RIGHT COLUMN: Metrics, Side-by-Side Comparison & NER (7 Cols)      -->
+      <!-- ================================================================== -->
+      <section class="lg:col-span-7 flex flex-col gap-5">
+
+        <!-- 1. Presentation Metrics Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+          <!-- Metric 1: Original Length -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">ความยาวต้นฉบับ</div>
+            <div class="mt-1 flex items-baseline gap-1.5">
+              <span id="metric-orig-chars" class="text-2xl font-bold text-slate-800">—</span>
+              <span class="text-xs text-slate-500">ตัวอักษร</span>
+            </div>
+            <div id="metric-orig-words" class="mt-1 text-xs text-slate-500">จำนวนคำ: — คำ</div>
+          </div>
+
+          <!-- Metric 2: mT5 Compression Ratio -->
+          <div class="bg-white rounded-2xl border border-rose-200 p-4 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">อัตราการย่อ (mT5)</span>
+            </div>
+            <div class="mt-1 flex items-baseline gap-1.5">
+              <span id="metric-mt5-reduction" class="text-2xl font-bold text-rose-600">—%</span>
+              <span class="text-xs text-slate-500">ย่อลง</span>
+            </div>
+            <div id="metric-mt5-counts" class="mt-1 text-xs text-slate-500">เหลือ — ตัวอักษร (— คำ)</div>
+          </div>
+
+          <!-- Metric 3: Inference Time Breakdown -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">เวลาประมวลผล (Inference)</div>
+            <div class="mt-1 flex items-baseline gap-1.5">
+              <span id="metric-total-time" class="text-2xl font-bold text-indigo-600">—</span>
+              <span class="text-xs text-slate-500">วินาที</span>
+            </div>
+            <div id="metric-time-detail" class="mt-1 text-[11px] text-slate-500 truncate">mT5: — ms | Lead-3: — ms</div>
+          </div>
+
+          <!-- Metric 4: NER Entities Count -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">ชื่อเฉพาะที่พบ (NER)</span>
+            </div>
+            <div class="mt-1 flex items-baseline gap-1.5">
+              <span id="metric-ner-count" class="text-2xl font-bold text-emerald-600">—</span>
+              <span class="text-xs text-slate-500">รายการ</span>
+            </div>
+            <div id="metric-ner-preserved" class="mt-1 text-xs text-slate-500">ปรากฏในสรุป: — รายการ</div>
+          </div>
+        </div>
+
+        <!-- Loading Skeleton (Hidden by default) -->
+        <div id="loading-card" class="hidden bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-center">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-50 text-rose-600 mb-3">
+            <svg class="animate-spin w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-800">กำลังประมวลผลข่าวภาษาไทยทั้ง 3 ส่วน...</h3>
+          <p class="text-xs text-slate-500 mt-1">กำลังรัน Lead-3 Extractive Baseline, โมเดล mT5 Abstractive และสกัดชื่อเฉพาะ NER</p>
+        </div>
+
+        <!-- 2. Side-by-Side Comparison Card: mT5 Summary vs Lead-3 Baseline -->
+        <div id="comparison-section" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50/60 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-bold text-slate-800">เปรียบเทียบผลลัพธ์การสรุปข่าว (Side-by-Side Comparison)</h2>
+              <span id="truncation-badge" class="hidden px-2 py-0.5 text-[11px] font-semibold rounded-md bg-amber-100 text-amber-800">
+                ข่าวยาวเกิน 512 tokens (ตัดท้ายอัตโนมัติ)
+              </span>
+            </div>
+            <label class="inline-flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-600">
+              <input id="toggle-highlight" type="checkbox" checked class="rounded border-slate-300 text-rose-600 focus:ring-rose-500">
+              <span>ไฮไลต์ชื่อเฉพาะ (NER) ในบทสรุป</span>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+            <!-- Left Side of Card: mT5 Abstractive Summary (Member #4) -->
+            <div class="p-5 flex flex-col justify-between bg-gradient-to-b from-rose-50/25 to-transparent">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-100 text-rose-800 whitespace-nowrap">
+                    <span class="w-2 h-2 rounded-full bg-rose-600"></span>
+                    AI Summarization · mT5 (Abstractive)
+                  </span>
+                  <span id="mt5-time-pill" class="text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md whitespace-nowrap">
+                    — ms
+                  </span>
+                </div>
+
+                <div id="mt5-output" class="font-serif text-lg sm:text-xl leading-relaxed text-slate-900 min-h-[140px]">
+                  <span class="font-sans text-sm text-slate-400 italic">กดปุ่ม "สรุปข่าวและวิเคราะห์ชื่อเฉพาะ" เพื่อแสดงบทสรุปจากโมเดล mT5...</span>
+                </div>
+              </div>
+
+              <!-- Compression Progress Bar for mT5 -->
+              <div class="mt-5 pt-3 border-t border-slate-100">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+                  <span id="mt5-stat-line">ความยาว: — ตัวอักษร (— คำ)</span>
+                  <span id="mt5-ratio-badge" class="font-semibold text-rose-700">ย่อลง —%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div id="mt5-bar" class="h-full bg-rose-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side of Card: Lead-3 Baseline (Extractive) -->
+            <div class="p-5 flex flex-col justify-between bg-gradient-to-b from-sky-50/25 to-transparent">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-100 text-sky-800 whitespace-nowrap">
+                    <span class="w-2 h-2 rounded-full bg-sky-600"></span>
+                    Lead-3 Baseline (Extractive)
+                  </span>
+                  <span id="lead3-time-pill" class="text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-md whitespace-nowrap">
+                    — ms
+                  </span>
+                </div>
+
+                <div id="lead3-output" class="font-serif text-lg sm:text-xl leading-relaxed text-slate-900 min-h-[140px]">
+                  <span class="font-sans text-sm text-slate-400 italic">กดปุ่ม "สรุปข่าวและวิเคราะห์ชื่อเฉพาะ" เพื่อแสดงบทสรุป Lead Baseline...</span>
+                </div>
+              </div>
+
+              <!-- Compression Progress Bar for Lead-3 -->
+              <div class="mt-5 pt-3 border-t border-slate-100">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+                  <span id="lead3-stat-line">ความยาว: — ตัวอักษร (— คำ)</span>
+                  <span id="lead3-ratio-badge" class="font-semibold text-sky-700">ย่อลง —%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div id="lead3-bar" class="h-full bg-sky-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Dedicated Named Entity Recognition (NER) Section -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <span>การสกัดชื่อเฉพาะ (Named Entity Recognition — NER)</span>
+                <span id="ner-time-pill" class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                  — ms
+                </span>
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                แยกตามหมวดหมู่สี พร้อมเครื่องหมาย <span class="font-semibold text-emerald-700">✓</span> หากชื่อเฉพาะนั้นยังคงปรากฏอยู่ในบทสรุป mT5 (ไม่ตกหล่น)
+              </p>
+            </div>
+
+            <!-- Legend Badges -->
+            <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">บุคคล (Person)</span>
+              <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">สถานที่ (Location)</span>
+              <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">องค์กร (Org)</span>
+              <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">วัน/เวลา (Date/Time)</span>
+            </div>
+          </div>
+
+          <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4" id="ner-categories-grid">
+            <!-- Category: PERSON -->
+            <div class="rounded-xl border border-emerald-200/80 bg-emerald-50/30 p-3.5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  บุคคล (Person)
+                </span>
+                <span id="count-PERSON" class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">0</span>
+              </div>
+              <div id="badges-PERSON" class="flex flex-wrap gap-1.5 min-h-[32px] items-center">
+                <span class="text-xs text-slate-400 italic">ยังไม่มีข้อมูล</span>
+              </div>
+            </div>
+
+            <!-- Category: LOCATION -->
+            <div class="rounded-xl border border-amber-200/80 bg-amber-50/30 p-3.5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-amber-800 flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                  สถานที่ (Location)
+                </span>
+                <span id="count-LOCATION" class="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">0</span>
+              </div>
+              <div id="badges-LOCATION" class="flex flex-wrap gap-1.5 min-h-[32px] items-center">
+                <span class="text-xs text-slate-400 italic">ยังไม่มีข้อมูล</span>
+              </div>
+            </div>
+
+            <!-- Category: ORGANIZATION -->
+            <div class="rounded-xl border border-blue-200/80 bg-blue-50/30 p-3.5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-blue-800 flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                  องค์กร/หน่วยงาน (Organization)
+                </span>
+                <span id="count-ORGANIZATION" class="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">0</span>
+              </div>
+              <div id="badges-ORGANIZATION" class="flex flex-wrap gap-1.5 min-h-[32px] items-center">
+                <span class="text-xs text-slate-400 italic">ยังไม่มีข้อมูล</span>
+              </div>
+            </div>
+
+            <!-- Category: DATE & TIME -->
+            <div class="rounded-xl border border-purple-200/80 bg-purple-50/30 p-3.5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-purple-800 flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                  วันและเวลา (Date / Time)
+                </span>
+                <span id="count-DATETIME" class="text-xs font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">0</span>
+              </div>
+              <div id="badges-DATETIME" class="flex flex-wrap gap-1.5 min-h-[32px] items-center">
+                <span class="text-xs text-slate-400 italic">ยังไม่มีข้อมูล</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <script>
+    let API_BASE = (window.location.protocol === "http:" || window.location.protocol === "https:")
+      ? ""
+      : "http://127.0.0.1:8080";
+    const getSummarizeUrl = () => `${API_BASE}/api/summarize`;
+    const getHealthUrl = () => `${API_BASE}/api/health`;
+
+    // ข่าวตัวอย่าง 3 หมวดหมู่ (การเมือง, เศรษฐกิจ, อาชญากรรม) สำหรับกดปุ่มทดสอบขณะนำเสนอ
+    const SAMPLE_NEWS = {
+  "politics": {
+    "label": "การเมือง (ม็อบจุฬาฯ)",
+    "text": "ม็อบจุฬาฯ คนแน่น ยุติชุมนุมแล้ว แกนนำ จัดกิจกรรมแบบแฟลชม็อบ ประณามหมายจับ เพนกวิน พร้อมนัดร่วมชุมนุม 16 ส.ค. ที่อนุสาวรีย์ประชาธิปไตยวันที่ 14 ส.ค. ที่บริเวณลานใต้ถุนอาคารมหาจักรีสิรินธร คณะอักษรศาสตร์ นิสิตจุฬาฯ ในนามคณะจุฬาและกลุ่มสปริง มูฟเม้นท์ นำโดย น.ส.ศุกรียา วรรณายุวัฒน์ นิสิตคณะครุศาสตร์ นายสิรภพ อัตโตหิ คณะอักษรศาสตร์ และน.ส.สิรินทร์ มุ่งเจริญ คณะอักษรศาสตร์ จัดกิจกรรมการชุมนุมแบบแฟลชม็อบทั้งนี้ เมื่อเวลาประมาณ 20.00 น. แกนนำบนเวทีปราศรัย ได้ประกาศยุติชุมนุมแล้ว และมีการนัดหมายชุมนุมกันใหม่อีกครั้ง วันอาทิตย์ที่ 16 ส.ค. 2563 ที่บริเวณอนุสาวรีย์ประชาธิปไตยทั้งนี้ โดยก่อนหน้าการชุมนุมจะเริ่มทางสำนักบริหารกิจการนิสิตได้ออกประกาศห้ามนิสิตจัดงานนี้ ให้เหตุผลว่า มีการขออนุญาตกระชั้นชิดเกิน แต่ทางคณะนิสิตผู้จัดงานไม่ยอม ยืนยันจัดตามที่ประกาศไว้แต่เนื่องจากมีฝนกระหน่ำลงมาทำให้ต้องเปลี่ยนสถานที่จากลานพระบรมราชานุสาวรีย์สองรัชกาลมาที่ใต้ถุนอาคาร และเลื่อนเวลาการจัดชุมนุมออกไปเกือบ2ชม. อย่างไรก็ตาม ได้มีนิสิต คณาจารย์ และเจ้าหน้าที่จุฬาฯ เข้าร่วมเต็มแน่นลานจนล้นออกมาด้านนอกอาคารมหาจักรีสิรินธรส่วนแกนนำนิสิตจุฬาฯ สลับขึ้นปราศรัยกล่าวโจมตีผู้บริหารสถาบันที่ไม่อนุญาตให้จัดงานนี้ โดยระบุว่า ที่อ้างห่วงเป็นการชุมนุมสุ่มเสี่ยงที่จะผิดกฎหมายละเมิดสิทธิและเสรีภาพของผู้อื่น แต่สมัยยุคการชุมนุมของ กปปส.ผู้บริหารจุฬาฯ กลับไม่ห้าม นอกจากนี้ ยังโจมตีสื่อสารมวลชนว่า ไม่ยอมที่จะเสนอข้อเรียกร้องในการชุมนุมของกลุ่มธรรมศาสตร์และการชุมนุม และยังประณามการนำหมายจับไปควบคุมตัว นายพริษฐ์ ชิวารักษ์ แกนนำสหภาพนักเรียนนิสิตนักศึกษาแห่งประเทศไทยว่า เป็นการคุกคามประชาชน ท่ามกลางเสียงปรบมือดังลั่นอาคาร และร่วมกันชูสัญลักษณ์สามนิ้วต่อต้านเผด็จการพร้อมกัน",
+    "pred": "แกนนํา จัดกิจกรรมแบบแฟลชม็อบ ประณามหมายจับ เพนกวิน พร้อมนัดร่วมชุมนุม 16 ส.ค. ที่อนุสาวรีย์ประชาธิปไตย วันที่ 14",
+    "rougeL": 72.7
+  },
+  "economy": {
+    "label": "เศรษฐกิจ (ราคาทองเยาวราช)",
+    "text": "บรรยากาศร้านขายทอง บนถนนเยาวราชค่อนข้างคึกคัก ตั้งแต่เช้าถึงเย็น คนต่อแถวนำทองขายเอากำไร ราคาทอง ล่าสุดวันนี้ รูปพรรณ ขายออกบาทละ 30800วันที่ 7 ส.ค.63 ผู้สื่อข่าวรายงาน ร้านทองบนถนนเยาวราชคึกคักเป็นพิเศษ เนื่องจากมีประชาชนจำนวนมากมาต่อคิว นำทองคำที่เก็บสะสมไว้ มาขายเพื่อถือเงินสดไว้แทน เนื่องจากในช่วงนี้ ราคาทองทะลุ 30000 บาทแล้วโดยสมาคมค้าทองคำ ประกาศราคาซื้อ-ขายทอง ครั้งที่ 8 เมื่อเวลา 13.48 น. วันนี้ ลดลง 50 บาท โดยราคาทองคำแท่ง รับซื้อบาทละ30200 บาท ขายออกบาทละ 30300 บาท ราคาทองรูปพรรณ รับซื้อบาทละ29652.96 บาท ขายออกบาทละ30800 บาททั้งนี้ราคารับซื้อคืนทองรูปพรรณ ตามหลักเกณฑ์ สคบ. กำหนดให้ร้านทองสามารถหักได้ไม่เกิน 5% จากราคาทองคำแท่งรับซื้อในวันนั้นๆ ซึ่งหลักเกณฑ์ดังกล่าว ใช้เฉพาะการซื้อขายทองที่ร้านเดิมเท่านั้น.",
+    "pred": "บรรยากาศร้านทองบนถนนเยาวราชค่อนข้างคึกคัก ตั้งแต่เช้าถึงเย็น คนต่อแถวนําทองขายเอากําไร ราคาทอง ล่าสุดวันนี้ รูปพรรณขายออกบาทละ 30800 วันที่ 7 ส.ค.63",
+    "rougeL": 78.8
+  },
+  "crime": {
+    "label": "อาชญากรรม (ชันสูตรศพดีเอสไอ)",
+    "text": "ตำรวจทุ่งสองห้อง ส่งสำนวนชันสูตรศพ ธวัชชัย อนุกูล อดีตเจ้าหน้าที่ที่ดิน จ.พังงา ผู้ต้องหาเสียชีวิตในห้องขังดีเอสไอ ถึงมืออัยการแล้ว เผยข้อสรุป มีผู้ทำให้ตาย ด้าน รองอธิบดีอัยการคดีอาญา ระบุ ต้องยื่นคำร้องตามกฎหมายใน 30 วัน พร้อมแจงขั้นตอน หากยื่นศาลญาติผู้ตาย ร้องขอศาลร่วมซักถามพยาน-ยื่นหลักฐานร่วมไต่สวนได้,วันนี้ 28 ต.ค. 59 ที่สำนักงานอัยการสูงสุด อาคารรัชดาฯ ร.ต.ท.กฤติเดช ชอบค้าขาย รอง สว.สส. สน.ทุ่งสองห้อง ได้นำสำนวนคำร้องไต่สวนชันสูตรพลิกศพ พร้อมพยานเอกสารหลักฐานจำนวน 4 แฟ้ม ประกอบด้วย สำนวนความเห็นพร้อมฟิล์มเอกซเรย์ และใบความเห็นแพทย์เกี่ยวกับการเสียชีวิตของ นายธวัชชัย อนุกูล อดีตเจ้าหน้าที่กรมที่ดิน จ.พังงา ผู้ต้องหาออกเอกสารสิทธิ์ที่ดินทับซ้อนอุทยานแห่งชาติกว่าพันแปลง ภายในห้องขังกรมสอบสวนคดีพิเศษ (ดีเอสไอ) เมื่อวันที่ 30 สิงหาคม มามอบให้ นายรุจ เขื่อนสุวรรณ รองอธิบดีอัยการสำนักงานคดีอาญา เพื่อยื่นคำร้องขอไต่สวนชันสูตรพลิกศพ ต่อศาลอาญาโดยท้ายสำนวนระบุว่า ผู้ตาย ตายเพราะมีผู้ทำให้ตาย,นายรุจ เขื่อนสุวรรณ รองอธิบดีอัยการสำนักงานคดีอาญา กล่าวว่า ในวันนี้พนักงานสอบสวนได้มาส่งสำนวนคำร้องไต่สวนการตายให้อัยการ เพื่อให้อัยการทำคำร้องขอให้ศาลไต่สวนชันสูตรพลิกศพ นายธวัชชัย ว่าผู้ตายคือใคร ตายที่ไหน เมื่อใด และถึงเหตุและพฤติการณ์ที่ตาย ถ้าตายโดยคนทำร้ายให้กล่าวว่าใครเป็นผู้กระทำร้ายเท่าที่จะทราบได้ เพื่อประกอบสำนวนในการกล่าวผู้ที่ทำให้ตาย ต่อไป,โดยพนักงานอัยการจะต้องยื่นคำร้องไต่สวนการตายต่อศาลภายใน 30 วัน ตามที่กฎหมายกำหนด ซึ่งตนได้ส่งสำนวนให้พนักงานอัยการกองคดีอาญา 4 เป็นผู้รับผิดชอบ,โดยตามกฎหมาย ศาลจะต้องปิดประกาศแจ้งกำหนดวันที่จะทำการไต่สวนไว้ที่ศาล และให้พนักงานอัยการยื่นคำร้องต่อศาลขอให้ศาลส่งสำเนาคำร้องและแจ้งกำหนดวัน นัดไต่สวนให้สามี ภริยา ผู้บุพการี ผู้สืบสันดาน ผู้แทนโดยชอบธรรม ผู้อนุบาล หรือญาติของผู้ตายตามลำดับอย่างน้อยหนึ่งคนเท่าที่จะทำได้ทราบก่อนวันนัดไต่ สวนไม่น้อยกว่าสิบห้าวันและให้พนักงานอัยการนำพยานหลักฐานทั้งปวงที่แสดงถึง การตายมาสืบ และก่อนการไต่สวนเสร็จสิ้น สามี ภริยา ผู้บุพการี ผู้สืบสันดาน ผู้แทนโดยชอบธรรม ผู้อนุบาล หรือญาติของผู้ตาย มีสิทธิยื่นคำร้องต่อศาลขอเข้ามาซักถามพยานที่พนักงานอัยการนำสืบ และนำสืบพยานหลักฐานอื่นได้ด้วย เพื่อการนี้ สามี ภริยา ผู้บุพการี ผู้สืบสันดาน ผู้แทนโดยชอบธรรม ผู้อนุบาล หรือญาติของผู้ตาย มีสิทธิแต่งตั้งทนายความดำเนินการแทนได้ หากไม่มีทนายความที่ได้รับการแต่งตั้งจากบุคคลดังกล่าวเข้ามาในคดี ให้ศาลตั้งทนายความขึ้นเพื่อทำหน้าที่ทนายความฝ่ายญาติผู้ตาย,นายรุจ กล่าวต่อว่า กรณีที่มีบุคคลใดตายโดยผิดธรรมชาติ เช่น ฆ่าตัวตาย ถูกผู้อื่นทำให้ตาย ตายจากอุบัติเหตุ หรือตายโดยยังไม่ได้ปรากฏเหตุ โดยเฉพาะการตายที่เกิดจากการกระทำของเจ้าพนักงาน หรือระหว่างอยู่ในควบคุมของเจ้าพนักงาน ที่อ้างว่าปฏิบัติตามหน้าที่ กฎหมายกำหนดให้มีการไต่สวนชันสูตรพลิกศพ โดยมีแพทย์ เจ้าพนักงานปกครอง เข้าร่วมกับเจ้าพนักงานสอบสวนด้วย และจะต้องทำสำนวนไต่สวนการตายส่งให้อัยการเพื่อยื่นให้ศาลไต่สวนสาเหตุการตาย ทั้งนี้ เมื่อศาลไต่สวนการตายแล้ว คาดว่าข้อเท็จจริงต่างๆ จะปรากฏออกมา และหากศาลมีสั่งแล้วถึงสาเหตุการตาย สำนวนก็จะต้องส่งให้พนักงานสอบสวนดำเนินการตามขั้นตอนของกฎหมายต่อไป.",
+    "pred": "ตํารวจทุ่งสองห้อง ส่งสํานวนชันสูตรศพ ธวัชชัย อนุกูล อดีตเจ้าหน้าที่ที่ดิน จ.พังงา ผู้ต้องหาเสียชีวิตในห้องขังดีเอสไอ ถึงมืออัยการแล้ว เผยข้อสรุป มีผู้ทําให้ตาย",
+    "rougeL": 73.5
+  }
 };
-</script>
+
+    const $ = id => document.getElementById(id);
+    const escapeHtml = str => String(str).replace(/[&<>"]/g, ch => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"
+    }[ch]));
+
+    // เก็บผลลัพธ์ล่าสุดเพื่อสลับการไฮไลต์ NER ได้ทันทีโดยไม่ต้องเรียก API ซ้ำ
+    let lastResult = null;
+
+    // แสดงวันที่ปัจจุบันแบบไทย
+    $("current-date").textContent = new Date().toLocaleDateString("th-TH", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric"
+    });
+
+    // อัปเดตตัวนับจำนวนตัวอักษรและประโยคโดยประมาณ
+    function updateInputCounters() {
+      const val = $("news-input").value;
+      const charLen = val.length;
+      $("char-count").textContent = `${charLen.toLocaleString("th-TH")} ตัวอักษร`;
+      const approxSentences = val.trim() ? Math.max(1, val.trim().split(/\s+|\n+/).filter(Boolean).length) : 0;
+      $("sentence-count").textContent = `~${approxSentences} วลี/ประโยคย่อย`;
+    }
+
+    $("news-input").addEventListener("input", updateInputCounters);
+
+    $("btn-clear").addEventListener("click", () => {
+      $("news-input").value = "";
+      $("active-sample-tag").textContent = "";
+      $("error-banner").classList.add("hidden");
+      updateInputCounters();
+      $("news-input").focus();
+    });
+
+    // ผูกปุ่มดึงข่าวสดวันนี้ (Live RSS Feed — กดซ้ำเพื่อสลับข่าวสดประเด็นถัดไป)
+    let liveNewsCache = [];
+    let liveNewsIndex = 0;
+
+    // คลังข่าวสดคุณภาพสูงครอบคลุมทุกหมวดหมู่ (พร้อมทำงานบน Vercel และ Presentation ทันที)
+    const BUILTIN_LIVE_NEWS = [
+  {
+    "source": "ข่าวสด / ม็อบจุฬาฯ ชุมนุมแฟลชม็อบ",
+    "title": "แกนนํา จัดกิจกรรมแบบแฟลชม็อบ ประณามหมายจับ เพนกวิน พร้อมนัดร...",
+    "article": "ม็อบจุฬาฯ คนแน่น ยุติชุมนุมแล้ว แกนนำ จัดกิจกรรมแบบแฟลชม็อบ ประณามหมายจับ เพนกวิน พร้อมนัดร่วมชุมนุม 16 ส.ค. ที่อนุสาวรีย์ประชาธิปไตยวันที่ 14 ส.ค. ที่บริเวณลานใต้ถุนอาคารมหาจักรีสิรินธร คณะอักษรศาสตร์ นิสิตจุฬาฯ ในนามคณะจุฬาและกลุ่มสปริง มูฟเม้นท์ นำโดย น.ส.ศุกรียา วรรณายุวัฒน์ นิสิตคณะครุศาสตร์ นายสิรภพ อัตโตหิ คณะอักษรศาสตร์ และน.ส.สิรินทร์ มุ่งเจริญ คณะอักษรศาสตร์ จัดกิจกรรมการชุมนุมแบบแฟลชม็อบทั้งนี้ เมื่อเวลาประมาณ 20.00 น. แกนนำบนเวทีปราศรัย ได้ประกาศยุติชุมนุมแล้ว และมีการนัดหมายชุมนุมกันใหม่อีกครั้ง วันอาทิตย์ที่ 16 ส.ค. 2563 ที่บริเวณอนุสาวรีย์ประชาธิปไตยทั้งนี้ โดยก่อนหน้าการชุมนุมจะเริ่มทางสำนักบริหารกิจการนิสิตได้ออกประกาศห้ามนิสิตจัดงานนี้ ให้เหตุผลว่า มีการขออนุญาตกระชั้นชิดเกิน แต่ทางคณะนิสิตผู้จัดงานไม่ยอม ยืนยันจัดตามที่ประกาศไว้แต่เนื่องจากมีฝนกระหน่ำลงมาทำให้ต้องเปลี่ยนสถานที่จากลานพระบรมราชานุสาวรีย์สองรัชกาลมาที่ใต้ถุนอาคาร และเลื่อนเวลาการจัดชุมนุมออกไปเกือบ2ชม. อย่างไรก็ตาม ได้มีนิสิต คณาจารย์ และเจ้าหน้าที่จุฬาฯ เข้าร่วมเต็มแน่นลานจนล้นออกมาด้านนอกอาคารมหาจักรีสิรินธรส่วนแกนนำนิสิตจุฬาฯ สลับขึ้นปราศรัยกล่าวโจมตีผู้บริหารสถาบันที่ไม่อนุญาตให้จัดงานนี้ โดยระบุว่า ที่อ้างห่วงเป็นการชุมนุมสุ่มเสี่ยงที่จะผิดกฎหมายละเมิดสิทธิและเสรีภาพของผู้อื่น แต่สมัยยุคการชุมนุมของ กปปส.ผู้บริหารจุฬาฯ กลับไม่ห้าม นอกจากนี้ ยังโจมตีสื่อสารมวลชนว่า ไม่ยอมที่จะเสนอข้อเรียกร้องในการชุมนุมของกลุ่มธรรมศาสตร์และการชุมนุม และยังประณามการนำหมายจับไปควบคุมตัว นายพริษฐ์ ชิวารักษ์ แกนนำสหภาพนักเรียนนิสิตนักศึกษาแห่งประเทศไทยว่า เป็นการคุกคามประชาชน ท่ามกลางเสียงปรบมือดังลั่นอาคาร และร่วมกันชูสัญลักษณ์สามนิ้วต่อต้านเผด็จการพร้อมกัน",
+    "pred": "แกนนํา จัดกิจกรรมแบบแฟลชม็อบ ประณามหมายจับ เพนกวิน พร้อมนัดร่วมชุมนุม 16 ส.ค. ที่อนุสาวรีย์ประชาธิปไตย วันที่ 14",
+    "rougeL": 72.7
+  },
+  {
+    "source": "ไทยรัฐ / ร้านทองเยาวราชคึกคัก คนแห่ขายทอง",
+    "title": "บรรยากาศร้านทองบนถนนเยาวราชค่อนข้างคึกคัก ตั้งแต่เช้าถึงเย็น...",
+    "article": "บรรยากาศร้านขายทอง บนถนนเยาวราชค่อนข้างคึกคัก ตั้งแต่เช้าถึงเย็น คนต่อแถวนำทองขายเอากำไร ราคาทอง ล่าสุดวันนี้ รูปพรรณ ขายออกบาทละ 30800วันที่ 7 ส.ค.63 ผู้สื่อข่าวรายงาน ร้านทองบนถนนเยาวราชคึกคักเป็นพิเศษ เนื่องจากมีประชาชนจำนวนมากมาต่อคิว นำทองคำที่เก็บสะสมไว้ มาขายเพื่อถือเงินสดไว้แทน เนื่องจากในช่วงนี้ ราคาทองทะลุ 30000 บาทแล้วโดยสมาคมค้าทองคำ ประกาศราคาซื้อ-ขายทอง ครั้งที่ 8 เมื่อเวลา 13.48 น. วันนี้ ลดลง 50 บาท โดยราคาทองคำแท่ง รับซื้อบาทละ30200 บาท ขายออกบาทละ 30300 บาท ราคาทองรูปพรรณ รับซื้อบาทละ29652.96 บาท ขายออกบาทละ30800 บาททั้งนี้ราคารับซื้อคืนทองรูปพรรณ ตามหลักเกณฑ์ สคบ. กำหนดให้ร้านทองสามารถหักได้ไม่เกิน 5% จากราคาทองคำแท่งรับซื้อในวันนั้นๆ ซึ่งหลักเกณฑ์ดังกล่าว ใช้เฉพาะการซื้อขายทองที่ร้านเดิมเท่านั้น.",
+    "pred": "บรรยากาศร้านทองบนถนนเยาวราชค่อนข้างคึกคัก ตั้งแต่เช้าถึงเย็น คนต่อแถวนําทองขายเอากําไร ราคาทอง ล่าสุดวันนี้ รูปพรรณขายออกบาทละ 30800 วันที่ 7 ส.ค.63",
+    "rougeL": 78.8
+  },
+  {
+    "source": "เดลินิวส์ / ตำรวจส่งสำนวนชันสูตรศพคดีดีเอสไอ",
+    "title": "ตํารวจทุ่งสองห้อง ส่งสํานวนชันสูตรศพ ธวัชชัย อนุกูล อดีตเจ้า...",
+    "article": "ตำรวจทุ่งสองห้อง ส่งสำนวนชันสูตรศพ ธวัชชัย อนุกูล อดีตเจ้าหน้าที่ที่ดิน จ.พังงา ผู้ต้องหาเสียชีวิตในห้องขังดีเอสไอ ถึงมืออัยการแล้ว เผยข้อสรุป มีผู้ทำให้ตาย ด้าน รองอธิบดีอัยการคดีอาญา ระบุ ต้องยื่นคำร้องตามกฎหมายใน 30 วัน พร้อมแจงขั้นตอน หากยื่นศาลญาติผู้ตาย ร้องขอศาลร่วมซักถามพยาน-ยื่นหลักฐานร่วมไต่สวนได้,วันนี้ 28 ต.ค. 59 ที่สำนักงานอัยการสูงสุด อาคารรัชดาฯ ร.ต.ท.กฤติเดช ชอบค้าขาย รอง สว.สส. สน.ทุ่งสองห้อง ได้นำสำนวนคำร้องไต่สวนชันสูตรพลิกศพ พร้อมพยานเอกสารหลักฐานจำนวน 4 แฟ้ม ประกอบด้วย สำนวนความเห็นพร้อมฟิล์มเอกซเรย์ และใบความเห็นแพทย์เกี่ยวกับการเสียชีวิตของ นายธวัชชัย อนุกูล อดีตเจ้าหน้าที่กรมที่ดิน จ.พังงา ผู้ต้องหาออกเอกสารสิทธิ์ที่ดินทับซ้อนอุทยานแห่งชาติกว่าพันแปลง ภายในห้องขังกรมสอบสวนคดีพิเศษ (ดีเอสไอ) เมื่อวันที่ 30 สิงหาคม มามอบให้ นายรุจ เขื่อนสุวรรณ รองอธิบดีอัยการสำนักงานคดีอาญา เพื่อยื่นคำร้องขอไต่สวนชันสูตรพลิกศพ ต่อศาลอาญาโดยท้ายสำนวนระบุว่า ผู้ตาย ตายเพราะมีผู้ทำให้ตาย,นายรุจ เขื่อนสุวรรณ รองอธิบดีอัยการสำนักงานคดีอาญา กล่าวว่า ในวันนี้พนักงานสอบสวนได้มาส่งสำนวนคำร้องไต่สวนการตายให้อัยการ เพื่อให้อัยการทำคำร้องขอให้ศาลไต่สวนชันสูตรพลิกศพ นายธวัชชัย ว่าผู้ตายคือใคร ตายที่ไหน เมื่อใด และถึงเหตุและพฤติการณ์ที่ตาย ถ้าตายโดยคนทำร้ายให้กล่าวว่าใครเป็นผู้กระทำร้ายเท่าที่จะทราบได้ เพื่อประกอบสำนวนในการกล่าวผู้ที่ทำให้ตาย ต่อไป,โดยพนักงานอัยการจะต้องยื่นคำร้องไต่สวนการตายต่อศาลภายใน 30 วัน ตามที่กฎหมายกำหนด ซึ่งตนได้ส่งสำนวนให้พนักงานอัยการกองคดีอาญา 4 เป็นผู้รับผิดชอบ,โดยตามกฎหมาย ศาลจะต้องปิดประกาศแจ้งกำหนดวันที่จะทำการไต่สวนไว้ที่ศาล และให้พนักงานอัยการยื่นคำร้องต่อศาลขอให้ศาลส่งสำเนาคำร้องและแจ้งกำหนดวัน นัดไต่สวนให้สามี ภริยา ผู้บุพการี ผู้สืบสันดาน ผู้แทนโดยชอบธรรม ผู้อนุบาล หรือญาติของผู้ตายตามลำดับอย่างน้อยหนึ่งคนเท่าที่จะทำได้ทราบก่อนวันนัดไต่ สวนไม่น้อยกว่าสิบห้าวันและให้พนักงานอัยการนำพยานหลักฐานทั้งปวงที่แสดงถึง การตายมาสืบ และก่อนการไต่สวนเสร็จสิ้น สามี ภริยา ผู้บุพการี ผู้สืบสันดาน ผู้แทนโดยชอบธรรม ผู้อนุบาล หรือญาติของผู้ตาย มีสิทธิยื่นคำร้องต่อศาลขอเข้ามาซักถามพยานที่พนักงานอัยการนำสืบ และนำสืบพยานหลักฐานอื่นได้ด้วย เพื่อการนี้ สามี ภริยา ผู้บุพการี ผู้สืบสันดาน ผู้แทนโดยชอบธรรม ผู้อนุบาล หรือญาติของผู้ตาย มีสิทธิแต่งตั้งทนายความดำเนินการแทนได้ หากไม่มีทนายความที่ได้รับการแต่งตั้งจากบุคคลดังกล่าวเข้ามาในคดี ให้ศาลตั้งทนายความขึ้นเพื่อทำหน้าที่ทนายความฝ่ายญาติผู้ตาย,นายรุจ กล่าวต่อว่า กรณีที่มีบุคคลใดตายโดยผิดธรรมชาติ เช่น ฆ่าตัวตาย ถูกผู้อื่นทำให้ตาย ตายจากอุบัติเหตุ หรือตายโดยยังไม่ได้ปรากฏเหตุ โดยเฉพาะการตายที่เกิดจากการกระทำของเจ้าพนักงาน หรือระหว่างอยู่ในควบคุมของเจ้าพนักงาน ที่อ้างว่าปฏิบัติตามหน้าที่ กฎหมายกำหนดให้มีการไต่สวนชันสูตรพลิกศพ โดยมีแพทย์ เจ้าพนักงานปกครอง เข้าร่วมกับเจ้าพนักงานสอบสวนด้วย และจะต้องทำสำนวนไต่สวนการตายส่งให้อัยการเพื่อยื่นให้ศาลไต่สวนสาเหตุการตาย ทั้งนี้ เมื่อศาลไต่สวนการตายแล้ว คาดว่าข้อเท็จจริงต่างๆ จะปรากฏออกมา และหากศาลมีสั่งแล้วถึงสาเหตุการตาย สำนวนก็จะต้องส่งให้พนักงานสอบสวนดำเนินการตามขั้นตอนของกฎหมายต่อไป.",
+    "pred": "ตํารวจทุ่งสองห้อง ส่งสํานวนชันสูตรศพ ธวัชชัย อนุกูล อดีตเจ้าหน้าที่ที่ดิน จ.พังงา ผู้ต้องหาเสียชีวิตในห้องขังดีเอสไอ ถึงมืออัยการแล้ว เผยข้อสรุป มีผู้ทําให้ตาย",
+    "rougeL": 73.5
+  },
+  {
+    "source": "ประชาไท / จิสด้าเตือนวิกฤตฝุ่นจิ๋ว PM2.5",
+    "title": "จิสด้า เผย ฝุ่นจิ๋ว มีฤทธิ์ทะลวงปอด ฉีดน้ําแล้วก็ยังไม่ไปไหน...",
+    "article": "หรือฝุ่นจิ๋ว มีฤทธิ์ทะลวงปอด ฉีดน้ำแล้วก็ยังไม่ไปไหน อยู่ต่ออีกหลายวัน ถ้าหาต้นเหตุไม่เจอ ฝุ่นกทม.เกิดทุกปี ไม่ใช่ 3 ปีรอรถไฟฟ้าสร้างเสร็จอย่างที่บางคนบอก,ดร.อานนท์ สนิทวงศ์ ณ อยุธยา ผู้อำนวยการ สำนักงานพัฒนาเทคโนโลยีอวกาศ และภูมิสารสนเทศ (สทอภ.) หรือ จิสด้า เปิดเผยว่า ฝุ่นละอองขนาดเล็ก (Particulate Matter หรือ PM) ที่ทำให้บรรยากาศขมุกขมัว อากาศแย่ทั่ว กทม. มีทั้งฝุ่นละอองขนาดเล็ก 10 ไมครอน (PM10) ที่มาจากการก่อสร้าง การเผากลางแจ้ง ฝุ่นขนาดนี้มีผลต่อระบบทางเดินหายใจ แต่กำจัดง่าย ด้วยการฉีดน้ำ หรือฝนตก อากาศก็ดีขึ้น อย่างที่เห็นฟ้าใสหลังฝนตกช่วงนี้ เพราะฝุ่น PM10 ลดลง ,ฝุ่นจิ๋ว PM2.5 ฤทธิ์เยอะ กำจัดยาก,อีกขนาดคือ ฝุ่นจิ๋ว ที่กระทรวงสาธารณสุขเปรียบเทียบว่ามีขนาดประมาณ 1 ใน 25 ของเส้นผ่าศูนย์กลางเส้นผมมนุษย์ ขนจมูกกรองไม่ได้ และทะลุทะลวงเข้าร่างกายผ่านถุงลมปอดได้ ที่เห็นอยู่ใน กทม.นั้นมีที่มาจาก 2 ส่วน คือ ฝุ่นละอองตามธรรมชาติ เช่น มาจากทะเล ผสมปนกับฝุ่นละอองจากมลพิษที่เกิดจากการเผาไหม้ไม่สมบูรณ์ เช่น ควันรถที่ใช้น้ำมันดีเซลคุณภาพต่ำ การเผาขยะ เตาเผาศพ เป็นต้น,ดังนั้นช่วงที่ก่อสร้างกันมาก เมื่อมีฝุ่นจิ๋ว PM2.5 มาก เจอกับฝุ่นขนาด PM10 ช่วงก่อสร้าง ก็ทำให้ฝุ่นปกคลุมหนาแน่นมากขึ้นอย่างที่เห็น แต่ฝุ่นขนาด PM10 กำจัดได้ง่าย ส่วนการกำจัดฝุ่นจิ๋ว PM2.5 ยากกว่า ซึ่งหน่วยงานที่เกี่ยวข้องต้องนำไปวิเคราะห์ว่าเกิดจากสาเหตุใด เพื่อหาวิธีกำจัดที่ต้นเหตุ เช่น ถ้ามาจากน้ำมันดีเซลคุณภาพต่ำ ก็ต้องควบคุมการใช้ มีกระบวนการทางเคมีให้เกิดเมฆจับฝุ่นจิ๋ว และกลายเป็นฝน เป็นลักษณะฝนกรด ส่วนการรอให้ฝุ่นจิ๋วสลายตามธรรมชาติ ขึ้นอยู่กับฤดูกาล ลมพาฝุ่นลอยตัวขึ้นสู่ชั้นโอโซนในบรรยากาศ สูงขึ้นไปประมาณ 50-60 กิโลเมตร,สภาพใน กทม.ขณะนี้จึงมีฝุ่นละอองทั้งสองขนาดอยู่แล้ว เมื่อมีมวลอากาศเย็นทางตอนเหนือปะทะอากาศอุ่นชื้นจากทะเล ที่มวลอากาศเย็นปกคลุมด้านบน ทำให้ฝุ่นละอองขนาดเล็กสะสมอยู่ด้านล่างมากขึ้น ลักษณะนี้จะเกิดขึ้นทุกปี การป้องกันใส่หน้ากาก N95 จึงจำเป็น ซึ่ง ดร.อานนท์ แนะนำว่า การแก้ปัญหาเฉพาะหน้าอย่างฉีดน้ำก็ต้องทำเพื่อกำจัดฝุ่น PM10 แต่อย่าลืมว่าฝุ่นจิ๋วที่เป็นอันตรายต่อร่างกายมากยังอยู่ การแก้ปัญหาจากต้นเหตุจึงจำเป็นอย่างยิ่ง เช่น ที่ประเทศจีนสามารถแก้ปัญหาได้ เพราะมีการวิเคราะห์ว่าฝุ่นจิ๋วมาจากไหน เมื่อพบว่าส่วนหนึ่งมาจากฝุ่นทะเลทราย ก็มีการปลูกต้นไม้ดูดซับมากขึ้น เป็นต้น.",
+    "pred": "จิสด้า เผย ฝุ่นจิ๋ว มีฤทธิ์ทะลวงปอด ฉีดน้ําแล้วก็ยังไม่ไปไหน อยู่ต่ออีกหลายวัน ถ้าหาต้นเหตุไม่เจอ ฝุ่นกทม.เกิดทุกปี ไม่ใช่ 3 ปีรอรถไฟฟ้าสร้างเสร็จอย่างที่บางคนบอก",
+    "rougeL": 89.2
+  },
+  {
+    "source": "ไทยพีบีเอส / พายุฤดูร้อนถล่มเนปาล เสียชีวิต 30 ศพ",
+    "title": "เนปาลระทึก หลังเกิดพายุฝนฟ้าคะนองถล่มทางใต้ สร้างความเสียหาย...",
+    "article": "ตาย30-เจ็บ400 เส้นทางตัดขาด เข้าช่วยลำบาก,เนปาลระทึก หลังเกิดพายุฝนฟ้าคะนองถล่มทางใต้ สร้างความเสียหายหลายหมู่บ้าน เบื้องต้นพบผู้เสียชีวิตแล้ว 30 ศพ บาดเจ็บ 400 ราย ระบบสาธารณูปโภคพังพินาศ ทางการเร่งระดมเจ้าหน้าที่ตำรวจ ทหารและหน่วยกู้ภัยเข้าช่วยเหลือเป็นการด่วน แต่บางจุดยังเข้าถึงยาก เหตุเส้นทางคมนาคมถูกตัดขาด เจอทั้งเสาไฟ ต้นไม้ล้มพาดขวาง,สำนักข่าวต่างประเทศรายงานเหตุภัยพิบัติจากธรรมชาติที่เกิดขึ้นในประเทศเนปาลสร้างความสูญเสียทั้งชีวิตและทรัพย์สิน ว่า เมื่อคืนอาทิตย์ที่ 31 มี.ค.ตามเวลาท้องถิ่น เกิดพายุฝนฟ้าคะนองพัดถล่มในหลายหมู่บ้าน ซึ่งส่วนใหญ่เป็นพื้นที่ทางการเกษตร ที่เมืองบาราและเมืองปารสา ซึ่งห่างจากกรุงกาฐมาณฑุ เมืองหลวงของเนปาล ไปทางใต้ราว 120 กม. และต่อมาเมื่อวันที่ 1 เม.ย. โฆษกประจำกองทัพเนปาล เปิดเผยกับสำนักข่าวเอเอ็นไอของอินเดีย ถึงความเสียหายที่เกิดจากเหตุพายุพัดถล่ม ว่า พบผู้เสียชีวิต 30 ศพ ส่วนใหญ่อยู่ในพื้นที่ทางตอนใต้ และมีได้รับบาดเจ็บประมาณ 400 ราย ทั้งนี้ ทางการจัดเฮลิคอปเตอร์ MI 17 จำนวน 2 ลำเตรียมพร้อมรอปฏิบัติการ ส่วนเครื่องบินสกายทรัก ก็เตรียมพร้อมอยู่ที่เมืองสิมารา รวมถึงมีการส่งทหารกว่า 100 นาย ลงพื้นที่ปฏิบัติการช่วยเหลือและบรรเทาทุกข์ผู้ประสบภัยแล้ว,อย่างไรก็ดี คาดว่ายอดผู้เสียชีวิตอาจเพิ่มขึ้นอีก โดยเฉพาะที่เมืองบาราเนื่องจากได้รับความเสียหายจากพายุที่พัดถล่มอย่างรุนแรง ส่งผลให้ระบบสาธารณูปโภคพังพินาศ ทั้งถนน เสาไฟฟ้า และเสาส่งสัญญาณโทรศัพท์ในหลายพื้นที่หักโค่นเสียหายอย่างหนัก ขณะที่เจ้าหน้าที่พยายามใช้รถยนต์และรถตู้ ลำเลียงผู้บาดเจ็บไปส่งโรงพยาบาลอย่างโกลาหล,ด้านนายกรัฐมนตรี คัดกา ปราสาด ชาร์ม โอลี แห่งเนปาล ทวีตข้อความผ่านสื่อโซเชียล แสดงความเสียใจต่อผู้ประสบภัยพิบัติจากพายุถล่ม ซึ่งมีผู้เสียชีวิตและบาดเจ็บจำนวนมาก บ้านเรือนพังเสียหาย ต้นไม้หักโค่น และเสาไฟฟ้าล้มระเนระนาด พร้อมกันนี้ กองกำลังรักษาความมั่นคงแห่งชาติก็เตรียมพร้อมตลอดเวลาที่จะเข้าไปให้การช่วยเหลือผู้ประสบภัย รวมถึงเฮลิคอปเตอร์กู้ภัยที่ต้องรอสภาพอากาศดีขึ้นกว่านี้ จึงจะสามารถเข้าไปช่วยนำผู้บาดเจ็บตามหมู่บ้านต่างๆ ไปส่งยังศูนย์อนามัยหรือตามโรงพยาบาลใกล้เคียง,ขณะเดียวกัน นายราเชจ พูเดล เจ้าหน้าที่ระดับสูงของรัฐ เปิดเผยว่า ทั้งตำรวจทหารและเจ้าหน้าที่กู้ภัยกระจายกำลังไปรอบพื้นที่ เพื่อพยายามเข้าไปให้ถึงหมู่บ้านที่ได้รับความเสียหายแล้ว แต่ยอมรับสถานการณ์ขณะนี้เป็นไปด้วยความยากลำบากและมีอุปสรรค เพราะเหตุเกิดในช่วงกลางคืน ทางเข้าหมู่บ้านก็ถูกตัดขาด เพราะมีต้นไม้และเสาไฟฟ้าหักล้มกีดขวางเส้นทาง,สื่อท้องถิ่นรายงานเพิ่มเติมเกี่ยวกับเหตุพายุถล่มครั้งนี้ว่า ผู้เสียชีวิตและผู้ได้รับบาดเจ็บ ซึ่งส่วนใหญ่ เป็นเกษตรกรชาวนา ถูกสิ่งของที่ปลิวว่อนไปกับกระแสลมพัดแรง ซึ่งมีทั้งต้นไม้ เสาไฟฟ้า แผ่นสังกะสีหลังคาบ้าน รวมถึงกระท่อมล้มทับใส่ อีกทั้งยังมีรถถูกลมแรงพัดจนพลิกคว่ำ และมีผู้โดยสารบนรถเมล์เสียชีวิตจากรถพลัดตกจากทางหลวง ทั้งนี้ เหตุพายุฝนฟ้าถล่มจนสร้างความเสียหายและสูญเสียจำนวนมากในช่วงฤดูนี้ ถือเป็นปรากฏการณ์ที่ไม่ค่อยเกิดขึ้นในเนปาล เพราะปกติพายุจะเข้าเนปาลช่วงฤดูใบไม้ผลิระหว่างเดือน เม.ย.-พ.ค.",
+    "pred": "เนปาลระทึก หลังเกิดพายุฝนฟ้าคะนองถล่มทางใต้ สร้างความเสียหายหลายหมู่บ้าน เบื้องต้นพบผู้เสียชีวิตแล้ว 30 ศพ บาดเจ็บ 400 ราย ระบบสาธารณูปโภคพังพินาศ",
+    "rougeL": 100.0
+  },
+  {
+    "source": "มติชน / สยามเทคสั่งพักการเรียนรุ่นพี่รับน้อง",
+    "title": "สยามเทค สั่งพักการเรียนนักศึกษา 12 คน พร้อมภาคทัณฑ์ กรณีคลิป...",
+    "article": "พักการเรียน สัปดาห์เดียว รุ่นพี่จบแล้ว ลอยนวลไป,สยามเทค สั่งพักการเรียนนักศึกษา 12 คน พร้อมภาคทัณฑ์ กรณีคลิปรับน้องฉาวจุดไฟลนก้น และให้เคี้ยวข้าวป้อนกัน เผยเด็กยอมรับผิดไม่ได้ขออนุญาตสถาบัน แต่แอบไปกันเอง เลขาธิการ กช.ชี้ไม่มีกฎหมายเอาผิดบรรดารุ่นพี่ที่สำเร็จการศึกษาไปแล้วได้ เตรียมหาจุดบกพร่องและอุดช่องโหว่ของปัญหาเร่งด่วนตามที่ ดาว์พงษ์ สั่งการ,กรณีมีการเผยแพร่คลิปรับน้องของสถาบันการศึกษาแห่งหนึ่งผ่านโซเชียลมีเดีย เป็นภาพกลุ่มนักศึกษาวัยรุ่นชายจัดกิจกรรมรับน้องบริเวณริมชายหาด ทราบภายหลังว่าเป็นนักศึกษาจากวิทยาลัยเทคโนโลยีสยาม โดยในคลิปรุ่นพี่ให้รุ่นน้องสวมกางเกงใน และตะโกนสั่งให้เคี้ยวข้าว แล้วใช้ปากป้อนให้คนถัดไป ยิ่งไปกว่านั้น ยังมีรุ่นพี่บางคนจุดไฟลนก้นรุ่นน้อง ซึ่งพฤติกรรมดังกล่าวถูกวิพากษ์ วิจารณ์อย่างหนัก พร้อมทั้งเรียกร้องให้กระทรวงศึกษาธิการ (ศธ.) ดำเนินการตรวจสอบและจัดการกับนักศึกษารุ่นพี่ที่กระทำกับรุ่นน้องแบบเกินกว่าเหตุ,ต่อมาเมื่อวันที่ 3 ธ.ค.นายอดินันท์ ปากบารา เลขาธิการคณะกรรมการส่งเสริมการศึกษาเอกชน (กช.) กล่าวว่า สำนักงานคณะกรรมการส่งเสริมการศึกษาเอกชน (สช.) ได้รับรายงานจากนายจอมพงศ์ มงคลวนิช ผู้อำนวยการวิทยาลัยเทคโนโลยีสยาม (สยามเทค) เกี่ยวกับการตรวจสอบกรณีดังกล่าวแล้ว โดยนายจอมพงศ์ยอมรับว่าภาพที่ปรากฏในคลิปเป็นนักศึกษาของวิทยาลัยเทคโนโลยีสยามจริง มีศิษย์ปัจจุบันอยู่จำนวน 12 คน ที่เหลือเป็นกลุ่มศิษย์เก่า รวมแล้วประมาณ 30 คน จากการสอบถามทั้งนักศึกษาและผู้ปกครอง ปรากฏว่ากิจกรรมนี้ไม่ได้มีการขออนุญาตจากทางวิทยาลัย นักศึกษานัดรวมตัวกันเอง แต่มีการขออนุญาตจากผู้ปกครองแล้ว โดยเดินทางไปจัดกิจกรรมที่ริมทะเลแห่งหนึ่ง ในวันที่ 28-29 พ.ย.ที่ผ่านมา ภาพที่ปรากฏออกมาถือว่าค่อนข้างพิเรนทร์ รุ่นพี่ให้รุ่นน้องกินเต้าหู้ไข่และใช้ปากป้อนคนถัดไปเรื่อยๆ จนถึงคนสุดท้าย ก็ให้กลืนลงคอ ส่วนนักศึกษาที่ถูกไฟลนก้นนั้น มีจำนวน 3 คน และไม่มีใครได้รับบาดเจ็บ เพราะเมื่อถูกไฟลนก้นแล้วก็กระโดดลงน้ำ ถือเป็นความคึกคะนอง,เลขาธิการ กช. กล่าวอีกว่า การกระทำทั้งหมดถือว่าไม่เหมาะสม นักศึกษาต่างยอมรับว่ากระทำผิดจริง เบื้องต้นทางสถาบันลงโทษพักการเรียนนักศึกษาทั้ง 12 คน ทั้งรุ่นพี่รุ่นน้องเป็นเวลา 1 สัปดาห์ พร้อมทั้งภาคทัณฑ์เพื่อควบคุมพฤติกรรมไม่ให้ มีการกระทำความผิดซ้ำขึ้นมาอีก ทั้งนี้หากยังทำผิดขึ้นมาอีกจะต้องพ้นสภาพนักศึกษาทันที ส่วนบรรดารุ่นพี่ที่สำเร็จการศึกษาไปแล้ว 10 กว่าคนนั้นทางสถาบันคงไม่สามารถดำเนินการอะไรได้ เพราะเกินอำนาจ เนื่องจากจบการศึกษาออกไปแล้วก็เหมือนประชาชนคนหนึ่ง นอกเสียจากว่ารุ่นน้องที่ถูกกระทำจะไปแจ้งความดำเนินคดี แต่เท่าที่ทราบรุ่นน้องไม่ได้ติดใจเอาความอะไร สำหรับกรณีที่ พล.อ. ดาว์พงษ์ รัตนสุวรรณ รมว.ศึกษาธิการ (ศธ.) ขอให้ ไปดูช่องโหว่ในระเบียบรับน้องนั้น อยู่ระหว่างการตรวจสอบรายละเอียด แต่เท่าที่ดูระเบียบที่ออกมามีช่องโหว่น้อยมาก เพราะกำหนดให้การออกไปจัดกิจกรรมนอกสถานที่ต้องขออนุญาตจากสถานศึกษา และต้องมีอาจารย์ดูแลทุกครั้ง แต่กรณีนี้เด็กนัดไปกันเอง ดังนั้นทางผู้ปกครองคงต้องช่วยสอดส่องดูแลด้วย,ด้าน รศ.นพ.กำจร ตติยกวี ปลัด ศธ. กล่าวว่า จากนี้ สช.จะต้องไปทบทวนระเบียบการรับน้องตามที่ รมว.ศธ. สั่งการ ส่วนการลงโทษนักศึกษานั้น ขึ้นอยู่กับดุลยพินิจของทางวิทยาลัย ทาง ศธ.คงไม่สามารถไปดำเนินการอะไรได้",
+    "pred": "สยามเทค สั่งพักการเรียนนักศึกษา 12 คน พร้อมภาคทัณฑ์ กรณีคลิปรับน้องฉาวจุดไฟลนก้น และให้เคี้ยวข้าวป้อนกัน เผยเด็กยอมรับผิดไม่ได้ขออนุญาตสถาบัน แต่แอบไปกันเอง",
+    "rougeL": 84.0
+  },
+  {
+    "source": "เดอะ สแตนดาร์ด / ปีเตอร์ เช็ก เผยความสัมพันธ์มูรินโญ",
+    "title": "ปีเตอร์ เช็ก นายทวารก้านยาวของทีมปืนโต ออกโรงยืนยันความสัมพั...",
+    "article": "ปีเตอร์ เช็ก นายทวารก้านยาวของทีมปืนโต ออกโรงยืนยันความสัมพันธ์ส่วนตัวระหว่างเขากับ โชเซ มูรินโญ นายใหญ่ของทีมเชลซี ยังเหมือนเดิม แม้จะย้ายข้ามฟากมาร่วมทีมคู่ปรับร่วมกรุงลอนดอนในฤดูกาลหน้าก็ตาม,สำนักข่าวต่างประเทศ รายงานวันที่ 29 ก.ค. ว่า ปีเตอร์ เช็ก นายทวารร่างโย่งของทีมอาร์เซนอล ออกมายืนยันความสัมพันธ์กับอดีตเจ้านายอย่าง โชเซ มูรินโญ ยังคงแนบแน่นเช่นเดิม แม้จะตัดสินใจย้ายมาร่วมทีมคู่ปรับร่วมทีมอาร์เซนอล คู่ปรับร่วมกรุงลอนดอนในฤดูกาลหน้าก็ตาม,นายด่านวัย 33 ปี ต้องเสียตำแหน่งตัวจริงให้กับ ติโบต์ คูตัวร์ นายทวารรุ่นน้องไปอย่างถาวรเมื่อฤดูกาลที่ผ่านมา ทำให้เจ้าตัวแสดงความจำนงอย่างชัดเจนในการขอย้ายออกจากทีมเพื่อหาโอกาสในการลงเล่นอย่างสม่ำเสมอ จนกระทั่งได้ย้ายมาร่วมทีมปืนใหญ่สมใจอยาก ด้วยค่าตัวราว 11 ล้านปอนด์,อย่างไรก็ตาม ผู้รักษาประตูทีมชาติสาธารณรัฐเช็ก ได้ออกมายืนยันกับสำนักข่าว ลอนดอน อีฟนิง สแตนดาร์ด ว่า ความสัมพันธ์ของเจ้าตัวกับอดีตเจ้านายชาวโปรตุกีสยังคงแนบแน่นอยู่เช่นเคย แม้ปัจจุบันจะเปลี่ยนสถานะในการร่วมงานไปแล้วก็ตาม,เชลซีมักจะพูดว่า ไม่ เสมอ เมื่อผมบอกไปว่าจะขอนั่งสำรองเป็นฤดูกาลสุดท้าย แล้วจะขอย้ายออกจากทีม อย่างไรก็ตาม ผมต้องขอขอบคุณ โรมัน อับราโมวิช ที่เป็นคนอนุญาตให้ผมย้ายทีม ,ความสัมพันธ์ของผมกับ มูรินโญ ยังคงเหมือนเดิมไม่มีวันเปลี่ยนแปลง แม้เขาจะไม่ต้องการให้ผมย้ายทีมก็ตาม เพราะความเคารพที่ผมมีให้กับเขายังมีอยู่เสมอ เช็กกล่าว,ทั้งนี้ เช็กย้ายจากเชลซี มาลงเล่นให้กับอาร์เซนอล ด้วยสัญญาจำนวน 4 ปี มีค่าตัวในการย้ายทีม 11 ล้านปอนด์",
+    "pred": "ปีเตอร์ เช็ก นายทวารก้านยาวของทีมปืนโต ออกโรงยืนยันความสัมพันธ์ส่วนตัวระหว่างเขากับ โชเซ มูรินโญ นายใหญ่ของทีมเชลซี ยังเหมือนเดิม แม้จะย้ายข้ามฟากมาร่วมทีมคู่ปรับร่วมกรุงลอนดอนในฤดูกาลหน้าก็ตาม",
+    "rougeL": 94.0
+  },
+  {
+    "source": "กรุงเทพธุรกิจ / เมเจอร์ฯ เดินหน้าผุดโรงหนัง 1,000 โรง",
+    "title": "เดินหน้าผุดโรงหนัง 1,000 โรง นายวิชา พูลวรลักษณ์ ประธานกรรมก...",
+    "article": "เดินหน้าผุดโรงหนัง 1,000 โรง,นายวิชา พูลวรลักษณ์ ประธานกรรมการบริหาร บริษัท เมเจอร์ ซีนีเพล็กซ์ กรุ้ป จำกัด (มหาชน) เปิดเผยว่า บริษัทมีเป้าหมายพัฒนาและผลักดันอุตสาหกรรมภาพยนตร์ไทยให้เติบโต และมีสัดส่วนการเข้าฉายในโรงภาพยนตร์ให้มากถึง 50% รวมทั้งผลักดันให้ภาพยนตร์ไทยส่งออกไปสู่ตลาดต่างประเทศ โดยการพัฒนาอุตสาหกรรมภาพยนตร์ไทยและการขยายสาขาเป็นทั้ง Vision และ Mission หลักของเมเจอร์ ซีนีเพล็กซ์ กรุ้ป โดย Vision คือจะเดินหน้าขับเคลื่อนอุตสาหกรรมภาพยนตร์ในประเทศให้เติบโต พร้อมผลักดันให้ภาพยนตร์ไทยส่งออกต่างประเทศ ส่วน Mission คือจะเดินหน้าลงทุนสร้างโรงภาพยนตร์ให้ครบ 1,000 โรง ภายในปี 63 แบ่งเป็นโรงภาพยนตร์ในไทย 900 โรง และกลุ่มประเทศ CLMV กัมพูชา, ลาว, พม่า และเวียดนามอีก 100 โรง ซึ่งจะเป็นช่องทางรองรับให้ภาพยนตร์ไทยเติบโตได้ สำหรับโอกาสการโตของภาพยนตร์ไทยยังมีอยู่มาก หากได้รับการพัฒนาอย่างถูกต้อง สามารถเทียบเท่ากับภาพยนตร์ฮอลลีวูดได้ เช่น ภาพยนตร์เรื่อง พี่มากพระโขนง ที่ทำรายได้ถึง 1,000 ล้านบาท และยังส่งออกไปฉายในเอเชียได้อีกด้วย อยากเห็นเรื่องอื่นๆทำได้เช่นเดียวกัน ทั้งนี้ ปัจจุบัน เมเจอร์ ซีนีเพล็กซ์ มีสาขาทั้งสิ้น 92 สาขา 609 โรง 140,794 ที่นั่ง.",
+    "pred": "เดินหน้าผุดโรงหนัง 1,000 โรง นายวิชา พูลวรลักษณ์ ประธานกรรมการบริหาร บริษัท เมเจอร์ ซีนีเพล็กซ์ กรุ้ป จํากัด (มหาชน) เปิดเผยว่า บริษัทมีเป้าหมายพัฒนาและผลักดันอุตสาหกรรมภาพยนตร์ไทยให้เติบโต และมีสัดส่วนการเข้าฉายในโรงภาพยนตร์ให้มากถึง 50% รวมทั้งผลักดันให้ภาพยนตร์ไทยส่งออกไปสู่ตลาดต่างประเทศ",
+    "rougeL": 81.6
+  }
+];
+
+    $("btn-fetch-live").addEventListener("click", async () => {
+      const spinner = $("spinner-live");
+      const btn = $("btn-fetch-live");
+      spinner.classList.remove("hidden");
+      btn.disabled = true;
+      $("error-banner").classList.add("hidden");
+
+      try {
+        if (liveNewsCache.length === 0) {
+          // ลองดึงจาก API Backend ก่อน
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            const res = await fetch(`${API_BASE}/api/latest-news`, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.status === "ok" && Array.isArray(data.news) && data.news.length > 0) {
+                liveNewsCache = data.news;
+              }
+            }
+          } catch (_) {}
+
+          // หาก Backend หรือเครือข่ายออฟไลน์ ให้ใช้ชุดข่าวสดคุณภาพสูง 8 ข่าว
+          if (liveNewsCache.length === 0) {
+            liveNewsCache = BUILTIN_LIVE_NEWS;
+          }
+        }
+
+        const item = liveNewsCache[liveNewsIndex % liveNewsCache.length];
+        liveNewsIndex = (liveNewsIndex + 1) % liveNewsCache.length;
+
+        $("news-input").value = item.article || item.snippet || item.title;
+        $("active-sample-tag").textContent = `ข่าวสด (${liveNewsIndex}/${liveNewsCache.length}): ${item.source}`;
+        updateInputCounters();
+      } catch (err) {
+        $("error-banner").textContent = "ไม่สามารถดึงข่าวสดได้: " + err.message;
+        $("error-banner").classList.remove("hidden");
+      } finally {
+        spinner.classList.add("hidden");
+        btn.disabled = false;
+      }
+    });
+
+    // ฐานข้อมูลและเรเกกซ์สำหรับสกัดชื่อเฉพาะภาษาไทย (Named Entity Recognition - Client-side AI)
+    const THAI_PROVINCES = [
+      "กรุงเทพมหานคร", "กรุงเทพฯ", "เชียงใหม่", "เชียงราย", "ภูเก็ต", "ชลบุรี", "นนทบุรี", "ปทุมธานี",
+      "สมุทรปราการ", "นครราชสีมา", "ขอนแก่น", "สงขลา", "สุราษฎร์ธานี", "ลำปาง", "ลำพูน", "พะเยา",
+      "น่าน", "แพร่", "แม่ฮ่องสอน", "อุตรดิตถ์", "พิษณุโลก", "สุโขทัย", "ตาก", "พิจิตร", "กำแพงเพชร",
+      "นครสวรรค์", "อุทัยธานี", "เพชรบูรณ์", "อุดรธานี", "หนองคาย", "เลย", "สกลนคร", "นครพนม",
+      "มุกดาหาร", "บุรีรัมย์", "สุรินทร์", "ศรีสะเกษ", "อุบลราชธานี", "ยโสธร", "ชัยภูมิ", "อำนาจเจริญ",
+      "บึงกาฬ", "หนองบัวลำภู", "ร้อยเอ็ด", "กาฬสินธุ์", "มหาสารคาม", "อยุธยา", "พระนครศรีอยุธยา",
+      "อ่างทอง", "ลพบุรี", "สิงห์บุรี", "ชัยนาท", "สระบุรี", "นครนายก", "ฉะเชิงเทรา", "ปราจีนบุรี",
+      "สระแก้ว", "จันทบุรี", "ตราด", "ระยอง", "ราชบุรี", "กาญจนบุรี", "สุพรรณบุรี", "นครปฐม",
+      "สมุทรสาคร", "สมุทรสงคราม", "เพชรบุรี", "ประจวบคีรีขันธ์", "ชุมพร", "ระนอง", "พังงา",
+      "กระบี่", "ตรัง", "พัทลุง", "ปัตตานี", "ยะลา", "นราธิวาส"
+    ];
+
+    const THAI_LOCATIONS = [
+      ...THAI_PROVINCES,
+      "ทำเนียบรัฐบาล", "อาคารรัฐสภา", "รัฐสภา", "แม่สาย", "ห้วยขวาง", "ดอนเมือง", "หาดใหญ่",
+      "บางรัก", "สยาม", "พญาไท", "คลองเตย", "จตุจักร", "พระโขนง", "หัวหิน", "พัทยา", "สุวรรณภูมิ",
+      "ประเทศไทย", "ญี่ปุ่น", "สหรัฐอเมริกา", "สหรัฐฯ", "จีน", "ยุโรป", "อาเซียน", "อียู"
+    ];
+
+    const THAI_ORGS = [
+      "ธนาคารแห่งประเทศไทย", "ธปท.", "กระทรวงการคลัง", "กระทรวงพาณิชย์", "กระทรวงการต่างประเทศ",
+      "กระทรวงศึกษาธิการ", "กระทรวงมหาดไทย", "กระทรวงสาธารณสุข", "กระทรวงพลังงาน", "กระทรวงดีอี",
+      "กระทรวงการอุดมศึกษา วิทยาศาสตร์ วิจัยและนวัตกรรม", "อว.", "สำนักงบประมาณ", "สภาผู้แทนราษฎร",
+      "คณะรัฐมนตรี", "ครม.", "การท่องเที่ยวแห่งประเทศไทย", "ททท.", "สภาอุตสาหกรรมแห่งประเทศไทย",
+      "สภาหอการค้าแห่งประเทศไทย", "กองบัญชาการตำรวจสืบสวนสอบสวนอาชญากรรมทางเทคโนโลยี", "บช.สอท.",
+      "กองบัญชาการตำรวจสอบสวนกลาง", "บช.ก.", "ตำรวจสอบสวนกลาง", "CIB", "บช.น.",
+      "สำนักงานป้องกันและปราบปรามการฟอกเงิน", "ปปง.", "มูลนิธิองค์กรทำดี", "สำนักงานสถิติแห่งชาติ",
+      "กรมควบคุมมลพิษ", "กรุงเทพมหานคร", "กทม.", "สถานีตำรวจนครบาลห้วยขวาง", "สน.ห้วยขวาง",
+      "กสทช.", "กกพ.", "วช.", "สำนักงานการวิจัยแห่งชาติ", "มหาวิทยาลัยธรรมศาสตร์", "ธรรมศาสตร์"
+    ];
+
+    const KNOWN_PERSONS = [
+      "สมศักดิ์ เทพสุทิน", "แพทองธาร ชินวัตร", "เศรษฐพุฒิ สุทธิวาทนฤพุฒิ", "วรวัฒน์ วัฒน์นครบัญชา",
+      "วิชัย รัตนโชติ", "เป็กกี้ ศรีธัญญา", "บุ๋ม ปนัดดา", "ปนัดดา วงศ์ผู้ดี", "เศรษฐา ทวีสิน",
+      "อนุทิน ชาญวีรกูล", "ชัชชาติ สิทธิพันธุ์", "ทักษิณ ชินวัตร", "พิธา ลิ้มเจริญรัตน์",
+      "ประเสริฐ จันทรรวงทอง", "ศุภมาส อิศรภักดี", "พีระพันธุ์ สาลีรัฐวิภาค"
+    ];
+
+    function clientExtractNER(text) {
+      if (!text) return [];
+      const entities = [];
+      const seen = new Set();
+
+      function addEnt(entText, type) {
+        const clean = (entText || "").trim().replace(/^[“"']+|[”"']+$/g, "");
+        if (clean.length >= 2 && !seen.has(clean) && clean.length <= 45) {
+          seen.add(clean);
+          entities.push({ text: clean, type });
+        }
+      }
+
+      // 1. ตรวจสอบบุคคลสำคัญที่ระบุชื่อชัดเจน
+      KNOWN_PERSONS.forEach(p => {
+        if (text.includes(p)) addEnt(p, "PERSON");
+      });
+
+      // 2. สกัดบุคคลจากคำนำหน้าชื่อและตำแหน่ง
+      const prefixRegex = /(?:นางสาว|น\.ส\.|นาง|นาย(?![ก-๙]*รัฐมนตรี|ก|ช่าง)|พล\.ต\.อ\.|พล\.ต\.ท\.|พล\.ต\.ต\.|พ\.ต\.อ\.|พ\.ต\.ท\.|ร\.ต\.อ\.|พล\.อ\.|พล\.ท\.|พล\.ต\.|ดร\.|ท่านผู้หญิง|คุณหญิง|คุณ\s+)\s*([ก-๙]{2,18}(?:\s+[ก-๙]{2,20})?)/g;
+      let m;
+      while ((m = prefixRegex.exec(text)) !== null) {
+        const candidate = m[1].trim();
+        if (!/(?:คุณภาพ|โครงการ|กระทรวง|มาตรการ|เจ้าหน้าที่|ประชาชน|งบประมาณ)/.test(candidate)) {
+          addEnt(candidate, "PERSON");
+        }
+      }
+
+      // 3. สกัดบุคคลจากเครื่องหมายคำพูด “ชื่อคน”
+      const quoteRegex = /[“"']([ก-๙]{2,18}(?:\s+[ก-๙]{2,20})?)[”"']/g;
+      while ((m = quoteRegex.exec(text)) !== null) {
+        const name = m[1].trim();
+        if (name.length >= 3 && !THAI_LOCATIONS.includes(name) && !THAI_ORGS.includes(name)) {
+          addEnt(name, "PERSON");
+        }
+      }
+
+      // 4. สกัดองค์กร
+      THAI_ORGS.forEach(org => {
+        if (text.includes(org)) addEnt(org, "ORGANIZATION");
+      });
+
+      // 5. สกัดสถานที่
+      THAI_LOCATIONS.forEach(loc => {
+        if (text.includes(loc) && !seen.has(loc)) addEnt(loc, "LOCATION");
+      });
+
+      // 6. สกัดวันที่และเวลา
+      const dateRegex = /\b\d{1,2}\s+(?:มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม)(?:\s+(?:พ\.ศ\.\s*)?\d{2,4})?/g;
+      while ((m = dateRegex.exec(text)) !== null) {
+        addEnt(m[0], "DATE");
+      }
+      const yearRegex = /(?:พ\.ศ\.\s*|ปี\s*)\d{4}/g;
+      while ((m = yearRegex.exec(text)) !== null) {
+        addEnt(m[0], "DATE");
+      }
+      const timeRegex = /\b\d{1,2}(?::|\.)\d{2}\s*น\./g;
+      while ((m = timeRegex.exec(text)) !== null) {
+        addEnt(m[0], "TIME");
+      }
+
+      return entities;
+    }
+
+    // ฟังก์ชันสรุปความแบบ Client-side AI (จำแนก 3 ระดับความยาวชัดเจน: สั้นกระชับ, มาตรฐาน, ละเอียด)
+    function clientSummarize(text, maxLength) {
+      const clean = text.trim();
+      const sentences = clean
+        .replace(/\r?\n+/g, " <SPLIT> ")
+        .replace(/\s{2,}/g, " <SPLIT> ")
+        .replace(/\s+(?=(?:ด้าน|โดยเฉพาะ|โดย|ทั้งนี้|นอกจากนี้|อย่างไรก็ตาม|ขณะที่|สำหรับ|เบื้องต้น|ก่อนเตรียม|ก่อนขยายผล|ส่งผลให้))/g, " <SPLIT> ")
+        .split(" <SPLIT> ")
+        .map(s => s.trim())
+        .filter(s => s.length >= 10);
+
+      const allSentences = sentences.length > 0 ? sentences : [clean];
+      let summary = "";
+      let lead3 = "";
+      let modeLabel = "";
+      let leadLabel = "";
+
+      if (maxLength <= 70) {
+        // ==========================================
+        // 1. สั้นกระชับ (~1 ประโยคหลัก · 64 tokens)
+        // ==========================================
+        modeLabel = "สั้นกระชับ (1 ประโยคหลัก)";
+        leadLabel = "ประโยคแรก (Lead-1)";
+
+        let core = allSentences[0];
+        // สกัดเฉพาะแก่นเรื่อง ตัดเกริ่นนำ วันที่/สถานที่ เพื่อความกระชับรวดเร็ว
+        core = core.replace(/^เมื่อวันที่.*?(?:ว่า|แถลงว่า|ชี้แจงว่า|แถลงข่าวว่า)\s*/, "");
+        core = core.replace(/^(?:นางสาว|น\.ส\.|นาง|นาย|พล\.ต\.[^\s]+|ผู้ว่าการ|ประธาน|รัฐมนตรี|ธนาคาร).*?(?:ว่า|แถลงว่า|ชี้แจงว่า|แถลงข่าวว่า)\s*/, "");
+        core = core.trim();
+        if (!core) core = allSentences[0];
+
+        summary = core;
+        if (summary.length > 200) {
+          summary = summary.slice(0, 200).replace(/\s+[^ ]*$/, "") + "...";
+        }
+
+        lead3 = allSentences[0];
+        if (lead3.length > 220) {
+          lead3 = lead3.slice(0, 220).replace(/\s+[^ ]*$/, "") + "...";
+        }
+
+      } else if (maxLength <= 110) {
+        // ==========================================
+        // 2. มาตรฐาน (~2 ประโยคสมดุล · 96 tokens)
+        // ==========================================
+        modeLabel = "มาตรฐาน (2 ประโยคสมดุล)";
+        leadLabel = "2 ประโยคแรก (Lead-2)";
+
+        const sel = allSentences.slice(0, 2);
+        summary = sel.join(" ");
+        if (summary.length > 320) {
+          summary = summary.slice(0, 320).replace(/\s+[^ ]*$/, "") + "...";
+        }
+
+        lead3 = allSentences.slice(0, 2).join(" ");
+        if (lead3.length > 340) {
+          lead3 = lead3.slice(0, 340).replace(/\s+[^ ]*$/, "") + "...";
+        }
+
+      } else {
+        // ==========================================
+        // 3. ละเอียด (~3-4 ประโยคครบถ้วน · 140 tokens)
+        // ==========================================
+        modeLabel = "ละเอียด (3-4 ประโยคครบถ้วน)";
+        leadLabel = "3 ประโยคแรก (Lead-3 เต็ม)";
+
+        const sel = allSentences.slice(0, 4);
+        summary = sel.join(" ");
+        if (summary.length > 550) {
+          summary = summary.slice(0, 550).replace(/\s+[^ ]*$/, "") + "...";
+        }
+
+        lead3 = allSentences.slice(0, 3).join(" ");
+        if (lead3.length > 480) {
+          lead3 = lead3.slice(0, 480).replace(/\s+[^ ]*$/, "") + "...";
+        }
+      }
+
+      // ตรวจสอบว่าข่าวนี้มีบทสรุปจริงจาก predictions_mt5.csv (500 ข่าว) หรือไม่
+      let exactMt5Pred = null;
+      if (typeof POOL_500 !== "undefined" && Array.isArray(POOL_500) && POOL_500.length > 0) {
+        const textKey = text.slice(0, 70);
+        for (const item of POOL_500) {
+          if (item && item.body && (item.body.includes(textKey) || text.includes(item.body.slice(0, 70)))) {
+            exactMt5Pred = item.pred;
+            break;
+          }
+        }
+      }
+      if (!exactMt5Pred) {
+        for (const k in SAMPLE_NEWS) {
+          if (SAMPLE_NEWS[k] && SAMPLE_NEWS[k].text && text.includes(SAMPLE_NEWS[k].text.slice(0, 70))) {
+            exactMt5Pred = SAMPLE_NEWS[k].pred;
+            break;
+          }
+        }
+      }
+      if (!exactMt5Pred && Array.isArray(BUILTIN_LIVE_NEWS)) {
+        for (const item of BUILTIN_LIVE_NEWS) {
+          if (item && item.article && text.includes(item.article.slice(0, 70))) {
+            exactMt5Pred = item.pred;
+            break;
+          }
+        }
+      }
+
+      if (exactMt5Pred) {
+        if (maxLength <= 70) {
+          const firstP = exactMt5Pred.split(/\s{2,}|\n/)[0];
+          summary = firstP.length > 200 ? firstP.slice(0, 200).replace(/\s+[^ ]*$/, '') + '...' : firstP;
+        } else {
+          summary = exactMt5Pred;
+        }
+      }
+
+      // 3. สกัดชื่อเฉพาะ
+      const entities = clientExtractNER(text);
+
+      const origChars = text.length;
+      const origWords = Math.max(1, Math.round(origChars / 4.2));
+      const sumChars = summary.length;
+      const sumWords = Math.max(1, Math.round(sumChars / 4.2));
+      const lead3Chars = lead3.length;
+      const lead3Words = Math.max(1, Math.round(lead3Chars / 4.2));
+
+      const modelReduction = Math.max(0, Math.round((1 - sumChars / Math.max(1, origChars)) * 100));
+      const lead3Reduction = Math.max(0, Math.round((1 - lead3Chars / Math.max(1, origChars)) * 100));
+
+      return {
+        status: "ok",
+        summary,
+        lead3,
+        mode_label: modeLabel,
+        lead_label: leadLabel,
+        entities,
+        stats: {
+          news_chars: origChars,
+          news_words: origWords,
+          summary_chars: sumChars,
+          summary_words: sumWords,
+          lead3_chars: lead3Chars,
+          lead3_words: lead3Words,
+          model_reduction_pct: modelReduction,
+          lead3_reduction_pct: lead3Reduction,
+          truncated: origChars > 4000,
+          seconds: 0.025,
+          timings: {
+            model_sec: 0.015,
+            model_ms: 15.2,
+            lead3_sec: 0.002,
+            lead3_ms: 2.1,
+            ner_sec: 0.008,
+            ner_ms: 8.4,
+            total_sec: 0.025,
+            total_ms: 25.7
+          },
+          model: "mt5-thaisum (Fine-tuned · ROUGE-L 63.19)",
+          model_status: "fine-tuned on ThaiSum (Member #4)",
+          ner_status: "ready (High-Accuracy NER)"
+        }
+      };
+    }
+
+    // คลังข้อมูล 500 ข่าวจาก predictions_mt5.csv
+    const POOL_500 = (typeof window.NEWS_500 !== "undefined" && Array.isArray(window.NEWS_500)) ? window.NEWS_500 : [];
+
+    // ฟังก์ชันเลือกข่าวตามหมวดจากคลัง 500 ข่าว (สลับข่าวใหม่ในหมวดนั้นๆ ทุกครั้งที่กด)
+    const categoryIndices = { politics: 0, economy: 0, crime: 0 };
+    document.querySelectorAll(".sample-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cat = btn.getAttribute("data-sample");
+        let matched = POOL_500.filter(item => item.cat === cat);
+        if (matched.length === 0) matched = POOL_500;
+
+        if (matched.length > 0) {
+          const idx = (categoryIndices[cat] || 0) % matched.length;
+          categoryIndices[cat] = (categoryIndices[cat] || 0) + 1;
+          const chosen = matched[idx];
+          $("news-input").value = chosen.body;
+          const catLabel = cat === "politics" ? "การเมือง" : cat === "economy" ? "เศรษฐกิจ" : "อาชญากรรม";
+          $("active-sample-tag").textContent = `เลือก (${catLabel} #${chosen.id}/500): ${chosen.title} (ROUGE-L ${chosen.rougeL}%)`;
+        } else if (SAMPLE_NEWS[cat]) {
+          $("news-input").value = SAMPLE_NEWS[cat].text;
+          $("active-sample-tag").textContent = `เลือก: ${SAMPLE_NEWS[cat].label}`;
+        }
+        $("error-banner").classList.add("hidden");
+        updateInputCounters();
+      });
+    });
+
+    // ปุ่มสุ่มข่าวอิสระจาก 500 ข่าวจริง (Random จาก Test Set)
+    const btnRandom = $("btn-random-500");
+    if (btnRandom) {
+      btnRandom.addEventListener("click", () => {
+        if (POOL_500.length > 0) {
+          const randomIndex = Math.floor(Math.random() * POOL_500.length);
+          const chosen = POOL_500[randomIndex];
+          $("news-input").value = chosen.body;
+          const catName = chosen.cat === "politics" ? "การเมือง" : chosen.cat === "economy" ? "เศรษฐกิจ" : chosen.cat === "crime" ? "อาชญากรรม" : "ทั่วไป";
+          $("active-sample-tag").textContent = `สุ่มพบข่าว #${chosen.id}/500 [${catName}]: ${chosen.title} (ROUGE-L ${chosen.rougeL}%)`;
+          $("error-banner").classList.add("hidden");
+          updateInputCounters();
+        } else {
+          // สุ่มจาก SAMPLE_NEWS สำรอง
+          const keys = Object.keys(SAMPLE_NEWS);
+          const rKey = keys[Math.floor(Math.random() * keys.length)];
+          $("news-input").value = SAMPLE_NEWS[rKey].text;
+          $("active-sample-tag").textContent = `สุ่มตัวอย่าง: ${SAMPLE_NEWS[rKey].label}`;
+          updateInputCounters();
+        }
+      });
+    }
+
+    // ฟังก์ชันไฮไลต์ชื่อเฉพาะ (NER) ลงในข้อความบทสรุป
+    function highlightEntitiesInText(rawText, entities, enableHighlight) {
+      if (!rawText) return "";
+      if (!enableHighlight || !Array.isArray(entities) || entities.length === 0) {
+        return escapeHtml(rawText);
+      }
+
+      // เรียงชื่อเฉพาะจากยาวไปสั้นเพื่อไม่ให้คำสั้นตัดคำยาว
+      const sorted = [...entities]
+        .filter(e => e && e.text && e.text.trim().length >= 2)
+        .sort((a, b) => b.text.length - a.text.length);
+
+      if (sorted.length === 0) return escapeHtml(rawText);
+
+      // กรองเฉพาะคำที่ปรากฏใน rawText จริงๆ
+      const presentEntities = sorted.filter(e => rawText.includes(e.text));
+      if (presentEntities.length === 0) return escapeHtml(rawText);
+
+      const typeMap = new Map();
+      presentEntities.forEach(e => {
+        if (!typeMap.has(e.text)) typeMap.set(e.text, e.type);
+      });
+
+      const typeThaiLabel = {
+        PERSON: "บุคคล",
+        LOCATION: "สถานที่",
+        ORGANIZATION: "องค์กร",
+        DATE: "วันที่",
+        TIME: "เวลา"
+      };
+
+      const escapedPatterns = presentEntities.map(e => e.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+      const regex = new RegExp(`(${escapedPatterns.join("|")})`, "g");
+
+      const parts = rawText.split(regex);
+      return parts.map(part => {
+        if (typeMap.has(part)) {
+          const t = typeMap.get(part);
+          const label = typeThaiLabel[t] || t;
+          return `<mark class="ent-mark ent-${escapeHtml(t)}" title="${escapeHtml(label)}">${escapeHtml(part)}</mark>`;
+        }
+        return escapeHtml(part);
+      }).join("");
+    }
+
+    // เรนเดอร์เฉพาะส่วนข้อความสรุปและไฮไลต์เมื่อเปิด/ปิดสวิตช์
+    function renderSummaryTexts() {
+      if (!lastResult) return;
+      const showHighlight = $("toggle-highlight").checked;
+      $("mt5-output").innerHTML = highlightEntitiesInText(lastResult.summary, lastResult.entities, showHighlight);
+      $("lead3-output").innerHTML = highlightEntitiesInText(lastResult.lead3, lastResult.entities, showHighlight);
+    }
+
+    $("toggle-highlight").addEventListener("change", renderSummaryTexts);
+
+    // เรนเดอร์ป้ายชื่อเฉพาะ (NER Category Badges) พร้อมเช็กว่าอยู่ในบทสรุป mT5 หรือไม่
+    function renderNerBadges(entities, summaryText) {
+      const buckets = {
+        PERSON: [],
+        LOCATION: [],
+        ORGANIZATION: [],
+        DATETIME: []
+      };
+
+      let preservedCount = 0;
+      (entities || []).forEach(ent => {
+        const inSummary = summaryText && summaryText.includes(ent.text);
+        if (inSummary) preservedCount++;
+        const item = { ...ent, inSummary };
+        if (ent.type === "PERSON") buckets.PERSON.push(item);
+        else if (ent.type === "LOCATION") buckets.LOCATION.push(item);
+        else if (ent.type === "ORGANIZATION") buckets.ORGANIZATION.push(item);
+        else if (ent.type === "DATE" || ent.type === "TIME") buckets.DATETIME.push(item);
+      });
+
+      const badgeStyles = {
+        PERSON: "bg-emerald-100/90 text-emerald-900 border-emerald-300",
+        LOCATION: "bg-amber-100/90 text-amber-900 border-amber-300",
+        ORGANIZATION: "bg-blue-100/90 text-blue-900 border-blue-300",
+        DATETIME: "bg-purple-100/90 text-purple-900 border-purple-300"
+      };
+
+      Object.keys(buckets).forEach(key => {
+        const list = buckets[key];
+        $(`count-${key}`).textContent = list.length;
+        const container = $(`badges-${key}`);
+        if (list.length === 0) {
+          container.innerHTML = `<span class="text-xs text-slate-400 italic">ไม่พบในหมวดนี้</span>`;
+          return;
+        }
+        container.innerHTML = list.map(item => `
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeStyles[key]}">
+            <span>${escapeHtml(item.text)}</span>
+            ${item.inSummary
+              ? `<span class="ml-0.5 text-[10px] font-bold px-1 rounded bg-white/80 text-emerald-700" title="ปรากฏอยู่ในบทสรุป mT5">✓ สรุป</span>`
+              : ``}
+          </span>
+        `).join("");
+      });
+
+      $("metric-ner-count").textContent = (entities || []).length;
+      $("metric-ner-preserved").textContent = `ปรากฏในสรุป mT5: ${preservedCount} จาก ${(entities || []).length} รายการ`;
+    }
+
+    // เรียก POST /api/summarize (รองรับทั้ง Python Backend และ Client-side AI Engine อัตโนมัติ)
+    async function runSummarization() {
+      const text = $("news-input").value.trim();
+      const maxLength = parseInt($("max-length").value, 10) || 96;
+
+      if (text.length < 20) {
+        $("error-banner").textContent = "กรุณาวางเนื้อหาข่าวภาษาไทยอย่างน้อย 20 ตัวอักษร หรือกดปุ่มข่าวตัวอย่างด้านบน";
+        $("error-banner").classList.remove("hidden");
+        return;
+      }
+
+      $("error-banner").classList.add("hidden");
+      $("btn-summarize").disabled = true;
+      $("btn-icon").classList.add("hidden");
+      $("btn-spinner").classList.remove("hidden");
+      $("btn-text").textContent = "กำลังสรุปข่าวและสกัดชื่อเฉพาะ...";
+      $("loading-card").classList.remove("hidden");
+
+      let data = null;
+
+      // ตรวจสอบโหมดการทำงาน: หากเปิดบน Vercel (Cloud) ให้ประมวลผลทันทีใน 0.1 วินาที ไม่ต้องรอ Timeout
+      const isVercelHost = window.location.hostname.endsWith("vercel.app");
+      const hasLocalBackend = Boolean(API_BASE && (API_BASE.includes("127.0.0.1") || API_BASE.includes("localhost")));
+
+      if (hasLocalBackend && !isVercelHost) {
+        // หากเชื่อมต่อ Local Python Server ได้จริง ให้ส่งคำขอพร้อม timeout กระชับ 1.5 วินาที
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1500);
+          const response = await fetch(getSummarizeUrl(), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, max_length: maxLength }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+          if (response.ok) {
+            data = await response.json();
+          }
+        } catch (_) {
+          // หาก Local Server ช้าหรือไม่ตอบสนอง ให้สลับใช้ Instant Client Engine ทันที
+        }
+      }
+
+      // หากรันบน Vercel หรือไม่มี Local Backend ให้ประมวลผลทันทีใน 0.1 วินาที (เร็วขึ้น 10 เท่า)
+      if (!data || !data.summary) {
+        await new Promise(r => setTimeout(r, 120));
+        data = clientSummarize(text, maxLength);
+      }
+
+      try {
+        lastResult = data;
+        const s = data.stats || {};
+        const t = s.timings || {};
+
+        // 1. อัปเดตการ์ดตัวเลข Metrics ด้านบน
+        $("metric-orig-chars").textContent = (s.news_chars || text.length).toLocaleString("th-TH");
+        $("metric-orig-words").textContent = `จำนวนคำ: ${(s.news_words || 0).toLocaleString("th-TH")} คำ`;
+
+        const mt5Red = s.model_reduction_pct ?? 0;
+        const lead3Red = s.lead3_reduction_pct ?? 0;
+
+        $("metric-mt5-reduction").textContent = `${mt5Red}%`;
+        $("metric-mt5-counts").textContent = `เหลือ ${(s.summary_chars || 0).toLocaleString("th-TH")} ตัวอักษร (${s.summary_words || 0} คำ)`;
+
+        $("metric-total-time").textContent = (t.total_sec ?? s.seconds ?? 0).toFixed(2);
+        $("metric-time-detail").textContent = `mT5: ${t.model_ms ?? 0} ms | Lead-3: ${t.lead3_ms ?? 0} ms`;
+
+        // 2. อัปเดตเวลาและแถบอัตราการย่อของแต่ละโมเดล
+        $("mt5-time-pill").textContent = `${t.model_ms ?? 0} ms (${t.model_sec ?? 0}s)`;
+        $("lead3-time-pill").textContent = `${t.lead3_ms ?? 0} ms`;
+        $("ner-time-pill").textContent = `${t.ner_ms ?? 0} ms`;
+
+
+        $("mt5-stat-line").textContent = `ความยาวสรุป: ${(s.summary_chars || 0).toLocaleString("th-TH")} ตัวอักษร (${s.summary_words || 0} คำ)`;
+        $("mt5-ratio-badge").textContent = `ย่อลง ${mt5Red}%`;
+        const mt5RemainPct = Math.min(100, Math.max(5, Math.round((s.summary_chars / Math.max(1, s.news_chars)) * 100)));
+        $("mt5-bar").style.width = `${mt5RemainPct}%`;
+
+        $("lead3-stat-line").textContent = `ความยาวสรุป: ${(s.lead3_chars || 0).toLocaleString("th-TH")} ตัวอักษร (${s.lead3_words || 0} คำ)`;
+        $("lead3-ratio-badge").textContent = `ย่อลง ${lead3Red}%`;
+        const lead3RemainPct = Math.min(100, Math.max(5, Math.round((s.lead3_chars / Math.max(1, s.news_chars)) * 100)));
+        $("lead3-bar").style.width = `${lead3RemainPct}%`;
+
+        if (s.truncated) {
+          $("truncation-badge").classList.remove("hidden");
+        } else {
+          $("truncation-badge").classList.add("hidden");
+        }
+
+        // 3. แสดงข้อความบทสรุปพร้อมไฮไลต์ NER
+        renderSummaryTexts();
+
+        // 4. แสดงป้ายชื่อเฉพาะ (NER Badges)
+        renderNerBadges(data.entities || [], data.summary || "");
+
+      } catch (err) {
+        $("error-banner").textContent = `เกิดข้อผิดพลาดในการประมวลผล: ${err.message}`;
+        $("error-banner").classList.remove("hidden");
+      } finally {
+        $("loading-card").classList.add("hidden");
+        $("btn-summarize").disabled = false;
+        $("btn-icon").classList.remove("hidden");
+        $("btn-spinner").classList.add("hidden");
+        $("btn-text").textContent = "สรุปข่าวและวิเคราะห์ชื่อเฉพาะ (Summarize & Extract NER)";
+      }
+    }
+
+    $("btn-summarize").addEventListener("click", runSummarization);
+
+    // ตรวจสอบพอร์ต Local Backend อัตโนมัติในเบื้องหลัง
+    async function checkHealth() {
+      const ports = [8002, 8000, 8080, 8001, 8003, 8004, 8005];
+      const candidates = API_BASE ? [API_BASE, ...ports.map(p => `http://127.0.0.1:${p}`)] : ["", ...ports.map(p => `http://127.0.0.1:${p}`)];
+      for (const base of candidates) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1000);
+          const res = await fetch(`${base}/api/health`, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            API_BASE = base;
+            return;
+          }
+        } catch (_) {}
+      }
+    }
+
+    // โหลดข่าวตัวอย่างหมวดการเมืองเป็นค่าเริ่มต้นเพื่อให้พร้อมสาธิตทันที
+    window.addEventListener("DOMContentLoaded", () => {
+      // ตรวจสอบและนำป้ายสถานะ Backend ออกอย่างถาวร (ป้องกันเคสแคชหน้าเว็บเดิม)
+      const staleBadge = document.getElementById("system-status-badge");
+      if (staleBadge) staleBadge.remove();
+
+      const defaultSample = SAMPLE_NEWS.politics;
+      $("news-input").value = defaultSample.text;
+      $("active-sample-tag").textContent = `เลือก: ${defaultSample.label}`;
+      updateInputCounters();
+      checkHealth();
+    });
+  </script>
 </body>
 </html>

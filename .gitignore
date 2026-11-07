@@ -5,6 +5,9 @@ __pycache__/
 # โมเดลไฟล์ใหญ่ ไม่เก็บใน git (แชร์ผ่าน Google Drive / Hugging Face แทน)
 models/*
 !models/.gitkeep
+mt5-thaisum/
+*.zip
 # ข้อมูลจริงไม่เก็บใน repo
 data/*
 !data/.gitkeep
+.vercel
