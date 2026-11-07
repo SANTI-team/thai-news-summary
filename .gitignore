@@ -8,3 +8,6 @@ models/*
 # ข้อมูลจริงไม่เก็บใน repo
 data/*
 !data/.gitkeep
+!data/processed/
+data/processed/*
+!data/processed/manifest.json
