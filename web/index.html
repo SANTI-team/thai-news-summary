@@ -110,7 +110,7 @@
             </span>
           </div>
           <p class="text-sm text-slate-600 mt-0.5">
-            สรุปใจความสำคัญของข่าวด้วย AI (mT5) เปรียบเทียบกับการตัดประโยคแรก (Lead-3) พร้อมแยกชื่อบุคคล สถานที่ และองค์กร
+            สรุปใจความสำคัญของข่าวด้วย AI (mT5) เปรียบเทียบกับการตัดประโยคแรก (Lead) พร้อมจำแนกชื่อบุคคล สถานที่ องค์กร และวันเวลา
           </p>
         </div>
       </div>
@@ -191,20 +191,20 @@
               id="news-input"
               rows="8"
               placeholder="วางเนื้อหาข่าวภาษาไทยที่นี่ หรือกดปุ่มเลือกข่าวตัวอย่างด้านบน..."
-              class="w-full rounded-lg border border-slate-300 bg-white p-4 reading-text text-slate-900 placeholder-slate-400 focus:outline-none focus:border-red-800 focus:ring-2 focus:ring-red-800/15 transition resize-y"
+              class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3.5 reading-text text-slate-900 placeholder-slate-400 focus:outline-none focus:border-red-800 focus:ring-2 focus:ring-red-800/15 transition resize-y"
             ></textarea>
           </div>
 
-          <!-- ตัวนับคำ และตัวเลือกระดับการสรุป -->
-          <div class="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600 bg-slate-50 px-4 py-2.5 rounded-lg border border-slate-200">
+          <!-- ตัวนับคำ/ประโยคที่จำแนกตามจริง และตัวเลือกระดับการสรุป -->
+          <div class="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600 bg-slate-50 px-4 py-3 rounded-lg border border-slate-200">
             <div class="flex items-center gap-2.5 font-medium">
-              <span id="char-count" class="text-slate-800 font-semibold">0 ตัวอักษร</span>
+              <span id="char-count" class="text-slate-900 font-bold">0 ตัวอักษร</span>
               <span class="text-slate-300">|</span>
-              <span id="sentence-count" class="text-slate-600">~0 ประโยค</span>
+              <span id="sentence-count" class="text-red-800 font-semibold bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-md">0 ประโยค</span>
             </div>
             <div class="flex items-center gap-2">
-              <label for="max-length" class="font-medium text-slate-700">ระดับการสรุป:</label>
-              <select id="max-length" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 focus:outline-none focus:border-red-800">
+              <label for="max-length" class="font-semibold text-slate-700">ระดับการสรุป:</label>
+              <select id="max-length" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-900 focus:outline-none focus:border-red-800 cursor-pointer">
                 <option value="64">สั้นกระชับ (1 ประโยค)</option>
                 <option value="96" selected>มาตรฐาน (2 ประโยค)</option>
                 <option value="140">ละเอียด (3-4 ประโยค)</option>
@@ -216,7 +216,7 @@
           <button
             id="btn-summarize"
             type="button"
-            class="w-full py-3.5 px-5 rounded-lg bg-red-800 hover:bg-red-900 text-white font-bold text-base flex items-center justify-center gap-2.5 transition disabled:opacity-60 disabled:cursor-wait"
+            class="w-full py-3.5 px-5 rounded-lg bg-red-800 hover:bg-red-900 active:scale-[0.99] text-white font-bold text-base flex items-center justify-center gap-2.5 transition disabled:opacity-60 disabled:cursor-wait"
           >
             <svg id="btn-spinner" class="hidden animate-spin w-5 h-5 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -236,19 +236,22 @@
 
         <!-- แถบสถานะกำลังโหลด -->
         <div id="loading-card" class="hidden bg-white rounded-xl border border-slate-200 p-5 text-center shadow-xs">
-          <p class="text-base font-semibold text-slate-800">กำลังสรุปข่าวและวิเคราะห์ชื่อเฉพาะ...</p>
+          <p class="text-base font-semibold text-slate-800">กำลังจำแนกประโยค สรุปข่าว และสกัดชื่อเฉพาะ...</p>
         </div>
 
         <!-- ============================================================== -->
-        <!-- ส่วนที่ 2: ผลลัพธ์การสรุปข่าว (เปรียบเทียบ mT5 vs Lead-3 ชัดเจน)   -->
+        <!-- ส่วนที่ 2: ผลลัพธ์การสรุปข่าว (เปรียบเทียบ mT5 vs Lead ตามระดับที่เลือก) -->
         <!-- ============================================================== -->
-        <div id="comparison-section" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div id="comparison-section" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden transition-all duration-200">
           
-          <!-- หัวข้อส่วนสรุปข่าว พร้อมสรุปตัวเลขย่อความในบรรทัดเดียว -->
+          <!-- หัวข้อส่วนสรุปข่าว พร้อมป้ายบอกโหมดระดับการสรุปปัจจุบัน -->
           <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2.5 flex-wrap">
               <span class="w-6 h-6 rounded-full bg-red-800 text-white text-xs font-bold flex items-center justify-center">2</span>
               <h2 class="text-base font-bold text-slate-900">ผลลัพธ์การสรุปข่าว</h2>
+              <span id="active-mode-pill" class="px-3 py-0.5 text-xs font-bold rounded-md bg-red-50 text-red-900 border border-red-200">
+                โหมด: มาตรฐาน (2 ประโยค)
+              </span>
               <span id="truncation-badge" class="hidden px-2.5 py-0.5 text-xs font-semibold rounded-md bg-amber-100 text-amber-900 border border-amber-300">
                 ข่าวยาวเกิน 512 tokens
               </span>
@@ -269,8 +272,8 @@
               <div>
                 <div class="flex items-center justify-between gap-2 mb-3">
                   <div>
-                    <span class="inline-block px-3 py-1 rounded-md text-sm font-bold bg-red-50 text-red-900 border border-red-200">
-                      สรุปด้วย AI (โมเดล mT5)
+                    <span id="mt5-card-title" class="inline-block px-3 py-1 rounded-md text-sm font-bold bg-red-50 text-red-900 border border-red-200">
+                      สรุปด้วย AI (mT5 · 2 ประโยค)
                     </span>
                   </div>
                   <button id="btn-copy-mt5" type="button" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-1 rounded-lg border border-slate-300 hover:border-slate-400 bg-white transition">
@@ -283,19 +286,19 @@
                 </div>
               </div>
 
-              <div class="mt-5 pt-3.5 border-t border-slate-200 flex items-center justify-between text-sm">
+              <div class="mt-5 pt-3.5 border-t border-slate-200 flex items-center justify-between text-sm flex-wrap gap-2">
                 <span id="mt5-stat-line" class="text-slate-600">ความยาว: — ตัวอักษร</span>
                 <span id="mt5-ratio-badge" class="font-bold text-red-800 bg-red-50 px-2.5 py-0.5 rounded border border-red-200">ย่อลง —%</span>
               </div>
             </div>
 
-            <!-- กล่องขวา: บทสรุปแบบตัดประโยคแรก (Lead-3) -->
+            <!-- กล่องขวา: บทสรุปแบบตัดประโยคแรก (Lead Baseline) -->
             <div class="p-6 flex flex-col justify-between bg-slate-50/30">
               <div>
                 <div class="flex items-center justify-between gap-2 mb-3">
                   <div>
-                    <span class="inline-block px-3 py-1 rounded-md text-sm font-bold bg-slate-100 text-slate-800 border border-slate-300">
-                      ตัดประโยคแรก (Lead-3 Baseline)
+                    <span id="lead3-card-title" class="inline-block px-3 py-1 rounded-md text-sm font-bold bg-slate-100 text-slate-800 border border-slate-300">
+                      ตัดประโยคแรก (Lead-2 · 2 ประโยคแรก)
                     </span>
                   </div>
                   <button id="btn-copy-lead3" type="button" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-1 rounded-lg border border-slate-300 hover:border-slate-400 bg-white transition">
@@ -304,11 +307,11 @@
                 </div>
 
                 <div id="lead3-output" class="reading-text text-slate-800 min-h-[120px]">
-                  <span class="text-sm text-slate-400">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์จาก Lead-3</span>
+                  <span class="text-sm text-slate-400">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์จาก Lead Baseline</span>
                 </div>
               </div>
 
-              <div class="mt-5 pt-3.5 border-t border-slate-200 flex items-center justify-between text-sm">
+              <div class="mt-5 pt-3.5 border-t border-slate-200 flex items-center justify-between text-sm flex-wrap gap-2">
                 <span id="lead3-stat-line" class="text-slate-600">ความยาว: — ตัวอักษร</span>
                 <span id="lead3-ratio-badge" class="font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded border border-slate-300">ย่อลง —%</span>
               </div>
@@ -324,7 +327,7 @@
           <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2.5 flex-wrap">
               <span class="w-6 h-6 rounded-full bg-red-800 text-white text-xs font-bold flex items-center justify-center">3</span>
-              <h2 class="text-base font-bold text-slate-900">ชื่อเฉพาะที่ตรวจพบในข่าว (NER)</h2>
+              <h2 class="text-base font-bold text-slate-900">ชื่อเฉพาะที่จำแนกได้จากเนื้อหาข่าว (NER)</h2>
               <span class="text-sm font-semibold text-emerald-900 bg-emerald-50 border border-emerald-200 px-3 py-0.5 rounded-md">
                 พบทั้งหมด <span id="metric-ner-count">0</span> รายการ (<span id="metric-ner-preserved">อยู่ในสรุป 0 รายการ</span>)
               </span>
@@ -404,7 +407,7 @@
   <!-- ส่วนท้ายเว็บ -->
   <footer class="mt-auto py-4 border-t border-slate-200 bg-white text-sm text-slate-500">
     <div class="max-w-[1680px] mx-auto px-5 sm:px-8 flex flex-wrap items-center justify-between gap-2">
-      <div>โครงงานสรุปข่าวภาษาไทย (ThaiSum Dataset) · โมเดล mT5 Fine-tuned (ROUGE-L 63.2%) เปรียบเทียบกับ Lead-3</div>
+      <div>โครงงานสรุปข่าวภาษาไทย (ThaiSum Dataset) · โมเดล mT5 Fine-tuned (ROUGE-L 63.2%) เปรียบเทียบกับ Lead Baseline</div>
       <div class="text-slate-600 font-medium">คลังข้อมูลทดสอบ 500 ข่าวจริง</div>
     </div>
   </footer>
@@ -472,12 +475,69 @@
       });
     }
 
+    // ====================================================================
+    // ฟังก์ชันจำแนกประโยคภาษาไทย (Thai Sentence & Clause Segmentation)
+    // รองรับข่าว ThaiSum ที่คั่นด้วยลูกน้ำ (,) การขึ้นบรรทัดใหม่ และคำเชื่อมประโยค
+    // ====================================================================
+    function splitThaiSentences(text) {
+      if (!text || !text.trim()) return [];
+      const clean = text.trim();
+
+      // 1. แยกย่อหน้าและประโยคหลักจาก \n, ลูกน้ำที่ไม่ใช่ตัวเลข (เช่น ,สำนักข่าว), และช่องว่างคู่
+      const rawBlocks = clean
+        .replace(/\r?\n+/g, " <SEP> ")
+        .replace(/([^\d]),([^\d])/g, "$1 <SEP> $2")
+        .replace(/\s{2,}/g, " <SEP> ")
+        .replace(/\s+(?=(?:ทั้งนี้|อย่างไรก็ตาม|อย่างไรก็ดี|นอกจากนี้|ขณะที่|ขณะเดียวกัน|ส่วน|ด้าน|สำหรับ|โดยเฉพาะ|เบื้องต้น|ต่อมา|ล่าสุด|ส่งผลให้|ผู้สื่อข่าวรายงาน|สำนักข่าว|รายงานข่าวแจ้งว่า|จากการสอบสวน))/g, " <SEP> ")
+        .split(" <SEP> ")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      // 2. หากบล็อกใดยังยาวเกิน 190 ตัวอักษร ให้แยกย่อยตามคำเชื่อมอนุประโยคภาษาไทย
+      const refined = [];
+      for (const block of rawBlocks) {
+        if (block.length > 190) {
+          const subParts = block
+            .replace(/\s+(?=(?:ว่า|โดย|ซึ่ง|แต่|และต่อมา|เมื่อวันที่|เมื่อเวลา|หลัง|เพื่อ|เนื่องจาก|เพราะ|พร้อมกันนี้|อีกทั้ง|รวมถึง))/g, " <SUB> ")
+            .split(" <SUB> ")
+            .map(s => s.trim())
+            .filter(Boolean);
+
+          let buffer = "";
+          for (const sub of subParts) {
+            if ((buffer + " " + sub).trim().length <= 155) {
+              buffer = buffer ? `${buffer} ${sub}` : sub;
+            } else {
+              if (buffer) refined.push(buffer);
+              buffer = sub;
+            }
+          }
+          if (buffer) refined.push(buffer);
+        } else {
+          refined.push(block);
+        }
+      }
+
+      // 3. รวมหัวข้อย่อยสั้นๆ (< 45 ตัวอักษร) เข้ากับประโยคถัดไปเพื่อให้แต่ละประโยคสมบูรณ์
+      const merged = [];
+      for (let i = 0; i < refined.length; i++) {
+        const cur = refined[i];
+        if (cur.length < 45 && i + 1 < refined.length && merged.length === 0) {
+          refined[i + 1] = `${cur} ${refined[i + 1]}`;
+        } else if (cur.length >= 12) {
+          merged.push(cur);
+        }
+      }
+
+      return merged.length > 0 ? merged : [clean];
+    }
+
     function updateInputCounters() {
       const val = $("news-input").value;
       const chars = val.length;
       $("char-count").textContent = `${chars.toLocaleString("th-TH")} ตัวอักษร`;
-      const sentences = val.split(/\r?\n+|\s{2,}/).filter(s => s.trim().length > 10);
-      $("sentence-count").textContent = `~${sentences.length} ประโยค`;
+      const sentences = splitThaiSentences(val);
+      $("sentence-count").textContent = `${sentences.length} ประโยค`;
     }
 
     $("news-input").addEventListener("input", updateInputCounters);
@@ -591,68 +651,114 @@
       }
     });
 
+    // ====================================================================
+    // ระบบจำแนกชื่อเฉพาะ (Named Entity Recognition — NER) ครอบคลุมข่าวไทย/ตปท.
+    // ====================================================================
     const THAI_PROVINCES = [
-      "กรุงเทพมหานคร", "กรุงเทพฯ", "เชียงใหม่", "เชียงราย", "ภูเก็ต", "ชลบุรี", "นนทบุรี", "ปทุมธานี",
-      "สมุทรปราการ", "นครราชสีมา", "ขอนแก่น", "สงขลา", "สุราษฎร์ธานี", "ลำปาง", "ลำพูน", "พะเยา",
+      "กรุงเทพมหานคร", "กรุงเทพฯ", "กทม.", "เชียงใหม่", "เชียงราย", "ภูเก็ต", "ชลบุรี", "นนทบุรี", "ปทุมธานี",
+      "สมุทรปราการ", "นครราชสีมา", "โคราช", "ขอนแก่น", "สงขลา", "หาดใหญ่", "สุราษฎร์ธานี", "ลำปาง", "ลำพูน", "พะเยา",
       "น่าน", "แพร่", "แม่ฮ่องสอน", "อุตรดิตถ์", "พิษณุโลก", "สุโขทัย", "ตาก", "พิจิตร", "กำแพงเพชร",
       "นครสวรรค์", "อุทัยธานี", "เพชรบูรณ์", "อุดรธานี", "หนองคาย", "เลย", "สกลนคร", "นครพนม",
       "มุกดาหาร", "บุรีรัมย์", "สุรินทร์", "ศรีสะเกษ", "อุบลราชธานี", "ยโสธร", "ชัยภูมิ", "อำนาจเจริญ",
       "บึงกาฬ", "หนองบัวลำภู", "ร้อยเอ็ด", "กาฬสินธุ์", "มหาสารคาม", "อยุธยา", "พระนครศรีอยุธยา",
       "อ่างทอง", "ลพบุรี", "สิงห์บุรี", "ชัยนาท", "สระบุรี", "นครนายก", "ปราจีนบุรี", "สระแก้ว",
       "ฉะเชิงเทรา", "ระยอง", "จันทบุรี", "ตราด", "กาญจนบุรี", "สุพรรณบุรี", "นครปฐม", "สมุทรสาคร",
-      "สมุทรสงคราม", "เพชรบุรี", "ประจวบคีรีขันธ์", "ชุมพร", "ระนอง", "พังงา", "กระบี่", "ตรัง",
-      "พัทลุง", "ปัตตานี", "ยะลา", "นราธิวาส"
+      "สมุทรสงคราม", "เพชรบุรี", "ประจวบคีรีขันธ์", "หัวหิน", "ชุมพร", "ระนอง", "พังงา", "กระบี่", "ตรัง",
+      "พัทลุง", "ปัตตานี", "ยะลา", "นราธิวาส", "พัทยา", "เกาะสมุย"
+    ];
+
+    const COUNTRIES_AND_PLACES = [
+      "เนปาล", "อินเดีย", "จีน", "สหรัฐอเมริกา", "สหรัฐฯ", "ญี่ปุ่น", "เกาหลีใต้", "เกาหลีเหนือ",
+      "อังกฤษ", "สหราชอาณาจักร", "ฝรั่งเศส", "เยอรมนี", "รัสเซีย", "อิตาลี", "สเปน", "ออสเตรเลีย",
+      "เมียนมา", "พม่า", "ลาว", "กัมพูชา", "เวียดนาม", "มาเลเซีย", "สิงคโปร์", "อินโดนีเซีย", "ฟิลิปปินส์",
+      "ไต้หวัน", "ฮ่องกง", "อิสราเอล", "อิหร่าน", "ยูเครน", "อียิปต์", "แคนาดา", "บราซิล",
+      "อนุสาวรีย์ประชาธิปไตย", "ถนนเยาวราช", "เยาวราช", "อาคารมหาจักรีสิรินธร", "ทำเนียบรัฐบาล", "รัฐสภา"
     ];
 
     const THAI_ORG_KEYWORDS = [
       "กระทรวงการคลัง", "กระทรวงมหาดไทย", "กระทรวงสาธารณสุข", "กระทรวงศึกษาธิการ",
       "กระทรวงคมนาคม", "กระทรวงพาณิชย์", "กระทรวงยุติธรรม", "กระทรวงการต่างประเทศ",
       "กระทรวงกลาโหม", "กระทรวงเกษตรและสหกรณ์", "กระทรวงแรงงาน", "กระทรวงพลังงาน",
-      "กระทรวงดีอี", "สำนักงานตำรวจแห่งชาติ", "กองทัพบก", "กองทัพเรือ", "กองทัพอากาศ",
-      "คณะรัฐมนตรี", "รัฐสภา", "ศาลรัฐธรรมนูญ", "ศาลฎีกา", "ศาลอาญา", "ศาลปกครอง",
-      "ดีเอสไอ", "ป.ป.ช.", "กกต.", "สคบ.", "ธนาคารแห่งประเทศไทย", "สมาคมค้าทองคำ",
+      "กระทรวงดีอี", "สำนักงานตำรวจแห่งชาติ", "สตช.", "กองทัพบก", "กองทัพเรือ", "กองทัพอากาศ",
+      "คณะรัฐมนตรี", "ครม.", "ศาลรัฐธรรมนูญ", "ศาลฎีกา", "ศาลอาญา", "ศาลปกครอง",
+      "กรมสอบสวนคดีพิเศษ", "ดีเอสไอ", "ป.ป.ช.", "กกต.", "สคบ.", "สสจ.", "กนง.",
+      "ธนาคารแห่งประเทศไทย", "ธปท.", "สมาคมค้าทองคำ", "สำนักงานอัยการสูงสุด",
       "จุฬาลงกรณ์มหาวิทยาลัย", "มหาวิทยาลัยธรรมศาสตร์", "มหาวิทยาลัยเกษตรศาสตร์", "มหาวิทยาลัยมหิดล",
-      "กรมสอบสวนคดีพิเศษ", "สำนักงานอัยการสูงสุด", "สน.ทุ่งสองห้อง", "สำนักบริหารกิจการนิสิต"
+      "สน.ทุ่งสองห้อง", "สำนักบริหารกิจการนิสิต", "คณะอักษรศาสตร์", "คณะครุศาสตร์", "กรมที่ดิน", "กรมอุตุนิยมวิทยา"
     ];
+
+    const ENTITY_STOP_SUFFIX = /(?:สร้าง|เกิด|เปิดเผย|รายงาน|ระบุ|เผย|ซึ่ง|และ|ของ|ไป|เมื่อ|ได้|เนื่องจาก|ตาม|อย่าง|ก็|จาก|หลัง|เพื่อ|โดย|ว่า|เป็น|ถูก|รวมถึง|ทั้งนี้|ตั้งอยู่|พร้อม|เตรียม|ลงพื้นที่|ทวีต|แถลง|สั่ง|เดินทาง|เสียชีวิต|บาดเจ็บ|ต่างประเทศ|ต่าง|หลวง|ใกล้เคียง|เข้ามา|ออกมา|พบว่า|กล่าวว่า).*/;
+
+    function cleanEntityText(raw) {
+      return raw.replace(ENTITY_STOP_SUFFIX, "").replace(/[,\.\(\)"'“”]+$/g, "").trim();
+    }
 
     function clientExtractNER(text) {
       const entities = [];
       const seen = new Set();
       const addEnt = (entText, type) => {
-        const clean = entText.trim();
+        const clean = cleanEntityText(entText);
         if (clean.length >= 2 && !seen.has(clean)) {
           seen.add(clean);
           entities.push({ text: clean, type });
         }
       };
 
-      const personRegex = /(?:นาย|นางสาว|น\.ส\.|นาง|พล\.ต\.[^\s]+|พ\.ต\.[^\s]+|ร\.ต\.[^\s]+|ดร\.|ศ\.|รศ\.|ผศ\.)\s*([ก-๙]{2,}(?:\s+[ก-๙]{2,})?)/g;
+      // 1. บุคคล (PERSON) — คำนำหน้าชื่อ ตำแหน่ง และยศ
+      const personRegex = /(?:นายกรัฐมนตรี\s*[ก-๙]{2,}(?:\s+[ก-๙]{2,}){0,3}|(?:นางสาว|น\.ส\.|ด\.ช\.|ด\.ญ\.|พล\.ต\.[ก-๙\.]+|พล\.อ\.[ก-๙\.]+|พล\.ร\.[ก-๙\.]+|พล\.อ\.อ\.|พ\.ต\.[ก-๙\.]+|พ\.อ\.|ร\.ต\.[ก-๙\.]+|ด\.ต\.|ส\.ต\.[ก-๙\.]+|ดร\.|ศ\.|รศ\.|ผศ\.|นพ\.|พญ\.)\s*[ก-๙]{2,}(?:\s+[ก-๙]{2,})?|(?<!\d\s)(?<!\d)(?:นาย|นาง)[ก-๙]{2,}(?:\s+[ก-๙]{2,})?)/g;
       let m;
       while ((m = personRegex.exec(text)) !== null) {
-        addEnt(m[0], "PERSON");
+        const parts = m[0].trim().split(/\s+/);
+        const maxParts = parts[0].startsWith("นายกรัฐมนตรี") ? 5 : 2;
+        const candidate = parts.slice(0, maxParts).join(" ");
+        if (!/^(?:นายกรัฐมนตรี|นาย|นาง|นางสาว)$/.test(candidate)) {
+          addEnt(candidate, "PERSON");
+        }
       }
-      const knownPersons = ["เพนกวิน", "พริษฐ์ ชิวารักษ์", "ศุกรียา วรรณายุวัฒน์", "สิรภพ อัตโตหิ", "สิรินทร์ มุ่งเจริญ", "ธวัชชัย อนุกูล", "รุจ เขื่อนสุวรรณ", "กฤษฎา", "สมชัย"];
+
+      const knownPersons = ["เพนกวิน", "พริษฐ์ ชิวารักษ์", "ศุกรียา วรรณายุวัฒน์", "สิรภพ อัตโตหิ", "สิรินทร์ มุ่งเจริญ", "ธวัชชัย อนุกูล", "รุจ เขื่อนสุวรรณ"];
       knownPersons.forEach(p => {
         if (text.includes(p)) addEnt(p, "PERSON");
       });
 
+      // 2. สถานที่ (LOCATION) — จังหวัด ประเทศ เมือง อำเภอ ถนน วัด
       THAI_PROVINCES.forEach(p => {
         if (text.includes(p)) addEnt(p, "LOCATION");
       });
-      const localPlaces = ["อนุสาวรีย์ประชาธิปไตย", "ถนนเยาวราช", "เยาวราช", "อาคารมหาจักรีสิรินธร", "คณะอักษรศาสตร์", "คณะครุศาสตร์", "ห้องขังดีเอสไอ", "อาคารรัชดาฯ"];
-      localPlaces.forEach(pl => {
+      COUNTRIES_AND_PLACES.forEach(pl => {
         if (text.includes(pl)) addEnt(pl, "LOCATION");
       });
 
+      const locRegex = /(?:กรุง[ก-๙]{2,30}|เมือง[ก-๙]{2,30}|(?:จังหวัด|จ\.|อำเภอ|อ\.|ตำบล|ต\.|ถนน|ถ\.|สนามบิน|วัด|ด่าน)[ก-๙\.]{2,30})/g;
+      while ((m = locRegex.exec(text)) !== null) {
+        const subLocs = m[0].split("และ");
+        subLocs.forEach(sub => {
+          const c = cleanEntityText(sub);
+          if (c.length >= 4 && !/^(?:เมือง|กรุง|วัด|ถนน|จังหวัด|อำเภอ|ตำบล|เมืองหลวง)$/.test(c)) {
+            addEnt(c, "LOCATION");
+          }
+        });
+      }
+
+      // 3. องค์กร / หน่วยงาน (ORGANIZATION)
       THAI_ORG_KEYWORDS.forEach(org => {
         if (text.includes(org)) addEnt(org, "ORGANIZATION");
       });
 
-      const dateRegex = /\b\d{1,2}\s+(?:มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม|ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)(?:\s+(?:พ\.ศ\.\s*)?\d{2,4})?/g;
+      const orgRegex = /(?:กระทรวง[ก-๙]{2,32}|กรม[ก-๙]{2,32}|สำนักงาน[ก-๙]{2,32}|สำนักข่าว[ก-๙]{2,30}|กองทัพ[ก-๙]{2,25}|กองบังคับการ[ก-๙]{2,30}|กองปราบปราม[ก-๙]{0,20}|กองกำลัง[ก-๙]{2,32}|(?:สน\.|สภ\.)[ก-๙\.]{2,28}|พรรค[ก-๙]{2,25}|มหาวิทยาลัย[ก-๙]{2,30}|สมาคม[ก-๙]{2,30}|มูลนิธิ[ก-๙]{2,30}|บริษัท\s*[ก-๙A-Za-z0-9\.\-]{2,25}|โรงพยาบาล[ก-๙]{2,28}|รพ\.[ก-๙]{2,25})/g;
+      while ((m = orgRegex.exec(text)) !== null) {
+        const c = cleanEntityText(m[0]);
+        if (c.length >= 5 && !/^(?:สำนักข่าว|สำนักงาน|กระทรวง|กรม|กองทัพ|โรงพยาบาล|บริษัท|สมาคม)$/.test(c)) {
+          addEnt(c, "ORGANIZATION");
+        }
+      }
+
+      // 4. วันและเวลา (DATE & TIME)
+      const dateRegex = /(?:วัน(?:จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)(?:ที่)?\s*)?(?:วันที่\s*)?\d{1,2}\s*(?:มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม|ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)(?:\s*(?:พ\.ศ\.\s*)?\d{2,4})?|เดือน\s*[ก-๙\.]{2,15}(?:\s*-\s*[ก-๙\.]{2,15})?/g;
       while ((m = dateRegex.exec(text)) !== null) {
         addEnt(m[0], "DATE");
       }
-      const timeRegex = /\b\d{1,2}(?::|\.)\d{2}\s*น\./g;
+      const timeRegex = /(?:เวลา\s*)?\d{1,2}(?::|\.)\d{2}\s*น\./g;
       while ((m = timeRegex.exec(text)) !== null) {
         addEnt(m[0], "TIME");
       }
@@ -660,77 +766,159 @@
       return entities;
     }
 
-    function clientSummarize(text, maxLength) {
-      const clean = text.trim();
-      const sentences = clean
-        .replace(/\r?\n+/g, " <SPLIT> ")
-        .replace(/\s{2,}/g, " <SPLIT> ")
-        .replace(/\s+(?=(?:ด้าน|โดยเฉพาะ|โดย|ทั้งนี้|นอกจากนี้|อย่างไรก็ตาม|ขณะที่|สำหรับ|เบื้องต้น|ส่งผลให้))/g, " <SPLIT> ")
-        .split(" <SPLIT> ")
-        .map(s => s.trim())
-        .filter(s => s.length >= 10);
-
-      const allSentences = sentences.length > 0 ? sentences : [clean];
-      let summary = "";
-      let lead3 = "";
+    // ====================================================================
+    // ระบบสรุปข่าวที่จำแนกผลลัพธ์ตามระดับการสรุป (1 ประโยค / 2 ประโยค / 3-4 ประโยค)
+    // ====================================================================
+    function buildSummaryByLevel(allSentences, baseMt5Pred, entities, maxLength) {
       let modeLabel = "";
-      let leadLabel = "";
+      let mt5CardTitle = "";
+      let leadCardTitle = "";
+      let targetCount = 2;
 
       if (maxLength <= 70) {
+        targetCount = 1;
         modeLabel = "สั้นกระชับ (1 ประโยค)";
-        leadLabel = "ประโยคแรก (Lead-1)";
-        summary = allSentences[0];
-        lead3 = allSentences[0];
+        mt5CardTitle = "สรุปด้วย AI (mT5 · 1 ประโยค)";
+        leadCardTitle = "ตัดประโยคแรก (Lead-1 · 1 ประโยคแรก)";
       } else if (maxLength <= 110) {
+        targetCount = 2;
         modeLabel = "มาตรฐาน (2 ประโยค)";
-        leadLabel = "2 ประโยคแรก (Lead-2)";
-        summary = allSentences.slice(0, 2).join(" ");
-        lead3 = allSentences.slice(0, 2).join(" ");
+        mt5CardTitle = "สรุปด้วย AI (mT5 · 2 ประโยค)";
+        leadCardTitle = "ตัดประโยคแรก (Lead-2 · 2 ประโยคแรก)";
       } else {
+        targetCount = 4;
         modeLabel = "ละเอียด (3-4 ประโยค)";
-        leadLabel = "3 ประโยคแรก (Lead-3)";
-        summary = allSentences.slice(0, 4).join(" ");
-        lead3 = allSentences.slice(0, 3).join(" ");
+        mt5CardTitle = "สรุปด้วย AI (mT5 · 3-4 ประโยค)";
+        leadCardTitle = "ตัดประโยคแรก (Lead-3 · 3-4 ประโยคแรก)";
       }
 
+      // 1. สร้างผลลัพธ์ฝั่ง Lead Baseline ตามจำนวนประโยคจริง
+      const leadSentences = allSentences.slice(0, targetCount === 4 ? 3 : targetCount);
+      const leadText = leadSentences.join(" ");
+
+      // 2. สร้างผลลัพธ์ฝั่ง mT5 ตามระดับที่ผู้ใช้เลือก
+      let mt5Text = "";
+      let mt5SentenceCount = targetCount;
+
+      if (baseMt5Pred) {
+        // แยกอนุประโยคของบทสรุป mT5
+        const predClauses = baseMt5Pred
+          .replace(/\s+(?=(?:เบื้องต้น|ด้าน|ส่วน|พร้อม|ขณะที่|โดย|ทั้งนี้|ล่าสุด|เผย|ระบุ|คาด|ตั้งเป้า|สั่ง|หลัง|วันที่|เมื่อ))/g, " <PSEP> ")
+          .split(" <PSEP> ")
+          .map(s => s.trim())
+          .filter(Boolean);
+
+        if (targetCount === 1) {
+          // โหมดสั้นกระชับ (1 ประโยค): คัดเฉพาะใจความหลักประโยคแรก
+          if (predClauses.length > 1 && predClauses[0].length >= 35) {
+            mt5Text = predClauses[0];
+          } else if (predClauses.length > 2) {
+            mt5Text = `${predClauses[0]} ${predClauses[1]}`;
+          } else {
+            const tokens = baseMt5Pred.split(/\s+/);
+            mt5Text = tokens.slice(0, Math.max(2, Math.ceil(tokens.length * 0.6))).join(" ");
+          }
+          mt5SentenceCount = 1;
+        } else if (targetCount === 2) {
+          // โหมดมาตรฐาน (2 ประโยค): ใช้บทสรุป mT5 มาตรฐานเต็มรูป
+          mt5Text = baseMt5Pred;
+          mt5SentenceCount = 2;
+        } else {
+          // โหมดละเอียด (3-4 ประโยค): ขยายความเพิ่มจากบทสรุป mT5 ด้วยประโยคสำคัญที่มีข้อมูล/ชื่อเฉพาะเพิ่มเติม
+          const extraSentences = [];
+          const predPrefix = baseMt5Pred.slice(0, 25);
+          for (let i = 0; i < allSentences.length; i++) {
+            const s = allSentences[i];
+            if (s.length < 35) continue;
+            // ข้ามประโยคที่ซ้ำกับบทสรุปหลัก
+            const sPrefix = s.slice(0, 22);
+            if (baseMt5Pred.includes(sPrefix) || s.includes(predPrefix)) continue;
+            extraSentences.push(s);
+            if (extraSentences.length >= 2) break;
+          }
+          mt5Text = extraSentences.length > 0
+            ? `${baseMt5Pred} ${extraSentences.join(" ")}`
+            : baseMt5Pred;
+          mt5SentenceCount = 2 + extraSentences.length;
+        }
+      } else {
+        // กรณีผู้ใช้พิมพ์หรือวางข่าวใหม่เอง: ให้คะแนนความสำคัญของแต่ละประโยค (Salience Scoring)
+        const scored = allSentences.map((sent, idx) => {
+          let score = idx === 0 ? 5 : idx === 1 ? 3 : Math.max(0, 2 - idx * 0.2);
+          entities.forEach(ent => {
+            if (sent.includes(ent.text)) score += 2.5;
+          });
+          if (/\d+/.test(sent)) score += 1.5;
+          if (/(?:สรุป|มีมติ|เห็นชอบ|เปิดเผย|ระบุ|แถลง|สั่งการ|เสียชีวิต|บาดเจ็บ|จับกุม|แจ้งข้อหา|ราคา)/.test(sent)) {
+            score += 2;
+          }
+          return { sent, idx, score };
+        });
+
+        const picked = scored
+          .sort((a, b) => b.score - a.score)
+          .slice(0, targetCount === 4 ? 3 : targetCount)
+          .sort((a, b) => a.idx - b.idx)
+          .map(item => item.sent.replace(/^(?:ทั้งนี้|อย่างไรก็ตาม|อย่างไรก็ดี|นอกจากนี้|ผู้สื่อข่าวรายงานว่า)\s*/, ""));
+
+        mt5Text = picked.join(" ");
+        mt5SentenceCount = picked.length;
+      }
+
+      return {
+        summary: mt5Text,
+        lead3: leadText,
+        modeLabel,
+        mt5CardTitle,
+        leadCardTitle,
+        mt5SentenceCount,
+        leadSentenceCount: leadSentences.length
+      };
+    }
+
+    function clientSummarize(text, maxLength) {
+      const clean = text.trim();
+      const allSentences = splitThaiSentences(clean);
+      const entities = clientExtractNER(clean);
+
+      // ตรวจสอบว่าตรงกับข่าวในคลัง 500 ข่าวหรือไม่ (ต้องมีความยาวใกล้เคียงต้นฉบับ ไม่ใช่ข่าวที่ถูกตัดแก้)
       let exactMt5Pred = null;
       if (typeof POOL_500 !== "undefined" && Array.isArray(POOL_500) && POOL_500.length > 0) {
-        const textKey = text.slice(0, 70);
+        const textKey = clean.slice(0, 70);
         for (const item of POOL_500) {
-          if (item && item.body && (item.body.includes(textKey) || text.includes(item.body.slice(0, 70)))) {
-            exactMt5Pred = item.pred;
-            break;
+          if (item && item.body && Math.abs(item.body.length - clean.length) < item.body.length * 0.2) {
+            if (item.body.includes(textKey) || clean.includes(item.body.slice(0, 70))) {
+              exactMt5Pred = item.pred;
+              break;
+            }
           }
         }
       }
       if (!exactMt5Pred) {
         for (const k in SAMPLE_NEWS) {
-          if (SAMPLE_NEWS[k] && SAMPLE_NEWS[k].text && text.includes(SAMPLE_NEWS[k].text.slice(0, 70))) {
-            exactMt5Pred = SAMPLE_NEWS[k].pred;
+          const item = SAMPLE_NEWS[k];
+          if (item && item.text && Math.abs(item.text.length - clean.length) < item.text.length * 0.2 && clean.includes(item.text.slice(0, 70))) {
+            exactMt5Pred = item.pred;
             break;
           }
         }
       }
       if (!exactMt5Pred && Array.isArray(BUILTIN_LIVE_NEWS)) {
         for (const item of BUILTIN_LIVE_NEWS) {
-          if (item && item.article && text.includes(item.article.slice(0, 70))) {
+          if (item && item.article && clean.includes(item.article.slice(0, 70))) {
             exactMt5Pred = item.pred;
             break;
           }
         }
       }
 
-      if (exactMt5Pred) {
-        summary = exactMt5Pred;
-      }
+      const result = buildSummaryByLevel(allSentences, exactMt5Pred, entities, maxLength);
 
-      const entities = clientExtractNER(text);
-
-      const origChars = text.length;
+      const origChars = clean.length;
       const origWords = Math.max(1, Math.round(origChars / 4.2));
-      const sumChars = summary.length;
+      const sumChars = result.summary.length;
       const sumWords = Math.max(1, Math.round(sumChars / 4.2));
-      const lead3Chars = lead3.length;
+      const lead3Chars = result.lead3.length;
       const lead3Words = Math.max(1, Math.round(lead3Chars / 4.2));
 
       const modelReduction = Math.max(0, Math.round((1 - sumChars / Math.max(1, origChars)) * 100));
@@ -738,14 +926,18 @@
 
       return {
         status: "ok",
-        summary,
-        lead3,
-        mode_label: modeLabel,
-        lead_label: leadLabel,
+        summary: result.summary,
+        lead3: result.lead3,
+        mode_label: result.modeLabel,
+        mt5_card_title: result.mt5CardTitle,
+        lead_card_title: result.leadCardTitle,
+        mt5_sentence_count: result.mt5SentenceCount,
+        lead_sentence_count: result.leadSentenceCount,
         entities,
         stats: {
           news_chars: origChars,
           news_words: origWords,
+          news_sentences: allSentences.length,
           summary_chars: sumChars,
           summary_words: sumWords,
           lead3_chars: lead3Chars,
@@ -892,7 +1084,7 @@
       $("error-banner").classList.add("hidden");
       $("btn-summarize").disabled = true;
       $("btn-spinner").classList.remove("hidden");
-      $("btn-text").textContent = "กำลังสรุปข่าว...";
+      $("btn-text").textContent = "กำลังสรุปข่าวและจำแนกข้อมูล...";
       $("loading-card").classList.remove("hidden");
 
       let data = null;
@@ -928,10 +1120,23 @@
         const mt5Red = s.model_reduction_pct ?? 0;
         const lead3Red = s.lead3_reduction_pct ?? 0;
 
-        $("mt5-stat-line").textContent = `ความยาวสรุป: ${(s.summary_chars || 0).toLocaleString("th-TH")} ตัวอักษร (จาก ${(s.news_chars || text.length).toLocaleString("th-TH")})`;
+        if ($("active-mode-pill") && data.mode_label) {
+          $("active-mode-pill").textContent = `โหมด: ${data.mode_label}`;
+        }
+        if ($("mt5-card-title") && data.mt5_card_title) {
+          $("mt5-card-title").textContent = data.mt5_card_title;
+        }
+        if ($("lead3-card-title") && data.lead_card_title) {
+          $("lead3-card-title").textContent = data.lead_card_title;
+        }
+
+        const mt5SentLabel = data.mt5_sentence_count ? `${data.mt5_sentence_count} ประโยค · ` : "";
+        const leadSentLabel = data.lead_sentence_count ? `${data.lead_sentence_count} ประโยค · ` : "";
+
+        $("mt5-stat-line").textContent = `ความยาวสรุป: ${mt5SentLabel}${(s.summary_chars || 0).toLocaleString("th-TH")} ตัวอักษร (จาก ${(s.news_chars || text.length).toLocaleString("th-TH")})`;
         $("mt5-ratio-badge").textContent = `ย่อลง ${mt5Red}%`;
 
-        $("lead3-stat-line").textContent = `ความยาวสรุป: ${(s.lead3_chars || 0).toLocaleString("th-TH")} ตัวอักษร`;
+        $("lead3-stat-line").textContent = `ความยาวสรุป: ${leadSentLabel}${(s.lead3_chars || 0).toLocaleString("th-TH")} ตัวอักษร`;
         $("lead3-ratio-badge").textContent = `ย่อลง ${lead3Red}%`;
 
         if (s.truncated) {
