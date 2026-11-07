@@ -6,3 +6,7 @@ pandas
 transformers
 torch
 sentencepiece
+
+# เว็บสรุปข่าว (api.py)
+fastapi
+uvicorn
