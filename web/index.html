@@ -180,7 +180,7 @@
 
           <!-- แถบแสดงชื่อข่าวที่กำลังเลือก (แสดงข้อความเต็ม ไม่ตัดคำ) -->
           <div class="bg-white border border-slate-300 rounded-lg px-3.5 py-2.5">
-            <span id="active-sample-tag" class="text-sm font-medium text-slate-800 block leading-relaxed"></span>
+            <span id="active-sample-tag" class="text-sm font-medium text-slate-800 block leading-relaxed break-words select-text"></span>
           </div>
         </div>
 
@@ -215,18 +215,23 @@
             </div>
           </div>
 
-          <!-- ปุ่มกดสรุปข่าว -->
-          <button
-            id="btn-summarize"
-            type="button"
-            class="w-full py-3.5 px-5 rounded-lg bg-red-800 hover:bg-red-900 active:scale-[0.99] text-white font-bold text-base flex items-center justify-center gap-2.5 transition disabled:opacity-60 disabled:cursor-wait"
-          >
-            <svg id="btn-spinner" class="hidden animate-spin w-5 h-5 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-            </svg>
-            <span id="btn-text">สรุปข่าวและสกัดชื่อเฉพาะ</span>
-          </button>
+          <!-- ปุ่มกดสรุปข่าว พร้อมคำอธิบายหน้าที่ชัดเจน (Unslop) -->
+          <div class="flex flex-col gap-2 pt-1">
+            <button
+              id="btn-summarize"
+              type="button"
+              class="w-full py-3.5 px-5 rounded-lg bg-red-800 hover:bg-red-900 active:scale-[0.99] text-white font-bold text-base flex items-center justify-center gap-2.5 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+            >
+              <svg id="btn-spinner" class="hidden animate-spin w-5 h-5 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              <span id="btn-text">⚡ ประมวลผลสรุปใหม่ (Ctrl + Enter)</span>
+            </button>
+            <p class="text-xs text-slate-500 text-center leading-relaxed">
+              💡 <strong>ปุ่มนี้มีไว้สำหรับ:</strong> ระบบจะสรุปผลอัตโนมัติทันทีที่เลือกข่าวตัวอย่าง หรือกดปุ่มนี้เพื่อประมวลผลข่าวที่คุณพิมพ์/วางใหม่
+            </p>
+          </div>
 
           <p id="error-banner" class="hidden text-sm font-medium text-red-800 bg-red-50 border border-red-300 rounded-lg px-4 py-2.5"></p>
         </div>
@@ -597,9 +602,46 @@
       $("char-count").textContent = `${chars.toLocaleString("th-TH")} ตัวอักษร`;
       const sentences = splitThaiSentences(val);
       $("sentence-count").textContent = `${sentences.length} ประโยค`;
+
+      const btn = $("btn-summarize");
+      const btnText = $("btn-text");
+      if (chars === 0) {
+        btn.disabled = true;
+        btnText.textContent = "กรุณากรอกหรือเลือกข่าวตัวอย่างก่อน";
+      } else {
+        btn.disabled = false;
+        if (btnText.textContent === "กรุณากรอกหรือเลือกข่าวตัวอย่างก่อน") {
+          btnText.textContent = "⚡ ประมวลผลสรุปใหม่ (Ctrl + Enter)";
+        }
+      }
     }
 
-    $("news-input").addEventListener("input", updateInputCounters);
+    $("news-input").addEventListener("input", () => {
+      updateInputCounters();
+      const val = $("news-input").value.trim();
+      const btnText = $("btn-text");
+      if (val.length > 0 && !btnText.textContent.includes("กำลัง")) {
+        btnText.textContent = "⚡ ประมวลผลสรุปข้อความนี้ (Ctrl + Enter)";
+      }
+    });
+
+    $("news-input").addEventListener("paste", () => {
+      setTimeout(() => {
+        const val = $("news-input").value.trim();
+        if (val.length >= 20) {
+          $("active-sample-tag").textContent = "📋 ตรวจพบการวางข่าวใหม่ — กำลังประมวลผลสรุปอัตโนมัติ...";
+          updateInputCounters();
+          runSummarization();
+        }
+      }, 100);
+    });
+
+    $("news-input").addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        runSummarization();
+      }
+    });
 
     $("btn-clear").addEventListener("click", () => {
       $("news-input").value = "";
@@ -1167,7 +1209,7 @@
       $("error-banner").classList.add("hidden");
       $("btn-summarize").disabled = true;
       $("btn-spinner").classList.remove("hidden");
-      $("btn-text").textContent = "กำลังสรุปข่าวและจำแนกข้อมูล...";
+      $("btn-text").textContent = "กำลังประมวลผลสรุป...";
       $("loading-card").classList.remove("hidden");
 
       let data = null;
@@ -1236,9 +1278,30 @@
         $("error-banner").classList.remove("hidden");
       } finally {
         $("loading-card").classList.add("hidden");
-        $("btn-summarize").disabled = false;
         $("btn-spinner").classList.add("hidden");
-        $("btn-text").textContent = "สรุปข่าวและสกัดชื่อเฉพาะ";
+        $("btn-summarize").disabled = false;
+
+        const summarizeBtn = $("btn-summarize");
+        const btnText = $("btn-text");
+        const compSec = $("comparison-section");
+
+        // แจ้งเตือน visual feedback ทันทีว่าระบบได้สรุปผลใหม่เรียบร้อยแล้ว
+        btnText.textContent = "✓ ประมวลผลและอัปเดตบทสรุปแล้ว";
+        summarizeBtn.classList.remove("bg-red-800", "hover:bg-red-900");
+        summarizeBtn.classList.add("bg-emerald-700", "hover:bg-emerald-800");
+
+        if (compSec) {
+          compSec.classList.add("ring-2", "ring-emerald-500/50");
+          setTimeout(() => {
+            compSec.classList.remove("ring-2", "ring-emerald-500/50");
+          }, 1200);
+        }
+
+        setTimeout(() => {
+          btnText.textContent = "⚡ ประมวลผลสรุปใหม่ (Ctrl + Enter)";
+          summarizeBtn.classList.remove("bg-emerald-700", "hover:bg-emerald-800");
+          summarizeBtn.classList.add("bg-red-800", "hover:bg-red-900");
+        }, 1600);
       }
     }
 
