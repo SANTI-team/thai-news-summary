@@ -254,7 +254,7 @@
   <!-- ==================================================================== -->
   <!-- พื้นที่ทำงานหลัก (2 คอลัมน์โปร่งสบาย ไม่อัดแน่น)                          -->
   <!-- ==================================================================== -->
-  <main class="flex-1 max-w-[1680px] w-full mx-auto px-5 sm:px-8 py-6">
+  <main class="flex-1 max-w-[1680px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
 
       <!-- ================================================================ -->
@@ -1691,6 +1691,16 @@
 
         renderSummaryTexts();
         renderNerBadges(data.entities || [], data.summary || "");
+        // เมื่อรันบนหน้าจอมือถือ (ความกว้างน้อยกว่า 1024px) ให้เลื่อนลงไปแสดงผลลัพธ์ทันที
+        if (window.innerWidth < 1024) {
+          const compSec = $("comparison-section");
+          if (compSec) {
+            setTimeout(() => {
+              compSec.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 100);
+          }
+        }
+
 
       } catch (err) {
         $("error-banner").textContent = `เกิดข้อผิดพลาด: ${err.message}`;
@@ -1793,7 +1803,58 @@
     $("btn-summarize").addEventListener("click", runSummarization);
     $("max-length").addEventListener("change", runSummarization);
 
+    // ====================================================================
+    // ฟังก์ชันเสริมสำหรับประสบการณ์ใช้งานบนมือถือ (Mobile UX & Auto-scroll)
+    // ====================================================================
+    function setupMobileFeatures() {
+      // 1. ปุ่มลัดเลื่อนลงไปดูผลลัพธ์
+      const jumpBtn = $("btn-jump-result");
+      if (jumpBtn) {
+        jumpBtn.addEventListener("click", () => {
+          const compSec = $("comparison-section");
+          if (compSec) {
+            compSec.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      }
+
+      // 2. ปุ่มลอยเลื่อนกลับขึ้นบนสุด (FAB)
+      const scrollTopBtn = $("btn-scroll-top");
+      if (scrollTopBtn) {
+        window.addEventListener("scroll", () => {
+          if (window.scrollY > 350) {
+            scrollTopBtn.classList.remove("opacity-0", "pointer-events-none");
+            scrollTopBtn.classList.add("opacity-100", "pointer-events-auto");
+          } else {
+            scrollTopBtn.classList.remove("opacity-100", "pointer-events-auto");
+            scrollTopBtn.classList.add("opacity-0", "pointer-events-none");
+          }
+        }, { passive: true });
+
+        scrollTopBtn.addEventListener("click", () => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      }
+
+      // 3. ปุ่มสลับโหมดมืดบนมือถือ
+      const mobileToggle = $("btn-theme-toggle-mobile");
+      if (mobileToggle) {
+        mobileToggle.addEventListener("click", () => {
+          const isDark = document.documentElement.classList.toggle("dark");
+          try {
+            localStorage.setItem("thaisum-theme", isDark ? "dark" : "light");
+          } catch (_) {}
+          document.querySelectorAll(".theme-icon-indicator").forEach(el => {
+            el.textContent = isDark ? "☀️" : "🌙";
+          });
+          const themeLabel = $("theme-label");
+          if (themeLabel) themeLabel.textContent = isDark ? "โหมดสว่าง" : "โหมดมืด";
+        });
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
+      setupMobileFeatures();
       setupThemeToggle();
       setupCopyButtons();
       setupNerInteraction();
@@ -1804,6 +1865,17 @@
       runSummarization();
     });
   </script>
+  <!-- ปุ่มลอยสำหรับเลื่อนขึ้นบนสุดบนหน้าจอมือถือ (Back to Top FAB) -->
+  <button
+    id="btn-scroll-top"
+    type="button"
+    aria-label="เลื่อนขึ้นบนสุด"
+    class="fixed bottom-5 right-4 z-40 lg:hidden w-11 h-11 rounded-full bg-red-800 text-white shadow-lg flex items-center justify-center transition-all duration-200 opacity-0 pointer-events-none active:scale-95"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
 </body>
 </html>
 
