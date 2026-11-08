@@ -14,6 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
@@ -33,6 +34,79 @@
       background-color: #f8fafc;
       color: #0f172a;
       line-height: 1.65;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    html.dark body {
+      background-color: #0b1120;
+      color: #f1f5f9;
+    }
+    /* โหมดมืด (Dark Mode Overrides) สำหรับการ์ด พื้นหลัง ขอบ และตัวอักษร */
+    html.dark .bg-white {
+      background-color: #1e293b !important;
+    }
+    html.dark .bg-slate-50,
+    html.dark .bg-slate-50\/70,
+    html.dark .bg-slate-50\/50,
+    html.dark .bg-slate-50\/30 {
+      background-color: #0f172a !important;
+    }
+    html.dark .bg-slate-100 {
+      background-color: #334155 !important;
+    }
+    html.dark .border-slate-200,
+    html.dark .border-slate-300,
+    html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+      border-color: #334155 !important;
+    }
+    html.dark .text-slate-900,
+    html.dark .text-slate-800 {
+      color: #f8fafc !important;
+    }
+    html.dark .text-slate-700,
+    html.dark .text-slate-600 {
+      color: #cbd5e1 !important;
+    }
+    html.dark .text-slate-500,
+    html.dark .text-slate-400 {
+      color: #94a3b8 !important;
+    }
+    html.dark textarea,
+    html.dark select {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border-color: #475569 !important;
+    }
+    html.dark textarea::placeholder {
+      color: #64748b !important;
+    }
+    html.dark .sample-btn:hover,
+    html.dark #btn-fetch-live:hover,
+    html.dark #btn-clear:hover,
+    html.dark #btn-copy-mt5:hover,
+    html.dark #btn-copy-lead3:hover {
+      background-color: #334155 !important;
+    }
+    html.dark .bg-red-50 {
+      background-color: rgba(153, 27, 27, 0.28) !important;
+    }
+    html.dark .text-red-900,
+    html.dark .text-red-800 {
+      color: #fca5a5 !important;
+    }
+    html.dark .border-red-200,
+    html.dark .border-red-300 {
+      border-color: rgba(248, 113, 113, 0.4) !important;
+    }
+    html.dark .bg-emerald-50 {
+      background-color: rgba(6, 95, 70, 0.3) !important;
+    }
+    html.dark .text-emerald-900,
+    html.dark .text-emerald-800 {
+      color: #6ee7b7 !important;
+    }
+    html.dark .border-emerald-200,
+    html.dark .border-emerald-300 {
+      border-color: rgba(52, 211, 153, 0.4) !important;
     }
     * {
       word-break: break-word;
@@ -74,6 +148,26 @@
       color: #581c87;
       border-bottom-color: #9333ea;
     }
+    html.dark .ent-PERSON {
+      background-color: rgba(22, 163, 74, 0.25);
+      color: #86efac;
+      border-bottom-color: #22c55e;
+    }
+    html.dark .ent-LOCATION {
+      background-color: rgba(217, 119, 6, 0.25);
+      color: #fde68a;
+      border-bottom-color: #f59e0b;
+    }
+    html.dark .ent-ORGANIZATION {
+      background-color: rgba(37, 99, 235, 0.25);
+      color: #93c5fd;
+      border-bottom-color: #3b82f6;
+    }
+    html.dark .ent-DATE, html.dark .ent-TIME {
+      background-color: rgba(147, 51, 234, 0.25);
+      color: #d8b4fe;
+      border-bottom-color: #a855f7;
+    }
     textarea::-webkit-scrollbar {
       width: 8px;
       height: 8px;
@@ -82,10 +176,21 @@
       background-color: #cbd5e1;
       border-radius: 4px;
     }
+    html.dark textarea::-webkit-scrollbar-thumb {
+      background-color: #475569;
+    }
     textarea::-webkit-scrollbar-thumb:hover {
       background-color: #94a3b8;
     }
   </style>
+  <script>
+    try {
+      const savedTheme = localStorage.getItem("thaisum-theme");
+      if (savedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    } catch (_) {}
+  </script>
   <script src="news_500.js" defer></script>
 </head>
 <body class="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased">
@@ -115,8 +220,19 @@
         </div>
       </div>
 
-      <div id="current-date" class="text-sm font-medium text-slate-600 bg-slate-100 px-3.5 py-1.5 rounded-lg border border-slate-200">
-        <span></span>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <div id="current-date" class="text-sm font-medium text-slate-600 bg-slate-100 px-3.5 py-1.5 rounded-lg border border-slate-200">
+          <span></span>
+        </div>
+        <button
+          id="btn-theme-toggle"
+          type="button"
+          aria-label="สลับโหมดมืดและโหมดสว่าง"
+          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 text-sm font-semibold transition cursor-pointer shadow-xs"
+        >
+          <span id="theme-icon" aria-hidden="true">🌙</span>
+          <span id="theme-label">โหมดมืด</span>
+        </button>
       </div>
     </div>
   </header>
@@ -193,6 +309,7 @@
             <textarea
               id="news-input"
               rows="8"
+              maxlength="20000"
               placeholder="วางเนื้อหาข่าวภาษาไทยที่นี่ หรือกดปุ่มเลือกข่าวตัวอย่างด้านบน..."
               class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3.5 reading-text text-slate-900 placeholder-slate-400 focus:outline-none focus:border-red-800 focus:ring-2 focus:ring-red-800/15 transition resize-y"
             ></textarea>
@@ -524,13 +641,47 @@
     ];
 
     const $ = id => document.getElementById(id);
-    const escapeHtml = str => String(str).replace(/[&<>"]/g, ch => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"
+    const escapeHtml = str => String(str).replace(/[&<>"']/g, ch => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[ch]));
+
+    function decodeHtmlEntities(str) {
+      return String(str || "")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;|&apos;/gi, "'")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
+        .replace(/&amp;/gi, "&");
+    }
+
+    function updateThemeButtonUI() {
+      const isDark = document.documentElement.classList.contains("dark");
+      const iconEl = $("theme-icon");
+      const labelEl = $("theme-label");
+      if (iconEl) iconEl.textContent = isDark ? "☀️" : "🌙";
+      if (labelEl) labelEl.textContent = isDark ? "โหมดสว่าง" : "โหมดมืด";
+    }
+
+    function setupThemeToggle() {
+      updateThemeButtonUI();
+      const btn = $("btn-theme-toggle");
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        const htmlEl = document.documentElement;
+        const willBeDark = !htmlEl.classList.contains("dark");
+        htmlEl.classList.toggle("dark", willBeDark);
+        try {
+          localStorage.setItem("thaisum-theme", willBeDark ? "dark" : "light");
+        } catch (_) {}
+        updateThemeButtonUI();
+      });
+    }
 
     let lastResult = null;
     let liveNewsCache = [];
     let liveNewsIndex = 0;
+    let summarizeRunId = 0;
 
     const curDateEl = $("current-date");
     if (curDateEl) {
@@ -545,7 +696,7 @@
     // ====================================================================
     function splitThaiSentences(text) {
       if (!text || !text.trim()) return [];
-      const clean = text.trim();
+      const clean = text.trim().slice(0, 20000);
 
       // 1. แยกย่อหน้าและประโยคหลักจาก \n, ลูกน้ำที่ไม่ใช่ตัวเลข (เช่น ,สำนักข่าว), และช่องว่างคู่
       const rawBlocks = clean
@@ -750,11 +901,14 @@
               const data = await res.json();
               if (data.status === "ok" && Array.isArray(data.items) && data.items.length >= 6) {
                 liveNewsCache = data.items.slice(0, 10).map((it) => {
-                  const rawTitle = it.title || "";
+                  const rawTitle = decodeHtmlEntities(it.title || "");
                   const source = rawTitle.includes(" - ") ? rawTitle.split(" - ").pop().trim() : "สำนักข่าวออนไลน์";
                   const title = rawTitle.includes(" - ") ? rawTitle.split(" - ").slice(0, -1).join(" - ").trim() : rawTitle;
-                  const desc = (it.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-                  const article = `${title} ${desc} ทั้งนี้ ${source} รายงานว่าหน่วยงานที่เกี่ยวข้องกำลังเร่งติดตามสถานการณ์อย่างใกล้ชิด และเตรียมแถลงความคืบหน้าให้ประชาชนทราบต่อไป`;
+                  const rawDesc = decodeHtmlEntities((it.description || "").replace(/<[^>]+>/g, " "))
+                    .replace(/\s+/g, " ")
+                    .trim();
+                  const desc = rawDesc && !title.includes(rawDesc.slice(0, 30)) ? rawDesc : "";
+                  const article = `${title} ${desc} ทั้งนี้ ${source} รายงานว่าหน่วยงานที่เกี่ยวข้องกำลังเร่งติดตามสถานการณ์อย่างใกล้ชิด และเตรียมแถลงความคืบหน้าให้ประชาชนทราบต่อไป`.replace(/\s+/g, " ").trim();
                   return {
                     source: `${source} (Google News RSS)`,
                     title: title,
@@ -801,17 +955,18 @@
 
     // ====================================================================
     // ระบบจำแนกชื่อเฉพาะ (Named Entity Recognition — NER) ครอบคลุมข่าวไทย/ตปท.
+    // (ตัดคำกำกวม เช่น เลย/แพร่/ตาก/น่าน/ตรัง ที่ซ้ำกับคำกริยา/วิเศษณ์ทั่วไปออก เว้นแต่มี จ./จังหวัด นำหน้า)
     // ====================================================================
     const THAI_PROVINCES = [
       "กรุงเทพมหานคร", "กรุงเทพฯ", "กทม.", "เชียงใหม่", "เชียงราย", "ภูเก็ต", "ชลบุรี", "นนทบุรี", "ปทุมธานี",
       "สมุทรปราการ", "นครราชสีมา", "โคราช", "ขอนแก่น", "สงขลา", "หาดใหญ่", "สุราษฎร์ธานี", "ลำปาง", "ลำพูน", "พะเยา",
-      "น่าน", "แพร่", "แม่ฮ่องสอน", "อุตรดิตถ์", "พิษณุโลก", "สุโขทัย", "ตาก", "พิจิตร", "กำแพงเพชร",
-      "นครสวรรค์", "อุทัยธานี", "เพชรบูรณ์", "อุดรธานี", "หนองคาย", "เลย", "สกลนคร", "นครพนม",
+      "แม่ฮ่องสอน", "อุตรดิตถ์", "พิษณุโลก", "สุโขทัย", "พิจิตร", "กำแพงเพชร",
+      "นครสวรรค์", "อุทัยธานี", "เพชรบูรณ์", "อุดรธานี", "หนองคาย", "สกลนคร", "นครพนม",
       "มุกดาหาร", "บุรีรัมย์", "สุรินทร์", "ศรีสะเกษ", "อุบลราชธานี", "ยโสธร", "ชัยภูมิ", "อำนาจเจริญ",
       "บึงกาฬ", "หนองบัวลำภู", "ร้อยเอ็ด", "กาฬสินธุ์", "มหาสารคาม", "อยุธยา", "พระนครศรีอยุธยา",
       "อ่างทอง", "ลพบุรี", "สิงห์บุรี", "ชัยนาท", "สระบุรี", "นครนายก", "ปราจีนบุรี", "สระแก้ว",
       "ฉะเชิงเทรา", "ระยอง", "จันทบุรี", "ตราด", "กาญจนบุรี", "สุพรรณบุรี", "นครปฐม", "สมุทรสาคร",
-      "สมุทรสงคราม", "เพชรบุรี", "ประจวบคีรีขันธ์", "หัวหิน", "ชุมพร", "ระนอง", "พังงา", "กระบี่", "ตรัง",
+      "สมุทรสงคราม", "เพชรบุรี", "ประจวบคีรีขันธ์", "หัวหิน", "ชุมพร", "ระนอง", "พังงา", "กระบี่",
       "พัทลุง", "ปัตตานี", "ยะลา", "นราธิวาส", "พัทยา", "เกาะสมุย"
     ];
 
@@ -835,7 +990,7 @@
       "สน.ทุ่งสองห้อง", "สำนักบริหารกิจการนิสิต", "คณะอักษรศาสตร์", "คณะครุศาสตร์", "กรมที่ดิน", "กรมอุตุนิยมวิทยา"
     ];
 
-    const ENTITY_STOP_SUFFIX = /(?:สร้าง|เกิด|เปิดเผย|รายงาน|ระบุ|เผยแพร่|เผยว่า|เผย|ซึ่ง|และ|ของ|เมื่อ|เนื่องจาก|ตาม|อย่าง|หลังจาก|หลัง|เพื่อ|โดย|ว่า|เป็น|ถูก|รวมถึง|ทั้งนี้|ตั้งอยู่|พร้อม|เตรียม|ลงพื้นที่|ทวีต|แถลง|สั่งการ|สั่ง|เดินทาง|เสียชีวิต|บาดเจ็บ|ต่างประเทศ|ใกล้เคียง|เข้ามา|ออกมา|พบว่า|กล่าวว่า|กล่าวถึง|กล่าว|ตอบคำถาม|ตอบว่า|ตอบ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำว่า|ย้ำ|ปฏิเสธ|คาดว่า|เชื่อว่า|มุ่งแต่|อยาก|กลายเป็น|ไม่ได้|ไม่สนใจ|ไม่|ยังไม่มี|ยัง|ในวัน|ในข้อหา|ลงมือ|ทำงาน|มีมติ|มีการ|เปรียบเทียบ|ทำให้|คู่แข่ง|เช่นกัน|จัดทำ).*/;
+    const ENTITY_STOP_SUFFIX = /(?:สร้าง|เกิด|เปิดเผย|รายงาน|ระบุ|เผยแพร่|เผยว่า|เผย|ซึ่ง|และ|ของ|เมื่อ|เนื่องจาก|ตาม|อย่าง|หลังจาก|หลัง|เพื่อ|โดย|ว่า|เป็น|ถูก|รวมถึง|ทั้งนี้|ตั้งอยู่|พร้อม|เตรียม|ลงพื้นที่|ทวีต|แถลง|สั่งการ|สั่ง|เดินทาง|เสียชีวิต|บาดเจ็บ|ต่างประเทศ|ใกล้เคียง|เข้ามา|ออกมา|พบว่า|กล่าวว่า|กล่าวถึง|กล่าว|ตอบคำถาม|ตอบว่า|ตอบ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำว่า|ย้ำ|ปฏิเสธ|คาดว่า|เชื่อว่า|มุ่งแต่|อยาก|กลายเป็น|ไม่ได้|ไม่สนใจ|ไม่|ยังไม่มี|ยัง|ในวัน|ในข้อหา|อยู่ที่|อยู่ระหว่าง|อยู่ใน|ลงมือ|ทำงาน|มีมติ|มีการ|ได้พัฒนา|ได้มี|ได้เปิด|เปรียบเทียบ|ทำให้|คู่แข่ง|เช่นกัน|จัดทำ|ก็ดี|ก็ได้|ก็ยัง).*/;
 
     function cleanEntityText(raw) {
       return raw.replace(ENTITY_STOP_SUFFIX, "").replace(/[,\.\(\)"'“”]+$/g, "").trim();
@@ -843,14 +998,15 @@
 
     const NON_NAME_SECOND_WORDS = /^(?:กล่าว|ตอบ|เผย|เปิดเผย|ระบุ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำ|สั่ง|คาด|เชื่อ|มุ่ง|อยาก|กลาย|ไม่|ยัง|ใน|เมื่อ|ที่|ได้|ว่า|แต่|และ|หลัง|ก่อน|เพื่อ|โดย|จาก|ต่อ|กับ|ตาม|ซึ่ง|เป็น|มี|ถูก|จะ|ต้อง|ก็|ลงมือ|ทำงาน|เดินทาง|ขึ้น|อยู่|มา|ไป|ถึง|ให้|นำ|ใช้|ขอ|ช่วย|ร่วม|ส่ง|รับ|ทำ|ดู|เห็น|รู้|คิด|ถือ|จัด|ตั้ง|เปิด|ปิด|เข้า|ออก|เกิด|สร้าง|แถลง|ทวีต|ลง|สัปดาห์|ช่วง|กรณี|เรื่อง|คดี|วัน|เวลา|ปี|เดือน|ส่วน|ด้าน|ทั้งนี้|พร้อม|ใคร|อะไร|ที่ไหน|อย่างไร|ทำไม|รพ|สน|สภ|จ|อ|ต)/;
 
-    function clientExtractNER(text) {
-      const entities = [];
+    function clientExtractNER(rawText) {
+      const text = String(rawText || "").slice(0, 20000);
+      const rawEntities = [];
       const seen = new Set();
       const addExact = (entText, type) => {
         const clean = entText.trim();
         if (clean.length >= 2 && !seen.has(clean)) {
           seen.add(clean);
-          entities.push({ text: clean, type });
+          rawEntities.push({ text: clean, type });
         }
       };
 
@@ -887,7 +1043,7 @@
 
       const locRegex = /(?<![ก-๙A-Za-z\d\.])(?:กรุง[ก-๙]{2,20}|(?:จังหวัด|จ\.|อำเภอ|อ\.|ตำบล|ต\.|ถนน|ถ\.|สนามบิน)[ก-๙]{2,22})/g;
       while ((m = locRegex.exec(text)) !== null) {
-        if (/^(?:ต\.ค|เม\.ย|พ\.ย|ก\.พ|มี\.ค|พ\.ค|มิ\.ย|ก\.ค|ส\.ค|ก\.ย|ธ\.ค|ม\.ค|อ\.ส\.ม\.ท|อ\.ก\.ค\.ศ|อ\.ต\.ก)/.test(m[0])) continue;
+        if (/^(?:ต\.ค|เม\.ย|พ\.ย|ก\.พ|มี\.ค|พ\.ค|มิ\.ย|ก\.ค|ส\.ค|ก\.ย|ธ\.ค|ม\.ค|อ\.ส\.ม\.ท|อ\.ก\.ค\.ศ|อ\.ต\.ก|อ\.ส่งเสริม)/.test(m[0])) continue;
         const c = cleanEntityText(m[0]);
         if (c.length >= 4 && !/^(?:กรุง|ถนน|จังหวัด|อำเภอ|ตำบล|สนามบิน)$/.test(c)) {
           addExact(c, "LOCATION");
@@ -917,7 +1073,19 @@
         addExact(m[0], "TIME");
       }
 
-      return entities;
+      // 5. ลดความซ้ำซ้อน (Deduplicate ชื่อต้นที่ซ้ำกับชื่อ-นามสกุลเต็ม และ จ.เชียงใหม่ ที่ซ้ำกับ เชียงใหม่)
+      return rawEntities.filter((ent, idx, arr) => {
+        if (ent.type === "PERSON" && !ent.text.includes(" ")) {
+          const hasFullName = arr.some((other, oIdx) => oIdx !== idx && other.type === "PERSON" && other.text.startsWith(ent.text + " "));
+          if (hasFullName) return false;
+        }
+        if (ent.type === "LOCATION" && /^(?:จ\.|จังหวัด)/.test(ent.text)) {
+          const bareLoc = ent.text.replace(/^(?:จ\.|จังหวัด)/, "").trim();
+          const hasBareLoc = arr.some((other, oIdx) => oIdx !== idx && other.type === "LOCATION" && other.text === bareLoc);
+          if (hasBareLoc) return false;
+        }
+        return true;
+      });
     }
 
     // ====================================================================
@@ -1030,28 +1198,37 @@
       };
     }
 
+    function isSameArticleText(cleanInput, referenceText) {
+      if (!referenceText) return false;
+      const ref = referenceText.trim();
+      if (Math.abs(ref.length - cleanInput.length) > Math.max(15, ref.length * 0.05)) {
+        return false;
+      }
+      const head = ref.slice(0, 70);
+      const tail = ref.slice(-60);
+      return cleanInput.includes(head) && cleanInput.includes(tail);
+    }
+
     function clientSummarize(text, maxLength) {
-      const clean = text.trim();
+      const clean = text.trim().slice(0, 20000);
       const allSentences = splitThaiSentences(clean);
       const entities = clientExtractNER(clean);
 
-      // ตรวจสอบว่าตรงกับข่าวในคลัง 500 ข่าวหรือไม่ (ต้องมีความยาวใกล้เคียงต้นฉบับ ไม่ใช่ข่าวที่ถูกตัดแก้)
+      // ตรวจสอบว่าตรงกับข่าวในคลัง 500 ข่าวหรือไม่ (ตรวจสอบทั้งส่วนต้น ส่วนท้าย และความยาว เพื่อไม่ให้ข่าวที่ผู้ใช้แก้ไขเองติดค่าเก่า)
       let exactMt5Pred = null;
-      if (typeof POOL_500 !== "undefined" && Array.isArray(POOL_500) && POOL_500.length > 0) {
-        const textKey = clean.slice(0, 70);
-        for (const item of POOL_500) {
-          if (item && item.body && Math.abs(item.body.length - clean.length) < item.body.length * 0.2) {
-            if (item.body.includes(textKey) || clean.includes(item.body.slice(0, 70))) {
-              exactMt5Pred = item.pred;
-              break;
-            }
+      const pool = getPool500();
+      if (pool.length > 0) {
+        for (const item of pool) {
+          if (item && item.body && isSameArticleText(clean, item.body)) {
+            exactMt5Pred = item.pred;
+            break;
           }
         }
       }
       if (!exactMt5Pred) {
         for (const k in SAMPLE_NEWS) {
           const item = SAMPLE_NEWS[k];
-          if (item && item.text && Math.abs(item.text.length - clean.length) < item.text.length * 0.2 && clean.includes(item.text.slice(0, 70))) {
+          if (item && item.text && isSameArticleText(clean, item.text)) {
             exactMt5Pred = item.pred;
             break;
           }
@@ -1059,7 +1236,7 @@
       }
       if (!exactMt5Pred && Array.isArray(BUILTIN_LIVE_NEWS)) {
         for (const item of BUILTIN_LIVE_NEWS) {
-          if (item && item.article && clean.includes(item.article.slice(0, 70))) {
+          if (item && item.article && isSameArticleText(clean, item.article)) {
             exactMt5Pred = item.pred;
             break;
           }
@@ -1164,7 +1341,10 @@
 
       let preservedCount = 0;
       (entities || []).forEach(ent => {
-        const inSummary = summaryText && summaryText.includes(ent.text);
+        const firstPart = ent.text.includes(" ") ? ent.text.split(/\s+/)[0] : ent.text;
+        const inSummary = Boolean(
+          summaryText && (summaryText.includes(ent.text) || (ent.type === "PERSON" && firstPart.length >= 5 && summaryText.includes(firstPart)))
+        );
         if (inSummary) preservedCount++;
         const item = { ...ent, inSummary };
         if (ent.type === "PERSON") buckets.PERSON.push(item);
@@ -1174,10 +1354,10 @@
       });
 
       const badgeStyles = {
-        PERSON: "bg-white text-emerald-950 border-emerald-300",
-        LOCATION: "bg-white text-amber-950 border-amber-300",
-        ORGANIZATION: "bg-white text-blue-950 border-blue-300",
-        DATETIME: "bg-white text-purple-950 border-purple-300"
+        PERSON: "bg-white dark:bg-slate-800 text-emerald-950 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700",
+        LOCATION: "bg-white dark:bg-slate-800 text-amber-950 dark:text-amber-200 border-amber-300 dark:border-amber-700",
+        ORGANIZATION: "bg-white dark:bg-slate-800 text-blue-950 dark:text-blue-200 border-blue-300 dark:border-blue-700",
+        DATETIME: "bg-white dark:bg-slate-800 text-purple-950 dark:text-purple-200 border-purple-300 dark:border-purple-700"
       };
 
       Object.keys(buckets).forEach(key => {
@@ -1192,7 +1372,7 @@
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium border ${badgeStyles[key]}">
             <span>${escapeHtml(item.text)}</span>
             ${item.inSummary
-              ? `<span class="text-xs font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-900" title="ปรากฏอยู่ในบทสรุป mT5">✓ สรุป</span>`
+              ? `<span class="text-xs font-bold px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200" title="ปรากฏอยู่ในบทสรุป mT5">✓ สรุป</span>`
               : ``}
           </span>
         `).join("");
@@ -1205,9 +1385,8 @@
     function copyTextSafely(text, btnElement) {
       if (!text || !btnElement) return;
       const onSuccess = () => {
-        const orig = btnElement.textContent;
         btnElement.textContent = "คัดลอกแล้ว";
-        setTimeout(() => { btnElement.textContent = orig; }, 1400);
+        setTimeout(() => { btnElement.textContent = "คัดลอก"; }, 1400);
       };
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
@@ -1261,6 +1440,8 @@
         return;
       }
 
+      const currentRunId = ++summarizeRunId;
+      resetSummarizeBtnStyle();
       $("error-banner").classList.add("hidden");
       $("btn-summarize").disabled = true;
       $("btn-spinner").classList.remove("hidden");
@@ -1290,8 +1471,11 @@
 
       if (!data || !data.summary) {
         await new Promise(r => setTimeout(r, 60));
+        if (currentRunId !== summarizeRunId) return;
         data = clientSummarize(text, maxLength);
       }
+
+      if (currentRunId !== summarizeRunId) return;
 
       try {
         lastResult = data;
@@ -1332,31 +1516,38 @@
         $("error-banner").textContent = `เกิดข้อผิดพลาด: ${err.message}`;
         $("error-banner").classList.remove("hidden");
       } finally {
-        $("loading-card").classList.add("hidden");
-        $("btn-spinner").classList.add("hidden");
-        $("btn-summarize").disabled = false;
+        if (currentRunId === summarizeRunId) {
+          $("loading-card").classList.add("hidden");
+          $("btn-spinner").classList.add("hidden");
+          $("btn-summarize").disabled = false;
 
-        const summarizeBtn = $("btn-summarize");
-        const btnText = $("btn-text");
-        const compSec = $("comparison-section");
+          const summarizeBtn = $("btn-summarize");
+          const btnText = $("btn-text");
+          const compSec = $("comparison-section");
 
-        // แจ้งเตือน visual feedback ทันทีว่าระบบได้สรุปผลใหม่เรียบร้อยแล้ว
-        btnText.textContent = "✓ ประมวลผลและอัปเดตบทสรุปแล้ว";
-        summarizeBtn.classList.remove("bg-red-800", "hover:bg-red-900");
-        summarizeBtn.classList.add("bg-emerald-700", "hover:bg-emerald-800");
+          btnText.textContent = "✓ ประมวลผลและอัปเดตบทสรุปแล้ว";
+          summarizeBtn.classList.remove("bg-red-800", "hover:bg-red-900");
+          summarizeBtn.classList.add("bg-emerald-700", "hover:bg-emerald-800");
 
-        if (compSec) {
-          compSec.classList.add("ring-2", "ring-emerald-500/50");
-          setTimeout(() => {
-            compSec.classList.remove("ring-2", "ring-emerald-500/50");
-          }, 1200);
+          if (compSec) {
+            if (ringFeedbackTimer) clearTimeout(ringFeedbackTimer);
+            compSec.classList.add("ring-2", "ring-emerald-500/50");
+            ringFeedbackTimer = setTimeout(() => {
+              compSec.classList.remove("ring-2", "ring-emerald-500/50");
+              ringFeedbackTimer = null;
+            }, 1200);
+          }
+
+          if (btnFeedbackTimer) clearTimeout(btnFeedbackTimer);
+          btnFeedbackTimer = setTimeout(() => {
+            if ($("news-input").value.trim().length > 0) {
+              btnText.textContent = "⚡ ประมวลผลสรุปใหม่";
+            }
+            summarizeBtn.classList.remove("bg-emerald-700", "hover:bg-emerald-800");
+            summarizeBtn.classList.add("bg-red-800", "hover:bg-red-900");
+            btnFeedbackTimer = null;
+          }, 1600);
         }
-
-        setTimeout(() => {
-          btnText.textContent = "⚡ ประมวลผลสรุปใหม่";
-          summarizeBtn.classList.remove("bg-emerald-700", "hover:bg-emerald-800");
-          summarizeBtn.classList.add("bg-red-800", "hover:bg-red-900");
-        }, 1600);
       }
     }
 
@@ -1364,6 +1555,7 @@
     $("max-length").addEventListener("change", runSummarization);
 
     window.addEventListener("DOMContentLoaded", () => {
+      setupThemeToggle();
       setupCopyButtons();
       const defaultSample = SAMPLE_NEWS.politics;
       $("news-input").value = defaultSample.text;
