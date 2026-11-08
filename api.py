@@ -15,8 +15,9 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -60,7 +61,7 @@ def load_summarizer_model() -> bool:
 
         _device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"[Member 4] กำลังโหลดโมเดลสรุปข่าว: {MODEL_NAME_OR_PATH} บน {_device} ...")
-        _tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME_OR_PATH, use_fast=False, local_files_only=local_only)
+        _tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME_OR_PATH, local_files_only=local_only)
         _model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME_OR_PATH, local_files_only=local_only).to(_device).eval()
         _model_status = f"loaded ({MODEL_NAME_OR_PATH} on {_device})"
         print(f"[Member 4] โหลดโมเดลสำเร็จ: {_model_status}")
@@ -266,7 +267,7 @@ def model_summarize(text: str, max_length: int = 96) -> Tuple[str, float, bool]:
                     input_ids=enc["input_ids"],
                     attention_mask=enc["attention_mask"],
                     max_new_tokens=max_length,
-                    num_beams=1 if _device == "cpu" else 4,
+                    num_beams=4,
                     no_repeat_ngram_size=3,
                     early_stopping=True,
                 )
@@ -461,7 +462,32 @@ class NewsIn(BaseModel):
     max_length: int = Field(96, ge=16, le=256, description="ความยาวบทสรุปสูงสุด (จำนวน token)")
 
 
+@api.get("/")
+@api.get("/api")
+@api.get("/api/")
+@api.get("/index.py")
+@api.get("/api/index.py")
+def root_info() -> Dict[str, Any]:
+    """ข้อมูลภาพรวมและรายการ API ทั้งหมดของระบบสรุปข่าวภาษาไทย"""
+    return {
+        "status": "ok",
+        "service": "สรุปข่าววันนี้ API (Today's News Summary API)",
+        "model": MODEL_NAME_OR_PATH,
+        "model_status": _model_status,
+        "ner_status": _ner_status,
+        "endpoints": {
+            "health": "/api/health",
+            "summarize": "/api/summarize",
+            "latest_news": "/api/latest-news",
+            "docs": "/docs"
+        }
+    }
+
+
+@api.get("/health")
 @api.get("/api/health")
+@api.get("/index.py/health")
+@api.get("/api/index.py/health")
 def health() -> Dict[str, Any]:
     """ตรวจสอบสถานะของเซิร์ฟเวอร์ โมเดลสรุปข่าว (คนที่ 4) และโมเดล NER (คนที่ 6)"""
     return {
@@ -473,8 +499,12 @@ def health() -> Dict[str, Any]:
     }
 
 
+@api.get("/google-news")
 @api.get("/api/google-news")
+@api.get("/latest-news")
 @api.get("/api/latest-news")
+@api.get("/index.py/latest-news")
+@api.get("/api/index.py/latest-news")
 def get_latest_news(q: Optional[str] = None) -> Dict[str, Any]:
     """
     ดึงหัวข้อและเนื้อหาข่าวเด่นประจำวันแบบ Real-time จาก Google News RSS (ประเทศไทย)
@@ -539,7 +569,7 @@ def get_latest_news(q: Optional[str] = None) -> Dict[str, Any]:
                 })
             return {"status": "ok", "count": len(news_items), "news": news_items}
     except Exception as exc:
-        fallback_path = HERE / "web" / "live_10.json"
+        fallback_path = HERE.parent / "web" / "live_10.json"
         if fallback_path.exists():
             import json
             try:
@@ -550,7 +580,24 @@ def get_latest_news(q: Optional[str] = None) -> Dict[str, Any]:
         return {"status": "error", "message": str(exc), "news": []}
 
 
+@api.get("/summarize")
+@api.get("/api/summarize")
+@api.get("/index.py/summarize")
+@api.get("/api/index.py/summarize")
+def summarize_info() -> Dict[str, Any]:
+    """คำแนะนำและตัวอย่างการเรียกใช้ POST /api/summarize สำหรับสรุปข่าว"""
+    return {
+        "status": "ok",
+        "endpoint": "POST /api/summarize",
+        "description": "ส่งคำขอแบบ POST พร้อม JSON Body: {'text': 'เนื้อหาข่าวภาษาไทย...', 'max_length': 96}",
+        "sample_curl": "curl -X POST https://thai-news-summary.vercel.app/api/summarize -H 'Content-Type: application/json' -d '{\"text\": \"...\"}'"
+    }
+
+
+@api.post("/summarize")
 @api.post("/api/summarize")
+@api.post("/index.py/summarize")
+@api.post("/api/index.py/summarize")
 def summarize(item: NewsIn) -> Dict[str, Any]:
     """
     รับเนื้อข่าวภาษาไทย แล้วประมวลผล 3 ส่วน:
@@ -625,8 +672,40 @@ def summarize(item: NewsIn) -> Dict[str, Any]:
     }
 
 
-# เสิร์ฟไฟล์หน้าเว็บทั้งหมดจากโฟลเดอร์ web/
-api.mount("/", StaticFiles(directory=HERE / "web", html=True), name="web")
+# Vercel catch-all router เพื่อป้องกัน 404 Not Found จากการ rewrite path
+@api.api_route("/{full_path:path}", methods=["GET", "POST", "OPTIONS", "HEAD", "PUT"])
+async def catch_all_router(request: Request, full_path: str = ""):
+    raw_path = (full_path or "").strip("/").lower()
+    matched = (request.headers.get("x-matched-path") or request.headers.get("x-forwarded-uri") or "").strip("/").lower()
+    combined = raw_path or matched
+
+    if "summarize" in combined:
+        if request.method == "POST":
+            try:
+                body = await request.json()
+                item = NewsIn(**body)
+                return summarize(item)
+            except Exception as e:
+                return JSONResponse(status_code=400, content={"status": "error", "message": str(e)})
+        return summarize_info()
+
+    if "health" in combined:
+        return health()
+
+    if "news" in combined:
+        q = request.query_params.get("q")
+        return get_latest_news(q=q)
+
+    return root_info()
+
+
+# เสิร์ฟไฟล์หน้าเว็บ (เฉพาะเมื่อรันแบบ local standalone)
+web_dir = HERE.parent / "web" if (HERE.parent / "web").exists() else HERE / "web"
+if web_dir.exists():
+    api.mount("/static", StaticFiles(directory=web_dir, html=True), name="static")
+
+# Vercel Serverless Function entry point
+app = api
 
 if __name__ == "__main__":
     import socket
