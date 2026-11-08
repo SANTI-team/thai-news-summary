@@ -141,8 +141,8 @@
       font-weight: 600;
       border-bottom: 2px solid;
       cursor: pointer;
-      box-decoration-break: clone;
       -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
       transition: background-color 0.15s ease, box-shadow 0.15s ease;
     }
     .ent-mark:hover,
@@ -242,7 +242,7 @@
             mT5
           </span>
           <span class="hidden sm:inline-block px-2 py-0.5 text-[11px] font-semibold rounded bg-emerald-50 text-emerald-800 border border-emerald-200 whitespace-nowrap shrink-0">
-            ROUGE-L 63.2%
+            ROUGE-L 30.8%
           </span>
         </div>
       </div>
@@ -545,7 +545,7 @@
   <!-- ส่วนท้ายเว็บ -->
   <footer class="mt-auto py-4 border-t border-slate-200 bg-white text-sm text-slate-500">
     <div class="max-w-[1680px] mx-auto px-5 sm:px-8 flex flex-wrap items-center justify-between gap-2">
-      <div>สรุปข่าววันนี้ (ThaiSum Dataset) · โมเดล mT5 Fine-tuned (ROUGE-L 63.2%) เปรียบเทียบกับ Lead Baseline</div>
+      <div>สรุปข่าววันนี้ (ThaiSum Dataset) · โมเดล mT5 Fine-tuned (ROUGE-L 30.8%) เปรียบเทียบกับ Lead Baseline</div>
       <div class="text-slate-600 font-medium">คลังข้อมูลทดสอบ 500 ข่าวจริง</div>
     </div>
   </footer>
@@ -1267,18 +1267,22 @@
       if (maxLength <= 70) {
         targetCount = 1;
         modeLabel = "สั้นกระชับ (1 ประโยค)";
-        mt5CardTitle = "สรุปด้วย AI (mT5 · 1 ประโยค)";
         leadCardTitle = "ตัดประโยคแรก (Lead-1 · 1 ประโยคแรก)";
       } else if (maxLength <= 110) {
         targetCount = 2;
         modeLabel = "มาตรฐาน (2 ประโยค)";
-        mt5CardTitle = "สรุปด้วย AI (mT5 · 2 ประโยค)";
         leadCardTitle = "ตัดประโยคแรก (Lead-2 · 2 ประโยคแรก)";
       } else {
         targetCount = 4;
         modeLabel = "ละเอียด (3-4 ประโยค)";
-        mt5CardTitle = "สรุปด้วย AI (mT5 · 3-4 ประโยค)";
         leadCardTitle = "ตัดประโยคแรก (Lead-3 · 3-4 ประโยคแรก)";
+      }
+
+      const countStr = targetCount === 4 ? "3-4 ประโยค" : `${targetCount} ประโยค`;
+      if (baseMt5Pred) {
+        mt5CardTitle = `สรุปด้วย AI (mT5 · ${countStr})`;
+      } else {
+        mt5CardTitle = `สรุปแบบคัดเลือกประโยค (ไม่ใช่ mT5 · ${countStr})`;
       }
 
       // 1. สร้างผลลัพธ์ฝั่ง Lead Baseline ตามจำนวนประโยคจริง
@@ -1361,7 +1365,8 @@
         mt5CardTitle,
         leadCardTitle,
         mt5SentenceCount,
-        leadSentenceCount: leadSentences.length
+        leadSentenceCount: leadSentences.length,
+        isMt5: Boolean(baseMt5Pred)
       };
     }
 
@@ -1434,6 +1439,7 @@
         lead_card_title: result.leadCardTitle,
         mt5_sentence_count: result.mt5SentenceCount,
         lead_sentence_count: result.leadSentenceCount,
+        is_mt5: result.isMt5,
         entities,
         stats: {
           news_chars: origChars,
@@ -1668,6 +1674,11 @@
         }
         if ($("mt5-card-title") && data.mt5_card_title) {
           $("mt5-card-title").textContent = data.mt5_card_title;
+          if (data.is_mt5) {
+            $("mt5-card-title").className = "px-2.5 py-0.5 rounded text-xs sm:text-sm font-bold bg-red-50 text-red-900 border border-red-200 whitespace-nowrap";
+          } else {
+            $("mt5-card-title").className = "px-2.5 py-0.5 rounded text-xs sm:text-sm font-bold bg-amber-50 text-amber-900 border border-amber-300 whitespace-nowrap";
+          }
         }
         if ($("lead3-card-title") && data.lead_card_title) {
           $("lead3-card-title").textContent = data.lead_card_title;
