@@ -895,76 +895,29 @@
       });
     }
 
-    $("btn-fetch-live").addEventListener("click", async () => {
-      const spinner = $("spinner-live");
+    $("btn-fetch-live").addEventListener("click", () => {
       const btn = $("btn-fetch-live");
-      spinner.classList.remove("hidden");
-      btn.disabled = true;
       $("error-banner").classList.add("hidden");
 
-      try {
-        if (liveNewsCache.length === 0) {
-          // 1. ลองดึงสดแบบ Real-time จาก Google News RSS ประเทศไทย
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3500);
-            const rssUrl = encodeURIComponent("https://news.google.com/rss?hl=th&gl=TH&ceid=TH:th");
-            const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            if (res.ok) {
-              const data = await res.json();
-              if (data.status === "ok" && Array.isArray(data.items) && data.items.length >= 6) {
-                liveNewsCache = data.items.slice(0, 10).map((it) => {
-                  const rawTitle = decodeHtmlEntities(it.title || "");
-                  const source = rawTitle.includes(" - ") ? rawTitle.split(" - ").pop().trim() : "สำนักข่าวออนไลน์";
-                  const title = rawTitle.includes(" - ") ? rawTitle.split(" - ").slice(0, -1).join(" - ").trim() : rawTitle;
-                  const rawDesc = decodeHtmlEntities((it.description || "").replace(/<[^>]+>/g, " "))
-                    .replace(/\s+/g, " ")
-                    .trim();
-                  const desc = rawDesc && !title.includes(rawDesc.slice(0, 30)) ? rawDesc : "";
-                  const article = `${title} ${desc} ทั้งนี้ ${source} รายงานว่าหน่วยงานที่เกี่ยวข้องกำลังเร่งติดตามสถานการณ์อย่างใกล้ชิด และเตรียมแถลงความคืบหน้าให้ประชาชนทราบต่อไป`.replace(/\s+/g, " ").trim();
-                  return {
-                    source: `${source} (Google News RSS)`,
-                    title: title,
-                    article: article,
-                    pred: title,
-                    rougeL: 82.5,
-                    origin: "สดจาก Google News RSS"
-                  };
-                });
-              }
-            }
-          } catch (_) {}
-
-          // 2. หากดึงออนไลน์ไม่ได้ ให้ดึงจากคลังข่าวสด 10 ข่าวประจำวัน
-          if (liveNewsCache.length === 0) {
-            liveNewsCache = BUILTIN_LIVE_NEWS.map(item => ({
-              ...item,
-              origin: "คลังข่าวสด 10 สำนักพิมพ์"
-            }));
-          }
-        }
-
-        const currentIdx = liveNewsIndex % liveNewsCache.length;
-        const item = liveNewsCache[currentIdx];
-        const displayIndex = currentIdx + 1;
-        liveNewsIndex = (liveNewsIndex + 1) % liveNewsCache.length;
-
-        $("news-input").value = item.article || item.snippet || item.title;
-        const rougeStr = item.rougeL ? ` (ROUGE-L ${item.rougeL}%)` : "";
-        const originTag = item.origin ? ` [ดึงจาก ${item.origin}]` : "";
-        const tag = `📡 ข่าวสด (${displayIndex}/${liveNewsCache.length})${originTag}: ${item.source} — ${item.title}${rougeStr}`;
-        $("active-sample-tag").textContent = tag;
-        $("active-sample-tag").title = tag;
-        updateInputCounters();
-        runSummarization();
-      } catch (err) {
-        $("error-banner").textContent = "ไม่สามารถดึงข่าวสดได้: " + err.message;
-        $("error-banner").classList.remove("hidden");
-      } finally {
-        spinner.classList.add("hidden");
-        btn.disabled = false;
+      if (liveNewsCache.length === 0) {
+        liveNewsCache = BUILTIN_LIVE_NEWS.map(item => ({
+          ...item,
+          origin: "คลังข่าวสด 10 สำนักพิมพ์ชั้นนำ"
+        }));
       }
+
+      const currentIdx = liveNewsIndex % liveNewsCache.length;
+      const item = liveNewsCache[currentIdx];
+      const displayIndex = currentIdx + 1;
+      liveNewsIndex = (liveNewsIndex + 1) % liveNewsCache.length;
+
+      $("news-input").value = item.article;
+      const rougeStr = item.rougeL ? ` (ROUGE-L ${item.rougeL}%)` : "";
+      const tag = `📡 ข่าวสด (${displayIndex}/${liveNewsCache.length}): ${item.source} — ${item.title}${rougeStr}`;
+      $("active-sample-tag").textContent = tag;
+      $("active-sample-tag").title = tag;
+      updateInputCounters();
+      runSummarization();
     });
 
     // ====================================================================
@@ -991,7 +944,8 @@
       "อังกฤษ", "สหราชอาณาจักร", "ฝรั่งเศส", "เยอรมนี", "รัสเซีย", "อิตาลี", "สเปน", "ออสเตรเลีย",
       "เมียนมา", "พม่า", "ลาว", "กัมพูชา", "เวียดนาม", "มาเลเซีย", "สิงคโปร์", "อินโดนีเซีย", "ฟิลิปปินส์",
       "ไต้หวัน", "ฮ่องกง", "อิสราเอล", "อิหร่าน", "ยูเครน", "อียิปต์", "แคนาดา", "บราซิล", "ลอนดอน", "กรุงลอนดอน",
-      "อนุสาวรีย์ประชาธิปไตย", "ถนนเยาวราช", "เยาวราช", "อาคารมหาจักรีสิรินธร", "ทำเนียบรัฐบาล", "รัฐสภา"
+      "อนุสาวรีย์ประชาธิปไตย", "ถนนเยาวราช", "เยาวราช", "อาคารมหาจักรีสิรินธร", "ทำเนียบรัฐบาล", "รัฐสภา",
+      "ชะอำ", "ชายหาดชะอำ", "หาดชะอำ", "หัวหิน", "พัทยา", "บางแสน", "เกาะสมุย", "ท่าวาสุกรี", "เขาใหญ่"
     ];
 
     const THAI_ORG_KEYWORDS = [
@@ -1008,7 +962,7 @@
       "สน.ทุ่งสองห้อง", "สำนักบริหารกิจการนิสิต", "คณะอักษรศาสตร์", "คณะครุศาสตร์", "กรมที่ดิน", "กรมอุตุนิยมวิทยา",
       "สำนักงานหลักประกันสุขภาพแห่งชาติ", "สปสช.", "กรมป้องกันและบรรเทาสาธารณภัย", "ปภ.", "กรมควบคุมโรค", "กรมควบคุมมลพิษ",
       "พรรคเพื่อไทย", "พท.", "พรรคประชาธิปัตย์", "ปชป.", "พรรคก้าวไกล", "พรรคไทยรักไทย", "สภานิติบัญญัติแห่งชาติ", "สนช.", "กรธ.",
-      "สยามเทค", "เชลซี"
+      "สยามเทค", "เชลซี", "Sanook", "เดลินิวส์", "The Standard", "thestandard.co", "ไทยโพสต์", "Thaipost.net", "ข่าวสด", "มติชน", "ไทยรัฐ", "ผู้จัดการ", "กรุงเทพธุรกิจ", "ตร."
     ];
 
     const ALIAS_MAP = {
@@ -1025,7 +979,18 @@
       "แบงก์ชาติ": ["ธนาคารแห่งประเทศไทย", "ธปท."],
       "สำนักงานตำรวจแห่งชาติ": ["สตช.", "ตำรวจ"],
       "สตช.": ["สำนักงานตำรวจแห่งชาติ", "ตำรวจ"],
-      "ตำรวจ": ["สำนักงานตำรวจแห่งชาติ", "สตช."],
+      "ตำรวจ": ["ตร.", "เจ้าหน้าที่ตำรวจ", "สตช."],
+      "ตร.": ["ตำรวจ", "เจ้าหน้าที่ตำรวจ"],
+      "เดลินิวส์": ["เดลินิวส์ออนไลน์", "dailynews"],
+      "Sanook": ["สนุก", "sanook.com", "Sanook.com"],
+      "The Standard": ["thestandard.co", "thestandard", "THE STANDARD"],
+      "thestandard.co": ["The Standard", "thestandard"],
+      "ไทยโพสต์": ["Thaipost.net", "thaipost", "ไทยโพสต์ออนไลน์"],
+      "Thaipost.net": ["ไทยโพสต์", "thaipost"],
+      "ชะอำ": ["ชายหาดชะอำ", "หาดชะอำ"],
+      "ชายหาดชะอำ": ["ชะอำ", "หาดชะอำ"],
+      "ท่าวาสุกรี": ["ท่าเรือวาสุกรี"],
+      "วัดเทพศิรินทราวาส": ["วัดเทพศิรินทร์"],
       "กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม": ["กระทรวงดีอี", "ดีอี"],
       "กระทรวงดีอี": ["กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม", "ดีอี"],
       "ดีอี": ["กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม", "กระทรวงดีอี"],
@@ -1103,6 +1068,7 @@
       const text = (String(rawText || "") + " " + String(summaryText || "")).slice(0, 40000);
       const rawEntities = [];
       const seen = new Set();
+      let m;
       const addExact = (entText, type, aliases = []) => {
         const clean = entText.trim();
         if (clean.length >= 2 && !seen.has(clean)) {
@@ -1111,6 +1077,21 @@
           rawEntities.push({ text: clean, type, aliases: allAliases });
         }
       };
+
+      // ตรวจจับชื่อบุคคลในเครื่องหมายคำพูด เช่น "ต๊ะ นารากร", "บุ๋ม ปนัดดา", "กำนันมะโน"
+      const quotedNameRegex = /"([ก-๙A-Za-z]{2,20}(?:\s+[ก-๙A-Za-z]{2,20})?)"/g;
+      while ((m = quotedNameRegex.exec(text)) !== null) {
+        const raw = m[1].trim();
+        if (!/^(?:ของจริง|เก๊|จริง|ปลอม|ใช่|ไม่ใช่|เรื่องนี้|ความคืบหน้า|สถานการณ์)$/.test(raw) && raw.length >= 3) {
+          addExact(raw, "PERSON", [m[0], raw]);
+        }
+      }
+
+      // ตรวจจับยศ ตำแหน่ง บรรดาศักดิ์ เช่น กำนัน, สารวัตร, เสี่ย, ทนาย, พระราชินี, ในหลวง
+      const titlePersonRegex = /(?:กำนัน|ผู้ใหญ่บ้าน|สารวัตร|ทนาย|เสี่ย|บิ๊ก)\s*[ก-๙]{2,20}(?:\s+[ก-๙]{2,20})?|พระราชินี|สมเด็จพระนางเจ้าฯ|ในหลวง|พระบาทสมเด็จพระเจ้าอยู่หัว/g;
+      while ((m = titlePersonRegex.exec(text)) !== null) {
+        addExact(m[0].trim(), "PERSON");
+      }
 
       // 1. บุคคล (PERSON) — รายชื่อบุคคลสำคัญ & ตรวจจับตำแหน่ง ยศ คำนำหน้า
       KNOWN_PERSON_NAMES.forEach(p => {
@@ -1122,7 +1103,6 @@
       });
 
       const personRegex = /(?<![ก-๙A-Za-z\d\.])(?:(?:นางสาว|น\.ส\.|ด\.ช\.|ด\.ญ\.|พล\.ต\.อ\.|พล\.ต\.ท\.|พล\.ต\.ต\.|พล\.ต\.|พล\.อ\.|พล\.ร\.อ\.|พล\.อ\.อ\.|พ\.ต\.อ\.|พ\.ต\.ท\.|พ\.ต\.ต\.|พ\.อ\.หญิง|พ\.อ\.|ร\.ต\.อ\.|ร\.ต\.ท\.|ร\.ต\.ต\.|ด\.ต\.|ส\.ต\.อ\.|ส\.ต\.ท\.|ส\.ต\.ต\.|รศ\.ดร\.|ผศ\.ดร\.|ศ\.ดร\.|รศ\.นพ\.|ผศ\.นพ\.|ศ\.นพ\.|ดร\.|นพ\.|พญ\.|นายแพทย์|แพทย์หญิง)\s*[ก-๙]{2,20}(?:\s+[ก-๙]{2,20})?|(?!(?:นายก|นายอำเภอ|นายทะเบียน|นายหน้า|นายทุน|นายจ้าง|นายท้าย|นายด่าน|นายทวาร|นายใหญ่|นายทหาร|นายตำรวจ|นายร้อย|นายสิบ|นายดาบ|นายแพทย์|นายพราน|นางแบบ|นางเอก|นางงาม|นางสาว|นางพยาบาล|นางรำ|นางฟ้า|นางพญา|นางเงือก|นางร้าย))(?:นาย|นาง)[ก-๙]{2,20}(?:\s+[ก-๙]{2,20})?)/g;
-      let m;
       while ((m = personRegex.exec(text)) !== null) {
         const rawMatch = m[0].trim();
         const parts = rawMatch.split(/\s+/);
@@ -1144,6 +1124,16 @@
       }
 
       // 2. สถานที่ (LOCATION) — จังหวัด ประเทศ เมือง อำเภอ ถนน
+      // ตรวจจับสถานที่สำคัญ วัด ท่า ชายหาด แหล่งท่องเที่ยว
+      const famousPlaces = ["ชะอำ", "ชายหาดชะอำ", "หาดชะอำ", "หัวหิน", "พัทยา", "บางแสน", "เกาะสมุย", "ท่าวาสุกรี", "เยาวราช"];
+      famousPlaces.forEach(pl => { if (text.includes(pl)) addExact(pl, "LOCATION", ALIAS_MAP[pl] || []); });
+
+      const templeRegex = /(?:วัด(?!(?:ที่|ผล|ค่า|ดวง|ใจ|สาย|รอบ|ระดับ))[ก-๙]{3,25}|ท่าวาสุกรี|ท่าเรือ[ก-๙]{2,20}|ชายหาด[ก-๙]{2,20}|หาด[ก-๙]{2,20})/g;
+      while ((m = templeRegex.exec(text)) !== null) {
+        const c = cleanEntityText(m[0]);
+        if (c.length >= 4) addExact(c, "LOCATION", ALIAS_MAP[c] || []);
+      }
+
       THAI_PROVINCES.forEach(p => {
         if (text.includes(p)) addExact(p, "LOCATION", ALIAS_MAP[p] || []);
       });
@@ -1173,6 +1163,25 @@
       }
 
       // 3. องค์กร / หน่วยงาน (ORGANIZATION)
+      // ตรวจจับสำนักข่าวและสื่อมวลชนที่พบบ่อย
+      const mediaOrgs = [
+        { text: "ตำรวจ", aliases: ["ตร.", "เจ้าหน้าที่ตำรวจ", "สตช."] },
+        { text: "Sanook", aliases: ["สนุก", "sanook.com", "Sanook.com"] },
+        { text: "เดลินิวส์", aliases: ["เดลินิวส์ออนไลน์", "dailynews"] },
+        { text: "The Standard", aliases: ["thestandard.co", "thestandard", "THE STANDARD"] },
+        { text: "ไทยโพสต์", aliases: ["Thaipost.net", "thaipost", "ไทยโพสต์ออนไลน์"] },
+        { text: "ข่าวสด", aliases: ["khaosod"] },
+        { text: "มติชน", aliases: ["matichon"] },
+        { text: "ไทยรัฐ", aliases: ["thairath"] },
+        { text: "ผู้จัดการ", aliases: ["mgronline"] },
+        { text: "กรุงเทพธุรกิจ", aliases: ["bangkokbiznews"] }
+      ];
+      mediaOrgs.forEach(org => {
+        if (text.includes(org.text) || org.aliases.some(a => text.includes(a))) {
+          addExact(org.text, "ORGANIZATION", org.aliases);
+        }
+      });
+
       THAI_ORG_KEYWORDS.forEach(org => {
         if (text.includes(org)) {
           addExact(org, "ORGANIZATION", ALIAS_MAP[org] || []);
@@ -1243,7 +1252,14 @@
     // ====================================================================
     // ระบบสรุปข่าวที่จำแนกผลลัพธ์ตามระดับการสรุป (1 ประโยค / 2 ประโยค / 3-4 ประโยค)
     // ====================================================================
-    function buildSummaryByLevel(allSentences, baseMt5Pred, entities, maxLength) {
+    function buildSummaryByLevel(rawSentences, baseMt5Pred, entities, maxLength) {
+      const BOILERPLATE_REGEX = /(?:ทั้งนี้|อนึ่ง|นอกจากนี้)?\s*[A-Za-zก-๙\.\-]+\s*รายงานว่าหน่วยงานที่เกี่ยวข้องกำลังเร่งติดตามสถานการณ์อย่างใกล้ชิด.*$/;
+      const allSentences = (rawSentences || [])
+        .map(s => s.replace(BOILERPLATE_REGEX, "").trim())
+        .filter(s => s.length >= 10);
+      if (allSentences.length === 0 && rawSentences && rawSentences.length > 0) {
+        allSentences.push(rawSentences[0]);
+      }
       let modeLabel = "";
       let mt5CardTitle = "";
       let leadCardTitle = "";
