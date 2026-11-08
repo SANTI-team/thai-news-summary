@@ -100,12 +100,14 @@
       border: 0 !important;
       outline: none !important;
       box-shadow: none !important;
+      line-height: 1.8 !important;
     }
     html.dark #news-input {
       background-color: transparent !important;
       color: #f8fafc !important;
       border: 0 !important;
       box-shadow: none !important;
+      line-height: 1.8 !important;
     }
     html.dark textarea::placeholder {
       color: #64748b !important;
@@ -140,8 +142,9 @@
       border-color: rgba(52, 211, 153, 0.4) !important;
     }
     .reading-text {
-      overflow-wrap: break-word;
-      word-break: break-word;
+      line-height: 1.85 !important;
+      word-break: normal !important;
+      overflow-wrap: anywhere !important;
       text-rendering: optimizeLegibility;
       -webkit-font-smoothing: antialiased;
     }
@@ -311,23 +314,23 @@
 
           <!-- กริดปุ่มเลือกข่าว (3 คอลัมน์บนมือถือ / 5 คอลัมน์บนจอใหญ่) -->
           <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2">
-            <button type="button" data-sample="politics" class="sample-btn h-9 flex items-center justify-center gap-1 px-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs truncate">
+            <button type="button" data-sample="politics" class="sample-btn h-9 flex items-center justify-center gap-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap">
               <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
-              <span class="truncate">การเมือง</span>
+              <span>การเมือง</span>
             </button>
-            <button type="button" data-sample="economy" class="sample-btn h-9 flex items-center justify-center gap-1 px-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs truncate">
+            <button type="button" data-sample="economy" class="sample-btn h-9 flex items-center justify-center gap-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap">
               <span class="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
-              <span class="truncate">เศรษฐกิจ</span>
+              <span>เศรษฐกิจ</span>
             </button>
-            <button type="button" data-sample="crime" class="sample-btn h-9 flex items-center justify-center gap-1 px-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs truncate">
+            <button type="button" data-sample="crime" class="sample-btn h-9 flex items-center justify-center gap-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap">
               <span class="w-2 h-2 rounded-full bg-amber-600 shrink-0"></span>
-              <span class="truncate">อาชญากรรม</span>
+              <span>อาชญากรรม</span>
             </button>
-            <button id="btn-fetch-live" type="button" class="h-9 flex items-center justify-center gap-1 px-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs truncate">
+            <button id="btn-fetch-live" type="button" class="h-9 flex items-center justify-center gap-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap">
               <svg class="w-3.5 h-3.5 animate-spin hidden shrink-0 text-red-800" id="spinner-live" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
               <span>📡 ข่าวสด</span>
             </button>
-            <button id="btn-random-500" type="button" class="col-span-2 sm:col-span-1 h-9 flex items-center justify-center gap-1 px-2 rounded-md bg-red-800 hover:bg-red-900 text-white font-semibold text-xs transition active:scale-95 shadow-2xs truncate">
+            <button id="btn-random-500" type="button" class="col-span-2 sm:col-span-1 h-9 flex items-center justify-center gap-1 px-2 rounded-md bg-red-800 hover:bg-red-900 text-white font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap">
               <span>🎲 สุ่มข่าว</span>
             </button>
           </div>
@@ -338,12 +341,10 @@
           <!-- กล่องสี่เหลี่ยมเนื้อหาข่าวแบบครบวงจร (Unified Rectangular News Card) -->
           <div class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-md overflow-hidden shadow-2xs focus-within:border-red-800 dark:focus-within:border-red-600 focus-within:ring-1 focus-within:ring-red-800 transition">
             
-            <!-- แถบด้านบนของกล่องสี่เหลี่ยม: แสดงหัวข้อข่าว/ที่มา -->
-            <div class="border-b border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/80 px-3 py-2 flex items-center justify-between gap-2 text-xs">
-              <div class="flex items-center gap-1.5 min-w-0 flex-1">
-                <span class="text-red-800 dark:text-red-400 shrink-0 font-bold">📌</span>
-                <span id="active-sample-tag" class="truncate font-semibold text-slate-800 dark:text-slate-200" title="แตะหรือวางเนื้อหาข่าวเพื่อแก้ไข">ข่าวที่กำลังเลือก</span>
-              </div>
+            <!-- แถบด้านบนของกล่องสี่เหลี่ยม: แสดงหัวข้อข่าว/ที่มา (ตัวอักษรไม่ตกหล่น ไม่ตัดทอน) -->
+            <div class="border-b border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/80 px-3.5 py-2.5 flex items-start gap-2 text-xs">
+              <span class="text-red-800 dark:text-red-400 shrink-0 font-bold mt-0.5">📌</span>
+              <span id="active-sample-tag" class="font-semibold text-slate-800 dark:text-slate-200 leading-relaxed break-words flex-1" title="แตะหรือวางเนื้อหาข่าวเพื่อแก้ไข">ข่าวที่กำลังเลือก</span>
             </div>
 
             <!-- ช่องวางเนื้อหาข่าว (เต็มพื้นที่กล่องสี่เหลี่ยม ไร้ขอบซ้อน) -->
@@ -407,10 +408,12 @@
         <!-- ============================================================== -->
         <div id="comparison-section" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden transition-all duration-200 scroll-mt-16">
           
-          <div class="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">2</span>
-              <h2 class="text-sm sm:text-base font-bold text-slate-900 truncate">ผลลัพธ์การสรุปข่าว</h2>
+          <div class="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2 min-w-0">
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">2</span>
+                <h2 class="text-sm sm:text-base font-bold text-slate-900 whitespace-nowrap">ผลลัพธ์การสรุปข่าว</h2>
+              </div>
               <span id="active-mode-pill" class="px-2 py-0.5 text-[11px] font-semibold rounded bg-red-50 text-red-900 border border-red-200 whitespace-nowrap shrink-0">
                 มาตรฐาน (2 ประโยค)
               </span>
@@ -420,7 +423,7 @@
             </div>
 
             <!-- สวิตช์ไฮไลต์ชื่อเฉพาะ -->
-            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none text-xs text-slate-600 bg-white px-2.5 py-1 rounded-md border border-slate-300 shrink-0">
+            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none text-xs text-slate-600 bg-white px-2.5 py-1 rounded-md border border-slate-300 shrink-0 ml-auto">
               <input id="toggle-highlight" type="checkbox" checked class="w-3.5 h-3.5 rounded border-slate-300 text-red-800 focus:ring-red-800 shrink-0">
               <span class="whitespace-nowrap">ไฮไลต์</span>
             </label>
@@ -433,7 +436,7 @@
             <div class="p-4 sm:p-5 flex flex-col justify-between bg-white">
               <div>
                 <div class="flex items-center justify-between gap-2 mb-2">
-                  <div class="flex items-center gap-1.5 min-w-0">
+                  <div class="flex flex-wrap items-center gap-1.5 min-w-0">
                     <span id="mt5-card-title" class="px-2.5 py-0.5 rounded text-xs sm:text-sm font-bold bg-red-50 text-red-900 border border-red-200 whitespace-nowrap">
                       สรุปด้วย AI (mT5 · 2 ประโยค)
                     </span>
@@ -461,11 +464,11 @@
             <div class="p-4 sm:p-5 flex flex-col justify-between bg-slate-50/40">
               <div>
                 <div class="flex items-center justify-between gap-2 mb-2">
-                  <div class="flex items-center gap-1.5 min-w-0">
+                  <div class="flex flex-wrap items-center gap-1.5 min-w-0">
                     <span id="lead3-card-title" class="hidden sm:inline-block px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 whitespace-nowrap">
                       เปรียบเทียบ:
                     </span>
-                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="rounded border border-slate-300 bg-white px-2 py-0.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs">
+                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="rounded border border-slate-300 bg-white px-2 py-0.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs max-w-[190px] xs:max-w-[220px] sm:max-w-none">
                       <option value="lead3" selected>Lead-3 (Baseline · คนที่ 3)</option>
                       <option value="textrank">TextRank (Graph · คนที่ 2)</option>
                       <option value="reference">บทสรุปจริงของนักข่าว (Reference)</option>
@@ -494,11 +497,13 @@
         <!-- ส่วนที่ 3: ชื่อเฉพาะที่ตรวจพบในข่าว (NER)                            -->
         <!-- ============================================================== -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-          <div class="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">3</span>
-              <h2 class="text-sm sm:text-base font-bold text-slate-900 truncate">ชื่อเฉพาะที่ตรวจพบ (NER)</h2>
-              <span class="text-xs font-semibold text-emerald-900 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
+          <div class="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2 min-w-0">
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">3</span>
+                <h2 class="text-sm sm:text-base font-bold text-slate-900 whitespace-nowrap">ชื่อเฉพาะที่ตรวจพบ (NER)</h2>
+              </div>
+              <span class="text-xs font-semibold text-emerald-900 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-md whitespace-nowrap shrink-0">
                 พบ <span id="metric-ner-count">0</span> (<span id="metric-ner-preserved">ในสรุป 0</span>)
               </span>
             </div>
@@ -1622,10 +1627,10 @@
           return;
         }
         container.innerHTML = list.map(item => `
-          <button type="button" class="ner-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium border whitespace-nowrap cursor-pointer transition select-none ${badgeStyles[key]}" data-ent-name="${escapeHtml(item.text)}" title="คลิกเพื่อเลื่อนดูตำแหน่งในบทสรุป">
-            <span>${escapeHtml(item.text)}</span>
+          <button type="button" class="ner-badge inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs sm:text-sm font-medium border cursor-pointer transition select-none max-w-full text-left leading-normal ${badgeStyles[key]}" data-ent-name="${escapeHtml(item.text)}" title="คลิกเพื่อเลื่อนดูตำแหน่งในบทสรุป">
+            <span class="break-words">${escapeHtml(item.text)}</span>
             ${item.inSummary
-              ? `<span class="text-xs font-bold px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 whitespace-nowrap shrink-0" title="ปรากฏอยู่ในบทสรุป">✓ สรุป</span>`
+              ? `<span class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 whitespace-nowrap shrink-0" title="ปรากฏอยู่ในบทสรุป">✓ สรุป</span>`
               : ``}
           </button>
         `).join("");
