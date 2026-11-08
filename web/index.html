@@ -115,7 +115,7 @@
       text-rendering: optimizeLegibility;
       -webkit-font-smoothing: antialiased;
     }
-    /* ไฮไลต์ชื่อเฉพาะในเนื้อหาสรุป */
+    /* ไฮไลต์ชื่อเฉพาะในเนื้อหาสรุป และการทำงานร่วมกับป้าย NER */
     .ent-mark {
       padding: 2px 7px;
       margin: 0 2px;
@@ -124,6 +124,23 @@
       border-bottom-width: 2px;
       display: inline-block;
       line-height: 1.45;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+    }
+    .ent-mark:hover,
+    .ent-mark.is-active {
+      transform: translateY(-1px) scale(1.04);
+      outline: 2px solid #f59e0b !important;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.45) !important;
+    }
+    .ner-badge {
+      transition: all 0.15s ease-in-out;
+    }
+    .ner-badge:hover,
+    .ner-badge.is-active {
+      transform: translateY(-1px) scale(1.04);
+      outline: 2px solid #f59e0b !important;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.45) !important;
     }
     .ent-PERSON {
       background-color: #dcfce7;
@@ -962,32 +979,84 @@
       "มุกดาหาร", "บุรีรัมย์", "สุรินทร์", "ศรีสะเกษ", "อุบลราชธานี", "ยโสธร", "ชัยภูมิ", "อำนาจเจริญ",
       "บึงกาฬ", "หนองบัวลำภู", "ร้อยเอ็ด", "กาฬสินธุ์", "มหาสารคาม", "อยุธยา", "พระนครศรีอยุธยา",
       "อ่างทอง", "ลพบุรี", "สิงห์บุรี", "ชัยนาท", "สระบุรี", "นครนายก", "ปราจีนบุรี", "สระแก้ว",
-      "ฉะเชิงเทรา", "ระยอง", "จันทบุรี", "ตราด", "กาญจนบุรี", "สุพรรณบุรี", "นครปฐม", "สมุทรสาคร",
+      "ฉะเชิงเทรา", "ระยอง", "จันทบุรี", "กาญจนบุรี", "สุพรรณบุรี", "นครปฐม", "สมุทรสาคร",
       "สมุทรสงคราม", "เพชรบุรี", "ประจวบคีรีขันธ์", "หัวหิน", "ชุมพร", "ระนอง", "พังงา", "กระบี่",
       "พัทลุง", "ปัตตานี", "ยะลา", "นราธิวาส", "พัทยา", "เกาะสมุย"
     ];
+
+    const AMBIGUOUS_PROVINCES = ["ตราด", "เลย", "แพร่", "ตาก", "น่าน", "ตรัง"];
 
     const COUNTRIES_AND_PLACES = [
       "เนปาล", "อินเดีย", "จีน", "สหรัฐอเมริกา", "สหรัฐฯ", "ญี่ปุ่น", "เกาหลีใต้", "เกาหลีเหนือ",
       "อังกฤษ", "สหราชอาณาจักร", "ฝรั่งเศส", "เยอรมนี", "รัสเซีย", "อิตาลี", "สเปน", "ออสเตรเลีย",
       "เมียนมา", "พม่า", "ลาว", "กัมพูชา", "เวียดนาม", "มาเลเซีย", "สิงคโปร์", "อินโดนีเซีย", "ฟิลิปปินส์",
-      "ไต้หวัน", "ฮ่องกง", "อิสราเอล", "อิหร่าน", "ยูเครน", "อียิปต์", "แคนาดา", "บราซิล",
+      "ไต้หวัน", "ฮ่องกง", "อิสราเอล", "อิหร่าน", "ยูเครน", "อียิปต์", "แคนาดา", "บราซิล", "ลอนดอน", "กรุงลอนดอน",
       "อนุสาวรีย์ประชาธิปไตย", "ถนนเยาวราช", "เยาวราช", "อาคารมหาจักรีสิรินธร", "ทำเนียบรัฐบาล", "รัฐสภา"
     ];
 
     const THAI_ORG_KEYWORDS = [
+      "กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม", "กระทรวงดิจิทัล", "กระทรวงดีอี",
       "กระทรวงการคลัง", "กระทรวงมหาดไทย", "กระทรวงสาธารณสุข", "กระทรวงศึกษาธิการ",
       "กระทรวงคมนาคม", "กระทรวงพาณิชย์", "กระทรวงยุติธรรม", "กระทรวงการต่างประเทศ",
-      "กระทรวงกลาโหม", "กระทรวงเกษตรและสหกรณ์", "กระทรวงแรงงาน", "กระทรวงพลังงาน",
-      "กระทรวงดีอี", "สำนักงานตำรวจแห่งชาติ", "สตช.", "กองทัพบก", "กองทัพเรือ", "กองทัพอากาศ",
+      "กระทรวงกลาโหม", "กระทรวงเกษตรและสหกรณ์", "กระทรวงเกษตรฯ", "กระทรวงเกษตร", "กระทรวงแรงงาน", "กระทรวงพลังงาน",
+      "กระทรวงอุตสาหกรรม", "กระทรวงการท่องเที่ยวและกีฬา", "กระทรวงวัฒนธรรม", "กระทรวงการอุดมศึกษา",
+      "สำนักงานตำรวจแห่งชาติ", "สตช.", "กองทัพบก", "กองทัพเรือ", "กองทัพอากาศ",
       "คณะรัฐมนตรี", "ครม.", "ศาลรัฐธรรมนูญ", "ศาลฎีกา", "ศาลอาญา", "ศาลปกครอง",
       "กรมสอบสวนคดีพิเศษ", "ดีเอสไอ", "ป.ป.ช.", "กกต.", "สคบ.", "สสจ.", "กนง.",
       "ธนาคารแห่งประเทศไทย", "ธปท.", "สมาคมค้าทองคำ", "สำนักงานอัยการสูงสุด",
       "จุฬาลงกรณ์มหาวิทยาลัย", "มหาวิทยาลัยธรรมศาสตร์", "มหาวิทยาลัยเกษตรศาสตร์", "มหาวิทยาลัยมหิดล",
-      "สน.ทุ่งสองห้อง", "สำนักบริหารกิจการนิสิต", "คณะอักษรศาสตร์", "คณะครุศาสตร์", "กรมที่ดิน", "กรมอุตุนิยมวิทยา"
+      "สน.ทุ่งสองห้อง", "สำนักบริหารกิจการนิสิต", "คณะอักษรศาสตร์", "คณะครุศาสตร์", "กรมที่ดิน", "กรมอุตุนิยมวิทยา",
+      "สำนักงานหลักประกันสุขภาพแห่งชาติ", "สปสช.", "กรมป้องกันและบรรเทาสาธารณภัย", "ปภ.", "กรมควบคุมโรค", "กรมควบคุมมลพิษ",
+      "พรรคเพื่อไทย", "พท.", "พรรคประชาธิปัตย์", "ปชป.", "พรรคก้าวไกล", "พรรคไทยรักไทย", "สภานิติบัญญัติแห่งชาติ", "สนช.", "กรธ.",
+      "สยามเทค", "เชลซี"
     ];
 
-    const ENTITY_STOP_SUFFIX = /(?:สร้าง|เกิด|เปิดเผย|รายงาน|ระบุ|เผยแพร่|เผยว่า|เผย|ซึ่ง|และ|ของ|เมื่อ|เนื่องจาก|ตาม|อย่าง|หลังจาก|หลัง|เพื่อ|โดย|ว่า|เป็น|ถูก|รวมถึง|ทั้งนี้|ตั้งอยู่|พร้อม|เตรียม|ลงพื้นที่|ทวีต|แถลง|สั่งการ|สั่ง|เดินทาง|เสียชีวิต|บาดเจ็บ|ต่างประเทศ|ใกล้เคียง|เข้ามา|ออกมา|พบว่า|กล่าวว่า|กล่าวถึง|กล่าว|ตอบคำถาม|ตอบว่า|ตอบ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำว่า|ย้ำ|ปฏิเสธ|คาดว่า|เชื่อว่า|มุ่งแต่|อยาก|กลายเป็น|ไม่ได้|ไม่สนใจ|ไม่|ยังไม่มี|ยัง|ในวัน|ในข้อหา|อยู่ที่|อยู่ระหว่าง|อยู่ใน|ลงมือ|ทำงาน|มีมติ|มีการ|ได้พัฒนา|ได้มี|ได้เปิด|เปรียบเทียบ|ทำให้|คู่แข่ง|เช่นกัน|จัดทำ|ก็ดี|ก็ได้|ก็ยัง).*/;
+    const ALIAS_MAP = {
+      "คณะรัฐมนตรี": ["ครม."],
+      "ครม.": ["คณะรัฐมนตรี"],
+      "กรุงเทพมหานคร": ["กทม.", "กรุงเทพฯ"],
+      "กทม.": ["กรุงเทพมหานคร", "กรุงเทพฯ"],
+      "สำนักงานหลักประกันสุขภาพแห่งชาติ": ["สปสช."],
+      "สปสช.": ["สำนักงานหลักประกันสุขภาพแห่งชาติ"],
+      "ธนาคารแห่งประเทศไทย": ["ธปท.", "แบงก์ชาติ"],
+      "ธปท.": ["ธนาคารแห่งประเทศไทย"],
+      "สำนักงานตำรวจแห่งชาติ": ["สตช.", "ตำรวจ"],
+      "กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม": ["กระทรวงดีอี", "ดีอี"],
+      "กระทรวงดีอี": ["กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม", "ดีอี"],
+      "ดีอี": ["กระทรวงดีอี"],
+      "กรมอุตุนิยมวิทยา": ["กรมอุตุฯ"],
+      "กรมอุตุฯ": ["กรมอุตุนิยมวิทยา"],
+      "กรมสอบสวนคดีพิเศษ": ["ดีเอสไอ"],
+      "ดีเอสไอ": ["กรมสอบสวนคดีพิเศษ"],
+      "คณะกรรมการนโยบายการเงิน": ["กนง."],
+      "กนง.": ["คณะกรรมการนโยบายการเงิน"],
+      "กรมป้องกันและบรรเทาสาธารณภัย": ["ปภ."],
+      "ปภ.": ["กรมป้องกันและบรรเทาสาธารณภัย"],
+      "กระทรวงศึกษาธิการ": ["ศธ."],
+      "ศธ.": ["กระทรวงศึกษาธิการ"],
+      "กระทรวงการคลัง": ["คลัง"],
+      "กระทรวงมหาดไทย": ["มหาดไทย"],
+      "กระทรวงเกษตรและสหกรณ์": ["กระทรวงเกษตรฯ", "กระทรวงเกษตร", "เกษตรฯ"],
+      "สภานิติบัญญัติแห่งชาติ": ["สนช."],
+      "สนช.": ["สภานิติบัญญัติแห่งชาติ"],
+      "พรรคเพื่อไทย": ["พท."],
+      "พท.": ["พรรคเพื่อไทย"],
+      "พรรคประชาธิปัตย์": ["ปชป."],
+      "ปชป.": ["พรรคประชาธิปัตย์"],
+      "นายกรัฐมนตรี": ["นายกฯ"],
+      "นายกฯ": ["นายกรัฐมนตรี"]
+    };
+
+    const KNOWN_PERSON_NAMES = [
+      "เพนกวิน", "พริษฐ์ ชิวารักษ์", "ศุกรียา วรรณายุวัฒน์", "สิรภพ อัตโตหิ", "สิรินทร์ มุ่งเจริญ", "ธวัชชัย อนุกูล", "รุจ เขื่อนสุวรรณ",
+      "มีชัย ฤชุพันธุ์", "มีชัย", "สมชัย ศรีสุทธิยากร", "สมชัย", "สมคิด เชื้อคง", "สมคิด", "พรเพชร วิชิตชลชัย", "พรเพชร",
+      "ประยุทธ์ จันทร์โอชา", "ประยุทธ์", "บิ๊กตู่", "ประวิตร วงษ์สุวรรณ", "ประวิตร", "บิ๊กป้อม", "ทักษิณ ชินวัตร", "ทักษิณ",
+      "ยิ่งลักษณ์ ชินวัตร", "ยิ่งลักษณ์", "ทนายปู", "อภิสิทธิ์ เวชชาชีวะ", "อภิสิทธิ์", "ธนาธร จึงรุ่งเรืองกิจ", "ธนาธร",
+      "พิธา ลิ้มเจริญรัตน์", "พิธา", "เศรษฐา ทวีสิน", "เศรษฐา", "อนุทิน ชาญวีรกูล", "อนุทิน", "ชวน หลีกภัย", "ชวน",
+      "ปีเตอร์ เช็ก", "โชเซ มูรินโญ", "มูรินโญ", "โดนัลด์ ทรัมป์", "ทรัมป์", "โจ ไบเดน", "ไบเดน", "วลาดิเมียร์ ปูติน", "ปูติน", "สี จิ้นผิง"
+    ];
+
+    const ENTITY_STOP_SUFFIX = /(?:จับมือ|เตือนภัย|เตือน|เร่ง|สร้าง|เกิด|เปิดเผย|รายงาน|ระบุ|เผยแพร่|เผยว่า|เผย|ซึ่ง|และ|ของ|เมื่อ|เนื่องจาก|ตาม|อย่าง|หลังจาก|หลัง|เพื่อ|โดย|ว่า|เป็น|ถูก|รวมถึง|ทั้งนี้|ตั้งอยู่|พร้อม|เตรียม|ลงพื้นที่|ทวีต|แถลง|สั่งการ|สั่ง|เดินทาง|เสียชีวิต|บาดเจ็บ|ต่างประเทศ|ใกล้เคียง|เข้ามา|ออกมา|พบว่า|กล่าวว่า|กล่าวถึง|กล่าว|ตอบคำถาม|ตอบว่า|ตอบ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำว่า|ย้ำ|ปฏิเสธ|คาดว่า|เชื่อว่า|มุ่งแต่|อยาก|กลายเป็น|ไม่ได้|ไม่สนใจ|ไม่|ยังไม่มี|ยัง|ในวัน|ในข้อหา|อยู่ที่|อยู่ระหว่าง|อยู่ใน|ลงมือ|ทำงาน|มีมติ|มีการ|ได้พัฒนา|ได้มี|ได้เปิด|เปรียบเทียบ|ทำให้|คู่แข่ง|เช่นกัน|จัดทำ|ก็ดี|ก็ได้|ก็ยัง).*/;
 
     function cleanEntityText(raw) {
       return raw.replace(ENTITY_STOP_SUFFIX, "").replace(/[,\.\(\)"'“”]+$/g, "").trim();
@@ -995,19 +1064,27 @@
 
     const NON_NAME_SECOND_WORDS = /^(?:กล่าว|ตอบ|เผย|เปิดเผย|ระบุ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำ|สั่ง|คาด|เชื่อ|มุ่ง|อยาก|กลาย|ไม่|ยัง|ใน|เมื่อ|ที่|ได้|ว่า|แต่|และ|หลัง|ก่อน|เพื่อ|โดย|จาก|ต่อ|กับ|ตาม|ซึ่ง|เป็น|มี|ถูก|จะ|ต้อง|ก็|ลงมือ|ทำงาน|เดินทาง|ขึ้น|อยู่|มา|ไป|ถึง|ให้|นำ|ใช้|ขอ|ช่วย|ร่วม|ส่ง|รับ|ทำ|ดู|เห็น|รู้|คิด|ถือ|จัด|ตั้ง|เปิด|ปิด|เข้า|ออก|เกิด|สร้าง|แถลง|ทวีต|ลง|สัปดาห์|ช่วง|กรณี|เรื่อง|คดี|วัน|เวลา|ปี|เดือน|ส่วน|ด้าน|ทั้งนี้|พร้อม|ใคร|อะไร|ที่ไหน|อย่างไร|ทำไม|รพ|สน|สภ|จ|อ|ต)/;
 
-    function clientExtractNER(rawText) {
-      const text = String(rawText || "").slice(0, 20000);
+    function clientExtractNER(rawText, summaryText = "") {
+      const text = (String(rawText || "") + " " + String(summaryText || "")).slice(0, 40000);
       const rawEntities = [];
       const seen = new Set();
-      const addExact = (entText, type) => {
+      const addExact = (entText, type, aliases = []) => {
         const clean = entText.trim();
         if (clean.length >= 2 && !seen.has(clean)) {
           seen.add(clean);
-          rawEntities.push({ text: clean, type });
+          rawEntities.push({ text: clean, type, aliases: [...aliases] });
         }
       };
 
-      // 1. บุคคล (PERSON) — คำนำหน้าชื่อ ตำแหน่ง และยศ (พร้อมตัวกรองคำทั่วไป)
+      // 1. บุคคล (PERSON) — รายชื่อบุคคลสำคัญ & ตรวจจับตำแหน่ง ยศ คำนำหน้า
+      KNOWN_PERSON_NAMES.forEach(p => {
+        if (text.includes(p)) {
+          const parts = p.split(/\s+/);
+          const aliases = parts.length > 1 ? [parts[0]] : [];
+          addExact(p, "PERSON", aliases);
+        }
+      });
+
       const personRegex = /(?<![ก-๙A-Za-z\d\.])(?:(?:นางสาว|น\.ส\.|ด\.ช\.|ด\.ญ\.|พล\.ต\.อ\.|พล\.ต\.ท\.|พล\.ต\.ต\.|พล\.ต\.|พล\.อ\.|พล\.ร\.อ\.|พล\.อ\.อ\.|พ\.ต\.อ\.|พ\.ต\.ท\.|พ\.ต\.ต\.|พ\.อ\.หญิง|พ\.อ\.|ร\.ต\.อ\.|ร\.ต\.ท\.|ร\.ต\.ต\.|ด\.ต\.|ส\.ต\.อ\.|ส\.ต\.ท\.|ส\.ต\.ต\.|รศ\.ดร\.|ผศ\.ดร\.|ศ\.ดร\.|รศ\.นพ\.|ผศ\.นพ\.|ศ\.นพ\.|ดร\.|นพ\.|พญ\.|นายแพทย์|แพทย์หญิง)\s*[ก-๙]{2,20}(?:\s+[ก-๙]{2,20})?|(?!(?:นายก|นายอำเภอ|นายทะเบียน|นายหน้า|นายทุน|นายจ้าง|นายท้าย|นายด่าน|นายทวาร|นายใหญ่|นายทหาร|นายตำรวจ|นายร้อย|นายสิบ|นายดาบ|นายแพทย์|นายพราน|นางแบบ|นางเอก|นางงาม|นางสาว|นางพยาบาล|นางรำ|นางฟ้า|นางพญา|นางเงือก|นางร้าย))(?:นาย|นาง)[ก-๙]{2,20}(?:\s+[ก-๙]{2,20})?)/g;
       let m;
       while ((m = personRegex.exec(text)) !== null) {
@@ -1016,26 +1093,34 @@
         const first = cleanEntityText(parts[0]);
         if (first.length < 4 || /^(?:นาย|นาง|นางสาว|น\.ส\.|ดร\.|นพ\.|พญ\.)$/.test(first)) continue;
         let candidate = first;
+        const aliases = [];
+        const bareFirst = first.replace(/^(?:นาย|นาง|นางสาว|น\.ส\.|พล\.ต\.อ\.|พล\.อ\.|พ\.ต\.อ\.|ร\.ต\.อ\.|ร\.ต\.ท\.|ดร\.|นพ\.|พญ\.)/, "").trim();
+        if (bareFirst.length >= 3) aliases.push(bareFirst);
+
         if (parts.length > 1) {
           const second = cleanEntityText(parts[1]);
           if (second.length >= 2 && second.length <= 20 && !NON_NAME_SECOND_WORDS.test(second)) {
             candidate = first + " " + second;
+            if (bareFirst.length >= 3) aliases.push(`${bareFirst} ${second}`);
           }
         }
-        addExact(candidate, "PERSON");
+        addExact(candidate, "PERSON", aliases);
       }
 
-      const knownPersons = ["เพนกวิน", "พริษฐ์ ชิวารักษ์", "ศุกรียา วรรณายุวัฒน์", "สิรภพ อัตโตหิ", "สิรินทร์ มุ่งเจริญ", "ธวัชชัย อนุกูล", "รุจ เขื่อนสุวรรณ"];
-      knownPersons.forEach(p => {
-        if (text.includes(p)) addExact(p, "PERSON");
-      });
-
-      // 2. สถานที่ (LOCATION) — จังหวัด ประเทศ เมือง อำเภอ ถนน วัด (กรองตัวย่อเดือน ต.ค. และยศทหาร อ.)
+      // 2. สถานที่ (LOCATION) — จังหวัด ประเทศ เมือง อำเภอ ถนน
       THAI_PROVINCES.forEach(p => {
-        if (text.includes(p)) addExact(p, "LOCATION");
+        if (text.includes(p)) addExact(p, "LOCATION", ALIAS_MAP[p] || []);
       });
       COUNTRIES_AND_PLACES.forEach(pl => {
-        if (text.includes(pl)) addExact(pl, "LOCATION");
+        if (text.includes(pl)) addExact(pl, "LOCATION", ALIAS_MAP[pl] || []);
+      });
+
+      // จังหวัดที่มีคำกำกวม (เช่น ตราด/เลย/แพร่/ตาก) ตรวจจับเฉพาะเมื่อมี จ./จังหวัด นำหน้า เพื่อป้องกันการตัดคำผิด
+      AMBIGUOUS_PROVINCES.forEach(p => {
+        const safeRegex = new RegExp(`(?:จ\\.|จังหวัด)\\s*${p}`, "g");
+        while ((m = safeRegex.exec(text)) !== null) {
+          addExact(m[0].trim(), "LOCATION", [p]);
+        }
       });
 
       const locRegex = /(?<![ก-๙A-Za-z\d\.])(?:กรุง[ก-๙]{2,20}|(?:จังหวัด|จ\.|อำเภอ|อ\.|ตำบล|ต\.|ถนน|ถ\.|สนามบิน)[ก-๙]{2,22})/g;
@@ -1049,14 +1134,16 @@
 
       // 3. องค์กร / หน่วยงาน (ORGANIZATION)
       THAI_ORG_KEYWORDS.forEach(org => {
-        if (text.includes(org)) addExact(org, "ORGANIZATION");
+        if (text.includes(org)) {
+          addExact(org, "ORGANIZATION", ALIAS_MAP[org] || []);
+        }
       });
 
       const orgRegex = /(?<![ก-๙A-Za-z\d\.])(?:กระทรวง[ก-๙]{2,25}|กรม[ก-๙]{2,25}|สำนักงาน[ก-๙]{2,28}|สำนักข่าว[ก-๙A-Za-z]{2,22}|กองทัพ[ก-๙]{2,20}|กองบังคับการ[ก-๙]{2,25}|กองปราบปราม|กองกำลัง[ก-๙]{2,25}|(?:สน\.|สภ\.)[ก-๙]{2,22}|พรรค(?!(?:การเมือง|พวก|เดียว|นั้น|นี้|อื่น|ใหญ่|เล็ก|ร่วม|ฝ่ายค้าน|รัฐบาล|ต้อง|เลย|คน|รับใช้|เหนียวแน่น|เทพ|เจริญ))[ก-๙]{2,22}|มหาวิทยาลัย[ก-๙]{2,25}|สมาคม[ก-๙]{2,25}|มูลนิธิ[ก-๙]{2,25}|บริษัท\s*[ก-๙A-Za-z0-9\.\-]{2,22}|โรงพยาบาล[ก-๙]{2,25}|รพ\.[ก-๙]{2,22})/g;
       while ((m = orgRegex.exec(text)) !== null) {
         const c = cleanEntityText(m[0]);
         if (c.length >= 5 && !/^(?:สำนักข่าว|สำนักงาน|กระทรวง|กรม|กองทัพ|โรงพยาบาล|บริษัท|สมาคม|พรรค|มหาวิทยาลัย|มูลนิธิ)$/.test(c)) {
-          addExact(c, "ORGANIZATION");
+          addExact(c, "ORGANIZATION", ALIAS_MAP[c] || []);
         }
       }
 
@@ -1070,7 +1157,7 @@
         addExact(m[0], "TIME");
       }
 
-      // 5. ลดความซ้ำซ้อน (Deduplicate ชื่อต้นที่ซ้ำกับชื่อ-นามสกุลเต็ม และ จ.เชียงใหม่ ที่ซ้ำกับ เชียงใหม่)
+      // 5. ลดความซ้ำซ้อน
       return rawEntities.filter((ent, idx, arr) => {
         if (ent.type === "PERSON" && !ent.text.includes(" ")) {
           const hasFullName = arr.some((other, oIdx) => oIdx !== idx && other.type === "PERSON" && other.text.startsWith(ent.text + " "));
@@ -1209,7 +1296,7 @@
     function clientSummarize(text, maxLength) {
       const clean = text.trim().slice(0, 20000);
       const allSentences = splitThaiSentences(clean);
-      const entities = clientExtractNER(clean);
+      const baseEntities = clientExtractNER(clean);
 
       // ตรวจสอบว่าตรงกับข่าวในคลัง 500 ข่าวหรือไม่ (ตรวจสอบทั้งส่วนต้น ส่วนท้าย และความยาว เพื่อไม่ให้ข่าวที่ผู้ใช้แก้ไขเองติดค่าเก่า)
       let exactMt5Pred = null;
@@ -1240,7 +1327,10 @@
         }
       }
 
-      const result = buildSummaryByLevel(allSentences, exactMt5Pred, entities, maxLength);
+      const result = buildSummaryByLevel(allSentences, exactMt5Pred, baseEntities, maxLength);
+
+      // ดึงคำเฉพาะทั้งจากเนื้อหาข่าวต้นฉบับ และจากบทสรุปที่ได้ เพื่อให้ทุกชื่อที่ปรากฏในบทสรุปมีป้าย NER และไฮไลต์ตรงกัน 100%
+      const entities = clientExtractNER(clean, `${result.summary} ${result.lead3}`);
 
       const origChars = clean.length;
       const origWords = Math.max(1, Math.round(origChars / 4.2));
@@ -1283,19 +1373,24 @@
         return escapeHtml(rawText);
       }
 
-      const sorted = [...entities]
-        .filter(e => e && e.text && e.text.trim().length >= 2)
-        .sort((a, b) => b.text.length - a.text.length);
-
-      if (sorted.length === 0) return escapeHtml(rawText);
-
-      const presentEntities = sorted.filter(e => rawText.includes(e.text));
-      if (presentEntities.length === 0) return escapeHtml(rawText);
-
-      const typeMap = new Map();
-      presentEntities.forEach(e => {
-        if (!typeMap.has(e.text)) typeMap.set(e.text, e.type);
+      const matchItems = [];
+      entities.forEach((ent, entIdx) => {
+        const forms = [ent.text, ...(ent.aliases || [])].filter(s => s && s.trim().length >= 2);
+        forms.forEach(form => {
+          if (rawText.includes(form)) {
+            matchItems.push({
+              matchText: form,
+              entityText: ent.text,
+              type: ent.type,
+              entIdx
+            });
+          }
+        });
       });
+
+      if (matchItems.length === 0) return escapeHtml(rawText);
+
+      matchItems.sort((a, b) => b.matchText.length - a.matchText.length);
 
       const typeThaiLabel = {
         PERSON: "บุคคล",
@@ -1305,15 +1400,19 @@
         TIME: "เวลา"
       };
 
-      const escapedPatterns = presentEntities.map(e => e.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-      const regex = new RegExp(`(${escapedPatterns.join("|")})`, "g");
+      const escapedPatterns = matchItems.map(m => m.matchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+      const regex = new RegExp(`(${[...new Set(escapedPatterns)].join("|")})`, "g");
+      const matchMap = new Map();
+      matchItems.forEach(m => {
+        if (!matchMap.has(m.matchText)) matchMap.set(m.matchText, m);
+      });
 
       const parts = rawText.split(regex);
       return parts.map(part => {
-        if (typeMap.has(part)) {
-          const t = typeMap.get(part);
-          const label = typeThaiLabel[t] || t;
-          return `<mark class="ent-mark ent-${escapeHtml(t)}" title="${escapeHtml(label)}">${escapeHtml(part)}</mark>`;
+        if (matchMap.has(part)) {
+          const info = matchMap.get(part);
+          const label = typeThaiLabel[info.type] || info.type;
+          return `<mark class="ent-mark ent-${escapeHtml(info.type)}" data-ent-name="${escapeHtml(info.entityText)}" data-ent-type="${escapeHtml(info.type)}" title="${escapeHtml(label)}: ${escapeHtml(info.entityText)}">${escapeHtml(part)}</mark>`;
         }
         return escapeHtml(part);
       }).join("");
@@ -1338,9 +1437,9 @@
 
       let preservedCount = 0;
       (entities || []).forEach(ent => {
-        const firstPart = ent.text.includes(" ") ? ent.text.split(/\s+/)[0] : ent.text;
+        const checkForms = [ent.text, ...(ent.aliases || [])];
         const inSummary = Boolean(
-          summaryText && (summaryText.includes(ent.text) || (ent.type === "PERSON" && firstPart.length >= 5 && summaryText.includes(firstPart)))
+          summaryText && checkForms.some(f => f && f.length >= 2 && summaryText.includes(f))
         );
         if (inSummary) preservedCount++;
         const item = { ...ent, inSummary };
@@ -1366,12 +1465,12 @@
           return;
         }
         container.innerHTML = list.map(item => `
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium border whitespace-nowrap ${badgeStyles[key]}">
+          <button type="button" class="ner-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium border whitespace-nowrap cursor-pointer transition select-none ${badgeStyles[key]}" data-ent-name="${escapeHtml(item.text)}" title="คลิกเพื่อเลื่อนดูตำแหน่งในบทสรุป">
             <span>${escapeHtml(item.text)}</span>
             ${item.inSummary
-              ? `<span class="text-xs font-bold px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 whitespace-nowrap shrink-0" title="ปรากฏอยู่ในบทสรุป mT5">✓ สรุป</span>`
+              ? `<span class="text-xs font-bold px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 whitespace-nowrap shrink-0" title="ปรากฏอยู่ในบทสรุป">✓ สรุป</span>`
               : ``}
-          </span>
+          </button>
         `).join("");
       });
 
@@ -1548,12 +1647,72 @@
       }
     }
 
+    function setupNerInteraction() {
+      const nerGrid = $("ner-categories-grid");
+      const summaryBoxes = document.querySelectorAll("#mt5-output, #lead3-output");
+
+      function setActiveHighlight(entName, active) {
+        if (!entName) return;
+        document.querySelectorAll(`mark.ent-mark[data-ent-name="${entName}"]`).forEach(el => {
+          el.classList.toggle("is-active", active);
+        });
+        document.querySelectorAll(`.ner-badge[data-ent-name="${entName}"]`).forEach(el => {
+          el.classList.toggle("is-active", active);
+        });
+      }
+
+      if (nerGrid) {
+        nerGrid.addEventListener("mouseover", (e) => {
+          const badge = e.target.closest(".ner-badge");
+          if (badge) setActiveHighlight(badge.dataset.entName, true);
+        });
+        nerGrid.addEventListener("mouseout", (e) => {
+          const badge = e.target.closest(".ner-badge");
+          if (badge) setActiveHighlight(badge.dataset.entName, false);
+        });
+        nerGrid.addEventListener("click", (e) => {
+          const badge = e.target.closest(".ner-badge");
+          if (badge) {
+            const targetMark = document.querySelector(`mark.ent-mark[data-ent-name="${badge.dataset.entName}"]`);
+            if (targetMark) {
+              targetMark.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              setActiveHighlight(badge.dataset.entName, true);
+              setTimeout(() => setActiveHighlight(badge.dataset.entName, false), 1500);
+            }
+          }
+        });
+      }
+
+      summaryBoxes.forEach(box => {
+        box.addEventListener("mouseover", (e) => {
+          const mark = e.target.closest("mark.ent-mark");
+          if (mark) setActiveHighlight(mark.dataset.entName, true);
+        });
+        box.addEventListener("mouseout", (e) => {
+          const mark = e.target.closest("mark.ent-mark");
+          if (mark) setActiveHighlight(mark.dataset.entName, false);
+        });
+        box.addEventListener("click", (e) => {
+          const mark = e.target.closest("mark.ent-mark");
+          if (mark) {
+            const targetBadge = document.querySelector(`.ner-badge[data-ent-name="${mark.dataset.entName}"]`);
+            if (targetBadge) {
+              targetBadge.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              setActiveHighlight(mark.dataset.entName, true);
+              setTimeout(() => setActiveHighlight(mark.dataset.entName, false), 1500);
+            }
+          }
+        });
+      });
+    }
+
     $("btn-summarize").addEventListener("click", runSummarization);
     $("max-length").addEventListener("change", runSummarization);
 
     window.addEventListener("DOMContentLoaded", () => {
       setupThemeToggle();
       setupCopyButtons();
+      setupNerInteraction();
       const defaultSample = SAMPLE_NEWS.politics;
       $("news-input").value = defaultSample.text;
       $("active-sample-tag").textContent = `ข่าวเริ่มต้น: ${defaultSample.label} (ความแม่นยำ ROUGE-L ${defaultSample.rougeL}%)`;
