@@ -676,8 +676,9 @@ def summarize(item: NewsIn) -> Dict[str, Any]:
 @api.api_route("/{full_path:path}", methods=["GET", "POST", "OPTIONS", "HEAD", "PUT"])
 async def catch_all_router(request: Request, full_path: str = ""):
     raw_path = (full_path or "").strip("/").lower()
+    query_path = (request.query_params.get("__path__") or request.query_params.get("path") or "").strip("/").lower()
     matched = (request.headers.get("x-matched-path") or request.headers.get("x-forwarded-uri") or "").strip("/").lower()
-    combined = raw_path or matched
+    combined = f"{raw_path} {query_path} {matched}".strip()
 
     if "summarize" in combined:
         if request.method == "POST":
