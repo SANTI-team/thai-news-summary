@@ -391,15 +391,15 @@
             ></textarea>
 
             <!-- แถบด้านล่างของกล่องสี่เหลี่ยม: ตัวนับคำ และระดับการสรุป (รองรับมือถือไม่ให้ตัวอักษรตกขอบ) -->
-            <div class="border-t border-slate-200 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/90 px-3 py-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 text-[11px] sm:text-xs md:text-sm">
-              <div class="flex items-center gap-1.5 font-semibold whitespace-nowrap">
-                <span id="char-count" class="text-slate-900 dark:text-slate-100 font-bold">0 ตัวอักษร</span>
+            <div class="border-t border-slate-200 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/90 px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center justify-between gap-1 text-[11px] sm:text-xs">
+              <div class="flex items-center gap-1 sm:gap-1.5 font-bold whitespace-nowrap shrink-0">
+                <span id="char-count" class="text-slate-900 dark:text-slate-100">0 ตัวอักษร</span>
                 <span class="text-slate-400 dark:text-slate-500 font-bold">|</span>
-                <span id="sentence-count" class="text-red-800 dark:text-red-400 font-bold">0 ประโยค</span>
+                <span id="sentence-count" class="text-red-800 dark:text-red-400">0 ประโยค</span>
               </div>
-              <div class="flex items-center gap-1.5 whitespace-nowrap ml-auto">
-                <label for="max-length" class="font-bold text-slate-800 dark:text-slate-200">ระดับ:</label>
-                <select id="max-length" class="rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-0.5 text-[11px] sm:text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs">
+              <div class="flex items-center gap-1 whitespace-nowrap shrink-0 ml-auto">
+                <label for="max-length" class="font-bold text-slate-800 dark:text-slate-200 text-[11px] sm:text-xs">ระดับ:</label>
+                <select id="max-length" class="rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-1.5 py-0.5 text-[11px] sm:text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs">
                   <option value="64">1 ประโยค</option>
                   <option value="96" selected>2 ประโยค</option>
                   <option value="140">3-4 ประโยค</option>
@@ -443,21 +443,21 @@
         <!-- ============================================================== -->
         <div id="comparison-section" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden transition-all duration-200 scroll-mt-16">
           
-          <div class="px-3 py-2 sm:px-4 sm:py-2.5 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">2</span>
-              <h2 class="text-xs sm:text-sm md:text-base font-bold text-slate-900 whitespace-nowrap">ผลลัพธ์การสรุปข่าว</h2>
+          <div class="px-2.5 py-1.5 sm:px-4 sm:py-2.5 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between gap-1 text-[11px] sm:text-xs">
+            <div class="flex items-center gap-1 sm:gap-1.5 min-w-0">
+              <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-red-800 text-white text-[10px] sm:text-[11px] font-bold flex items-center justify-center shrink-0">2</span>
+              <h2 class="text-[11px] sm:text-xs md:text-sm font-bold text-slate-900 whitespace-nowrap shrink-0">ผลลัพธ์สรุปข่าว</h2>
+              <span id="active-mode-pill" class="px-1.5 py-0.5 text-[10px] sm:text-xs font-semibold rounded bg-red-50 text-red-900 border border-red-200 whitespace-nowrap shrink-0">
+                2 ประโยค
+              </span>
+              <span id="truncation-badge" class="hidden px-1.5 py-0.5 text-[10px] sm:text-xs font-semibold rounded bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap shrink-0" title="เนื้อหาข่าวต้นฉบับยาวเกินข้อจำกัด 512 tokens ของโมเดล mT5">
+                ยาวเกินเกณฑ์
+              </span>
             </div>
 
-            <span id="active-mode-pill" class="px-2 py-0.5 text-[11px] sm:text-xs font-semibold rounded-md bg-red-50 text-red-900 border border-red-200 whitespace-nowrap shrink-0">
-              โหมด: มาตรฐาน (2 ประโยค)
-            </span>
-            <span id="truncation-badge" class="hidden px-2 py-0.5 text-[11px] sm:text-xs font-semibold rounded-md bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap shrink-0" title="เนื้อหาข่าวต้นฉบับยาวเกินข้อจำกัด 512 tokens ของโมเดล mT5 โมเดลจึงสรุปจากส่วนต้นของเนื้อหา">
-              เนื้อหายาวเกินเกณฑ์โมเดล
-            </span>
             <!-- สวิตช์ไฮไลต์ชื่อเฉพาะ -->
-            <label class="inline-flex items-center gap-1 cursor-pointer select-none text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-300 dark:border-slate-600 shrink-0 shadow-2xs">
-              <input id="toggle-highlight" type="checkbox" checked class="w-3.5 h-3.5 rounded border-slate-300 text-red-800 focus:ring-red-800 shrink-0">
+            <label class="inline-flex items-center gap-1 cursor-pointer select-none text-[10px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-600 shrink-0 shadow-2xs">
+              <input id="toggle-highlight" type="checkbox" checked class="w-3 h-3 rounded border-slate-300 text-red-800 focus:ring-red-800 shrink-0">
               <span class="whitespace-nowrap">ไฮไลต์</span>
             </label>
           </div>
@@ -468,16 +468,16 @@
             <!-- ซ้าย: สรุปด้วย AI (mT5) -->
             <div class="p-3 sm:p-4 md:p-5 flex flex-col justify-between bg-white">
               <div>
-                <div class="flex items-center justify-between gap-1.5 mb-2">
-                  <div class="flex items-center gap-1.5 min-w-0 flex-1">
-                    <span id="mt5-card-title" class="px-2 py-0.5 rounded-md text-[11px] sm:text-xs md:text-sm font-bold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/70 dark:text-red-200 dark:border-red-700 truncate shadow-2xs">
+                <div class="flex items-center justify-between gap-1 mb-2 flex-nowrap">
+                  <div class="flex items-center gap-1 min-w-0 flex-1">
+                    <span id="mt5-card-title" class="px-1.5 py-0.5 rounded text-[11px] sm:text-xs md:text-sm font-bold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/70 dark:text-red-200 dark:border-red-700 truncate shadow-2xs">
                       สรุปด้วย AI (mT5 · 2 ประโยค)
                     </span>
-                    <span id="mt5-rougel-badge" class="hidden px-1.5 py-0.5 text-[10px] sm:text-xs font-bold rounded-md bg-emerald-100 text-emerald-950 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-200 dark:border-emerald-700 whitespace-nowrap shrink-0 shadow-2xs" title="ROUGE-L ของข่าวนี้เทียบกับบทสรุปจริง">
+                    <span id="mt5-rougel-badge" class="hidden px-1.5 py-0.5 text-[10px] sm:text-xs font-bold rounded bg-emerald-100 text-emerald-950 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-200 dark:border-emerald-700 whitespace-nowrap shrink-0 shadow-2xs" title="ROUGE-L ของข่าวนี้เทียบกับบทสรุปจริง">
                       RL 35.7%
                     </span>
                   </div>
-                  <button id="btn-copy-mt5" type="button" class="text-[11px] sm:text-xs font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white px-2 py-0.5 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1 cursor-pointer" title="คัดลอกบทสรุป mT5">
+                  <button id="btn-copy-mt5" type="button" class="text-[11px] sm:text-xs font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white px-2 py-0.5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1 cursor-pointer" title="คัดลอกบทสรุป mT5">
                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     <span>คัดลอก</span>
                   </button>
@@ -497,18 +497,18 @@
             <!-- ขวา: โมเดลเปรียบเทียบ (Lead Baseline / TextRank / Reference) -->
             <div class="p-3 sm:p-4 md:p-5 flex flex-col justify-between bg-slate-50/40">
               <div>
-                <div class="flex items-center justify-between gap-1.5 mb-2">
-                  <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-1 mb-2 flex-nowrap">
+                  <div class="flex items-center gap-1 min-w-0 flex-1">
                     <label for="compare-model-select" class="text-[11px] sm:text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 whitespace-nowrap shrink-0">
                       เปรียบเทียบ:
                     </label>
-                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-1.5 py-0.5 text-[11px] sm:text-xs md:text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs min-w-0 flex-1 truncate">
+                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-1.5 py-0.5 text-[11px] sm:text-xs md:text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs min-w-0 flex-1 truncate">
                       <option value="lead3" selected>Lead-3 (Baseline)</option>
                       <option value="textrank">TextRank (Graph)</option>
                       <option value="reference">บทสรุปจริง (Reference)</option>
                     </select>
                   </div>
-                  <button id="btn-copy-lead3" type="button" class="text-[11px] sm:text-xs font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white px-2 py-0.5 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1 cursor-pointer" title="คัดลอกบทสรุป">
+                  <button id="btn-copy-lead3" type="button" class="text-[11px] sm:text-xs font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white px-2 py-0.5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1 cursor-pointer" title="คัดลอกบทสรุป">
                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     <span>คัดลอก</span>
                   </button>
@@ -532,17 +532,17 @@
         <!-- ส่วนที่ 3: ชื่อเฉพาะที่ตรวจพบในข่าว (Named Entities)                 -->
         <!-- ============================================================== -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-          <div class="px-3 py-2 sm:px-4 sm:py-2.5 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">3</span>
-              <h2 class="text-xs sm:text-sm md:text-base font-bold text-slate-900 whitespace-nowrap">ชื่อเฉพาะที่ตรวจพบ</h2>
+          <div class="px-2.5 py-1.5 sm:px-4 sm:py-2.5 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between gap-1 text-[11px] sm:text-xs">
+            <div class="flex items-center gap-1 sm:gap-1.5 min-w-0">
+              <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-red-800 text-white text-[10px] sm:text-[11px] font-bold flex items-center justify-center shrink-0">3</span>
+              <h2 class="text-[11px] sm:text-xs md:text-sm font-bold text-slate-900 whitespace-nowrap shrink-0">ชื่อเฉพาะที่ตรวจพบ</h2>
+              <span class="text-[10px] sm:text-xs font-bold text-emerald-950 bg-emerald-100 dark:bg-emerald-950/80 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.5 rounded whitespace-nowrap shrink-0 shadow-2xs">
+                พบ <span id="metric-ner-count">0</span> (<span id="metric-ner-preserved">ในสรุป 0</span>)
+              </span>
             </div>
-            <span class="text-[11px] sm:text-xs font-bold text-emerald-950 bg-emerald-100 dark:bg-emerald-950/80 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 px-2 py-0.5 rounded-md whitespace-nowrap shrink-0 shadow-2xs">
-              พบ <span id="metric-ner-count">0</span> (<span id="metric-ner-preserved">ในสรุป 0</span>)
-            </span>
-            <span class="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 bg-slate-200/90 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-2 py-0.5 rounded-md shadow-2xs shrink-0">
-              <span class="px-1.5 py-0.2 text-[10px] font-bold rounded bg-emerald-600 text-white dark:bg-emerald-500 dark:text-slate-950">สรุป</span>
-              <span>= ปรากฏในบทสรุป</span>
+            <span class="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 bg-slate-200/90 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-1.5 py-0.5 rounded shadow-2xs shrink-0">
+              <span class="px-1 py-0.2 text-[9px] sm:text-[10px] font-bold rounded bg-emerald-600 text-white dark:bg-emerald-500 dark:text-slate-950">สรุป</span>
+              <span>= ในสรุป</span>
             </span>
           </div>
 
@@ -1374,15 +1374,15 @@
 
       if (maxLength <= 70) {
         targetCount = 1;
-        modeLabel = "สั้นกระชับ (1 ประโยค)";
+        modeLabel = "1 ประโยค";
         leadCardTitle = "เปรียบเทียบ:";
       } else if (maxLength <= 110) {
         targetCount = 2;
-        modeLabel = "มาตรฐาน (2 ประโยค)";
+        modeLabel = "2 ประโยค";
         leadCardTitle = "เปรียบเทียบ:";
       } else {
         targetCount = 4;
-        modeLabel = "ละเอียด (3-4 ประโยค)";
+        modeLabel = "3-4 ประโยค";
         leadCardTitle = "เปรียบเทียบ:";
       }
 
@@ -1858,7 +1858,7 @@
         const lead3Red = s.lead3_reduction_pct ?? 0;
 
         if ($("active-mode-pill") && data.mode_label) {
-          $("active-mode-pill").textContent = `โหมด: ${data.mode_label}`;
+          $("active-mode-pill").textContent = data.mode_label;
         }
         if ($("mt5-card-title") && data.mt5_card_title) {
           $("mt5-card-title").textContent = data.mt5_card_title;
