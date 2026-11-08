@@ -1,0 +1,2 @@
+model,n,same_test,rouge1,rouge2,rougeL,pred_words,copy_rate_2g
+lead3,500,1.0,26.94,18.4,23.66,40.8,1.0
