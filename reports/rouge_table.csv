@@ -1,0 +1,4 @@
+model,n,same_test,rouge1,rouge2,rougeL,pred_words,copy_rate_2g
+mt5,500,1.0,35.43,22.64,30.76,39.1,0.807
+lead3,500,1.0,31.23,20.27,26.08,79.3,1.0
+textrank,500,1.0,29.31,19.85,25.5,48.4,1.0
