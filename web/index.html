@@ -596,6 +596,21 @@
       return merged.length > 0 ? merged : [clean];
     }
 
+    let btnFeedbackTimer = null;
+    let ringFeedbackTimer = null;
+
+    function resetSummarizeBtnStyle() {
+      if (btnFeedbackTimer) {
+        clearTimeout(btnFeedbackTimer);
+        btnFeedbackTimer = null;
+      }
+      const summarizeBtn = $("btn-summarize");
+      if (summarizeBtn) {
+        summarizeBtn.classList.remove("bg-emerald-700", "hover:bg-emerald-800");
+        summarizeBtn.classList.add("bg-red-800", "hover:bg-red-900");
+      }
+    }
+
     function updateInputCounters() {
       const val = $("news-input").value;
       const chars = val.length;
@@ -606,6 +621,7 @@
       const btn = $("btn-summarize");
       const btnText = $("btn-text");
       if (chars === 0) {
+        resetSummarizeBtnStyle();
         btn.disabled = true;
         btnText.textContent = "กรุณากรอกหรือเลือกข่าวตัวอย่างก่อน";
       } else {
@@ -617,6 +633,7 @@
     }
 
     $("news-input").addEventListener("input", () => {
+      resetSummarizeBtnStyle();
       updateInputCounters();
       const val = $("news-input").value.trim();
       const btnText = $("btn-text");
@@ -644,20 +661,25 @@
     });
 
     $("btn-clear").addEventListener("click", () => {
+      resetSummarizeBtnStyle();
       $("news-input").value = "";
       $("active-sample-tag").textContent = "ล้างข้อความแล้ว — วางเนื้อหาข่าวใหม่หรือกดปุ่มเลือกข่าวจากคลังทดสอบ 500 ข่าวด้านบน";
+      $("error-banner").classList.add("hidden");
       updateInputCounters();
       $("news-input").focus();
     });
 
-    const POOL_500 = (typeof window.NEWS_500 !== "undefined" && Array.isArray(window.NEWS_500)) ? window.NEWS_500 : [];
+    function getPool500() {
+      return (typeof window.NEWS_500 !== "undefined" && Array.isArray(window.NEWS_500)) ? window.NEWS_500 : [];
+    }
 
     const categoryIndices = { politics: 0, economy: 0, crime: 0 };
     document.querySelectorAll(".sample-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const cat = btn.getAttribute("data-sample");
-        let matched = POOL_500.filter(item => item.cat === cat);
-        if (matched.length === 0) matched = POOL_500;
+        const pool = getPool500();
+        let matched = pool.filter(item => item.cat === cat);
+        if (matched.length === 0) matched = pool;
 
         if (matched.length > 0) {
           const idx = (categoryIndices[cat] || 0) % matched.length;
@@ -683,9 +705,10 @@
     const btnRandom = $("btn-random-500");
     if (btnRandom) {
       btnRandom.addEventListener("click", () => {
-        if (POOL_500.length > 0) {
-          const randomIndex = Math.floor(Math.random() * POOL_500.length);
-          const chosen = POOL_500[randomIndex];
+        const pool = getPool500();
+        if (pool.length > 0) {
+          const randomIndex = Math.floor(Math.random() * pool.length);
+          const chosen = pool[randomIndex];
           $("news-input").value = chosen.body;
           const catName = chosen.cat === "politics" ? "การเมือง" : chosen.cat === "economy" ? "เศรษฐกิจ" : chosen.cat === "crime" ? "อาชญากรรม" : "ทั่วไป";
           const tag = `สุ่มข่าว (#${chosen.id}/500 [${catName}] จาก predictions_mt5.csv): ${chosen.title} (ROUGE-L ${chosen.rougeL}%)`;
@@ -812,80 +835,86 @@
       "สน.ทุ่งสองห้อง", "สำนักบริหารกิจการนิสิต", "คณะอักษรศาสตร์", "คณะครุศาสตร์", "กรมที่ดิน", "กรมอุตุนิยมวิทยา"
     ];
 
-    const ENTITY_STOP_SUFFIX = /(?:สร้าง|เกิด|เปิดเผย|รายงาน|ระบุ|เผย|ซึ่ง|และ|ของ|ไป|เมื่อ|ได้|เนื่องจาก|ตาม|อย่าง|ก็|จาก|หลัง|เพื่อ|โดย|ว่า|เป็น|ถูก|รวมถึง|ทั้งนี้|ตั้งอยู่|พร้อม|เตรียม|ลงพื้นที่|ทวีต|แถลง|สั่ง|เดินทาง|เสียชีวิต|บาดเจ็บ|ต่างประเทศ|ต่าง|หลวง|ใกล้เคียง|เข้ามา|ออกมา|พบว่า|กล่าวว่า).*/;
+    const ENTITY_STOP_SUFFIX = /(?:สร้าง|เกิด|เปิดเผย|รายงาน|ระบุ|เผยแพร่|เผยว่า|เผย|ซึ่ง|และ|ของ|เมื่อ|เนื่องจาก|ตาม|อย่าง|หลังจาก|หลัง|เพื่อ|โดย|ว่า|เป็น|ถูก|รวมถึง|ทั้งนี้|ตั้งอยู่|พร้อม|เตรียม|ลงพื้นที่|ทวีต|แถลง|สั่งการ|สั่ง|เดินทาง|เสียชีวิต|บาดเจ็บ|ต่างประเทศ|ใกล้เคียง|เข้ามา|ออกมา|พบว่า|กล่าวว่า|กล่าวถึง|กล่าว|ตอบคำถาม|ตอบว่า|ตอบ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำว่า|ย้ำ|ปฏิเสธ|คาดว่า|เชื่อว่า|มุ่งแต่|อยาก|กลายเป็น|ไม่ได้|ไม่สนใจ|ไม่|ยังไม่มี|ยัง|ในวัน|ในข้อหา|ลงมือ|ทำงาน|มีมติ|มีการ|เปรียบเทียบ|ทำให้|คู่แข่ง|เช่นกัน|จัดทำ).*/;
 
     function cleanEntityText(raw) {
       return raw.replace(ENTITY_STOP_SUFFIX, "").replace(/[,\.\(\)"'“”]+$/g, "").trim();
     }
 
+    const NON_NAME_SECOND_WORDS = /^(?:กล่าว|ตอบ|เผย|เปิดเผย|ระบุ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำ|สั่ง|คาด|เชื่อ|มุ่ง|อยาก|กลาย|ไม่|ยัง|ใน|เมื่อ|ที่|ได้|ว่า|แต่|และ|หลัง|ก่อน|เพื่อ|โดย|จาก|ต่อ|กับ|ตาม|ซึ่ง|เป็น|มี|ถูก|จะ|ต้อง|ก็|ลงมือ|ทำงาน|เดินทาง|ขึ้น|อยู่|มา|ไป|ถึง|ให้|นำ|ใช้|ขอ|ช่วย|ร่วม|ส่ง|รับ|ทำ|ดู|เห็น|รู้|คิด|ถือ|จัด|ตั้ง|เปิด|ปิด|เข้า|ออก|เกิด|สร้าง|แถลง|ทวีต|ลง|สัปดาห์|ช่วง|กรณี|เรื่อง|คดี|วัน|เวลา|ปี|เดือน|ส่วน|ด้าน|ทั้งนี้|พร้อม|ใคร|อะไร|ที่ไหน|อย่างไร|ทำไม|รพ|สน|สภ|จ|อ|ต)/;
+
     function clientExtractNER(text) {
       const entities = [];
       const seen = new Set();
-      const addEnt = (entText, type) => {
-        const clean = cleanEntityText(entText);
+      const addExact = (entText, type) => {
+        const clean = entText.trim();
         if (clean.length >= 2 && !seen.has(clean)) {
           seen.add(clean);
           entities.push({ text: clean, type });
         }
       };
 
-      // 1. บุคคล (PERSON) — คำนำหน้าชื่อ ตำแหน่ง และยศ
-      const personRegex = /(?:นายกรัฐมนตรี\s*[ก-๙]{2,}(?:\s+[ก-๙]{2,}){0,3}|(?:นางสาว|น\.ส\.|ด\.ช\.|ด\.ญ\.|พล\.ต\.[ก-๙\.]+|พล\.อ\.[ก-๙\.]+|พล\.ร\.[ก-๙\.]+|พล\.อ\.อ\.|พ\.ต\.[ก-๙\.]+|พ\.อ\.|ร\.ต\.[ก-๙\.]+|ด\.ต\.|ส\.ต\.[ก-๙\.]+|ดร\.|ศ\.|รศ\.|ผศ\.|นพ\.|พญ\.)\s*[ก-๙]{2,}(?:\s+[ก-๙]{2,})?|(?<!\d\s)(?<!\d)(?:นาย|นาง)[ก-๙]{2,}(?:\s+[ก-๙]{2,})?)/g;
+      // 1. บุคคล (PERSON) — คำนำหน้าชื่อ ตำแหน่ง และยศ (พร้อมตัวกรองคำทั่วไป)
+      const personRegex = /(?<![ก-๙A-Za-z\d\.])(?:(?:นางสาว|น\.ส\.|ด\.ช\.|ด\.ญ\.|พล\.ต\.อ\.|พล\.ต\.ท\.|พล\.ต\.ต\.|พล\.ต\.|พล\.อ\.|พล\.ร\.อ\.|พล\.อ\.อ\.|พ\.ต\.อ\.|พ\.ต\.ท\.|พ\.ต\.ต\.|พ\.อ\.หญิง|พ\.อ\.|ร\.ต\.อ\.|ร\.ต\.ท\.|ร\.ต\.ต\.|ด\.ต\.|ส\.ต\.อ\.|ส\.ต\.ท\.|ส\.ต\.ต\.|รศ\.ดร\.|ผศ\.ดร\.|ศ\.ดร\.|รศ\.นพ\.|ผศ\.นพ\.|ศ\.นพ\.|ดร\.|นพ\.|พญ\.|นายแพทย์|แพทย์หญิง)\s*[ก-๙]{2,20}(?:\s+[ก-๙]{2,20})?|(?!(?:นายก|นายอำเภอ|นายทะเบียน|นายหน้า|นายทุน|นายจ้าง|นายท้าย|นายด่าน|นายทวาร|นายใหญ่|นายทหาร|นายตำรวจ|นายร้อย|นายสิบ|นายดาบ|นายแพทย์|นายพราน|นางแบบ|นางเอก|นางงาม|นางสาว|นางพยาบาล|นางรำ|นางฟ้า|นางพญา|นางเงือก|นางร้าย))(?:นาย|นาง)[ก-๙]{2,20}(?:\s+[ก-๙]{2,20})?)/g;
       let m;
       while ((m = personRegex.exec(text)) !== null) {
-        const parts = m[0].trim().split(/\s+/);
-        const maxParts = parts[0].startsWith("นายกรัฐมนตรี") ? 5 : 2;
-        const candidate = parts.slice(0, maxParts).join(" ");
-        if (!/^(?:นายกรัฐมนตรี|นาย|นาง|นางสาว)$/.test(candidate)) {
-          addEnt(candidate, "PERSON");
+        const rawMatch = m[0].trim();
+        const parts = rawMatch.split(/\s+/);
+        const first = cleanEntityText(parts[0]);
+        if (first.length < 4 || /^(?:นาย|นาง|นางสาว|น\.ส\.|ดร\.|นพ\.|พญ\.)$/.test(first)) continue;
+        let candidate = first;
+        if (parts.length > 1) {
+          const second = cleanEntityText(parts[1]);
+          if (second.length >= 2 && second.length <= 20 && !NON_NAME_SECOND_WORDS.test(second)) {
+            candidate = first + " " + second;
+          }
         }
+        addExact(candidate, "PERSON");
       }
 
       const knownPersons = ["เพนกวิน", "พริษฐ์ ชิวารักษ์", "ศุกรียา วรรณายุวัฒน์", "สิรภพ อัตโตหิ", "สิรินทร์ มุ่งเจริญ", "ธวัชชัย อนุกูล", "รุจ เขื่อนสุวรรณ"];
       knownPersons.forEach(p => {
-        if (text.includes(p)) addEnt(p, "PERSON");
+        if (text.includes(p)) addExact(p, "PERSON");
       });
 
-      // 2. สถานที่ (LOCATION) — จังหวัด ประเทศ เมือง อำเภอ ถนน วัด
+      // 2. สถานที่ (LOCATION) — จังหวัด ประเทศ เมือง อำเภอ ถนน วัด (กรองตัวย่อเดือน ต.ค. และยศทหาร อ.)
       THAI_PROVINCES.forEach(p => {
-        if (text.includes(p)) addEnt(p, "LOCATION");
+        if (text.includes(p)) addExact(p, "LOCATION");
       });
       COUNTRIES_AND_PLACES.forEach(pl => {
-        if (text.includes(pl)) addEnt(pl, "LOCATION");
+        if (text.includes(pl)) addExact(pl, "LOCATION");
       });
 
-      const locRegex = /(?:กรุง[ก-๙]{2,30}|เมือง[ก-๙]{2,30}|(?:จังหวัด|จ\.|อำเภอ|อ\.|ตำบล|ต\.|ถนน|ถ\.|สนามบิน|วัด|ด่าน)[ก-๙\.]{2,30})/g;
+      const locRegex = /(?<![ก-๙A-Za-z\d\.])(?:กรุง[ก-๙]{2,20}|(?:จังหวัด|จ\.|อำเภอ|อ\.|ตำบล|ต\.|ถนน|ถ\.|สนามบิน)[ก-๙]{2,22})/g;
       while ((m = locRegex.exec(text)) !== null) {
-        const subLocs = m[0].split("และ");
-        subLocs.forEach(sub => {
-          const c = cleanEntityText(sub);
-          if (c.length >= 4 && !/^(?:เมือง|กรุง|วัด|ถนน|จังหวัด|อำเภอ|ตำบล|เมืองหลวง)$/.test(c)) {
-            addEnt(c, "LOCATION");
-          }
-        });
+        if (/^(?:ต\.ค|เม\.ย|พ\.ย|ก\.พ|มี\.ค|พ\.ค|มิ\.ย|ก\.ค|ส\.ค|ก\.ย|ธ\.ค|ม\.ค|อ\.ส\.ม\.ท|อ\.ก\.ค\.ศ|อ\.ต\.ก)/.test(m[0])) continue;
+        const c = cleanEntityText(m[0]);
+        if (c.length >= 4 && !/^(?:กรุง|ถนน|จังหวัด|อำเภอ|ตำบล|สนามบิน)$/.test(c)) {
+          addExact(c, "LOCATION");
+        }
       }
 
       // 3. องค์กร / หน่วยงาน (ORGANIZATION)
       THAI_ORG_KEYWORDS.forEach(org => {
-        if (text.includes(org)) addEnt(org, "ORGANIZATION");
+        if (text.includes(org)) addExact(org, "ORGANIZATION");
       });
 
-      const orgRegex = /(?:กระทรวง[ก-๙]{2,32}|กรม[ก-๙]{2,32}|สำนักงาน[ก-๙]{2,32}|สำนักข่าว[ก-๙]{2,30}|กองทัพ[ก-๙]{2,25}|กองบังคับการ[ก-๙]{2,30}|กองปราบปราม[ก-๙]{0,20}|กองกำลัง[ก-๙]{2,32}|(?:สน\.|สภ\.)[ก-๙\.]{2,28}|พรรค[ก-๙]{2,25}|มหาวิทยาลัย[ก-๙]{2,30}|สมาคม[ก-๙]{2,30}|มูลนิธิ[ก-๙]{2,30}|บริษัท\s*[ก-๙A-Za-z0-9\.\-]{2,25}|โรงพยาบาล[ก-๙]{2,28}|รพ\.[ก-๙]{2,25})/g;
+      const orgRegex = /(?<![ก-๙A-Za-z\d\.])(?:กระทรวง[ก-๙]{2,25}|กรม[ก-๙]{2,25}|สำนักงาน[ก-๙]{2,28}|สำนักข่าว[ก-๙A-Za-z]{2,22}|กองทัพ[ก-๙]{2,20}|กองบังคับการ[ก-๙]{2,25}|กองปราบปราม|กองกำลัง[ก-๙]{2,25}|(?:สน\.|สภ\.)[ก-๙]{2,22}|พรรค(?!(?:การเมือง|พวก|เดียว|นั้น|นี้|อื่น|ใหญ่|เล็ก|ร่วม|ฝ่ายค้าน|รัฐบาล|ต้อง|เลย|คน|รับใช้|เหนียวแน่น|เทพ|เจริญ))[ก-๙]{2,22}|มหาวิทยาลัย[ก-๙]{2,25}|สมาคม[ก-๙]{2,25}|มูลนิธิ[ก-๙]{2,25}|บริษัท\s*[ก-๙A-Za-z0-9\.\-]{2,22}|โรงพยาบาล[ก-๙]{2,25}|รพ\.[ก-๙]{2,22})/g;
       while ((m = orgRegex.exec(text)) !== null) {
         const c = cleanEntityText(m[0]);
-        if (c.length >= 5 && !/^(?:สำนักข่าว|สำนักงาน|กระทรวง|กรม|กองทัพ|โรงพยาบาล|บริษัท|สมาคม)$/.test(c)) {
-          addEnt(c, "ORGANIZATION");
+        if (c.length >= 5 && !/^(?:สำนักข่าว|สำนักงาน|กระทรวง|กรม|กองทัพ|โรงพยาบาล|บริษัท|สมาคม|พรรค|มหาวิทยาลัย|มูลนิธิ)$/.test(c)) {
+          addExact(c, "ORGANIZATION");
         }
       }
 
       // 4. วันและเวลา (DATE & TIME)
       const dateRegex = /(?:วัน(?:จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)(?:ที่)?\s*)?(?:วันที่\s*)?\d{1,2}\s*(?:มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม|ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)(?:\s*(?:พ\.ศ\.\s*)?\d{2,4})?|เดือน\s*[ก-๙\.]{2,15}(?:\s*-\s*[ก-๙\.]{2,15})?/g;
       while ((m = dateRegex.exec(text)) !== null) {
-        addEnt(m[0], "DATE");
+        addExact(m[0], "DATE");
       }
       const timeRegex = /(?:เวลา\s*)?\d{1,2}(?::|\.)\d{2}\s*น\./g;
       while ((m = timeRegex.exec(text)) !== null) {
-        addEnt(m[0], "TIME");
+        addExact(m[0], "TIME");
       }
 
       return entities;
