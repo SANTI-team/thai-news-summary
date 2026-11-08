@@ -1,0 +1,10 @@
+{
+  "model": "mt5",
+  "n_articles": 500,
+  "entity_hallucination_rate": 0.0857,
+  "articles_with_hallucinated_entity": 90,
+  "number_hallucination_rate": 0.0272,
+  "entity_recall_vs_reference": 0.4368,
+  "mean_pred_copy_ratio": 0.4829,
+  "mean_ref_copy_ratio": 0.3054
+}
