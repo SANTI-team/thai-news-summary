@@ -1278,13 +1278,13 @@
         leadCardTitle = "ตัดประโยคแรก (Lead-3 · 3-4 ประโยคแรก)";
       }
 
+      // ไม่มีบทสรุป mT5 ที่คำนวณไว้ล่วงหน้า (ข่าวที่ผู้ใช้พิมพ์เอง) → บนเว็บนี้ไม่ได้รันโมเดลจริง ใช้วิธีเลือกประโยคแทน
       const countStr = targetCount === 4 ? "3-4 ประโยค" : `${targetCount} ประโยค`;
       if (baseMt5Pred) {
         mt5CardTitle = `สรุปด้วย AI (mT5 · ${countStr})`;
       } else {
-        mt5CardTitle = `สรุปแบบคัดเลือกประโยค (ไม่ใช่ mT5 · ${countStr})`;
+        mt5CardTitle = `สรุปแบบเลือกประโยค (ไม่ใช่ mT5 · ${countStr})`;
       }
-
       // 1. สร้างผลลัพธ์ฝั่ง Lead Baseline ตามจำนวนประโยคจริง
       const leadSentences = allSentences.slice(0, targetCount === 4 ? 3 : targetCount);
       const leadText = leadSentences.join(" ");
