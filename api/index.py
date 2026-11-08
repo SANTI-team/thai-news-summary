@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -313,6 +313,7 @@ def _rule_based_entities(text: str) -> List[Dict[str, str]]:
 
     # 2. องค์กร (ORGANIZATION): หน่วยงานรัฐ มูลนิธิ สื่อ ธนาคาร บริษัท ศาล เรือนจำ
     org_patterns = [
+        r"(?:กองบังคับการตำรวจจราจร|บก\.จร\.|กองบัญชาการตำรวจนครบาล|บช\.น\.|กองบังคับการปราบปราม|บก\.ป\.|กองบังคับการ[ก-๙]{2,25}|กองบัญชาการ[ก-๙]{2,25})",
         r"มูลนิธิ[ก-๙a-zA-Z0-9\s]{2,30}?(?=\s|[\"“”]|$)",
         r"(?:กองบัญชาการตำรวจสืบสวนสอบสวนอาชญากรรมทางเทคโนโลยี|บช\.สอท\.|กองบัญชาการตำรวจนครบาล|บช\.น\.|สำนักงานตำรวจแห่งชาติ|ตร\.)",
         r"(?:สำนักงานป้องกันและปราบปรามการฟอกเงิน|ปปง\.|สำนักงานคณะกรรมการป้องกันและปราบปรามการทุจริตแห่งชาติ|ป\.ป\.ช\.)",
@@ -329,7 +330,7 @@ def _rule_based_entities(text: str) -> List[Dict[str, str]]:
             val = re.sub(r"\s+", " ", m.group(0).strip())
             found.append((val, "ORGANIZATION"))
 
-    # 3. สถานที่ (LOCATION): จังหวัดทั้ง 77 จังหวัด, ถนน, อำเภอ, เขต, สถานที่ราชการ
+    # 3. สถานที่ (LOCATION): จังหวัดทั้ง 77 จังหวัด, ถนน, อำเภอ, เขต, สถานที่ราชการ, ทางแยก, สะพาน
     th_provinces = (
         "กรุงเทพมหานคร|กรุงเทพฯ|กทม|เชียงใหม่|เชียงราย|ขอนแก่น|ภูเก็ต|ชลบุรี|สงขลา|นครราชสีมา|นนทบุรี|สมุทรปราการ|ปทุมธานี|"
         "อยุธยา|พระนครศรีอยุธยา|แม่ฮ่องสอน|ลำปาง|ลำพูน|น่าน|แพร่|พะเยา|อุตรดิตถ์|ตาก|สุโขทัย|พิษณุโลก|พิจิตร|กำแพงเพชร|เพชรบูรณ์|"
@@ -341,7 +342,8 @@ def _rule_based_entities(text: str) -> List[Dict[str, str]]:
     loc_patterns = [
         rf"(?:จังหวัด|จ\.)\s*(?:{th_provinces})",
         rf"\b(?:{th_provinces})\b",
-        r"(?:ถนน|ถ\.)\s*[ก-๙]{2,25}",
+        r"(?:แยกบรมราชชนนี|ถนนบรมราชชนนี|สะพานพระราม\s*\d+|แยกบางพลัด|แยกบางขุนนนท์|ถนนจรัญสนิทวงศ์|สะพานสมเด็จพระปิ่นเกล้า)",
+        r"(?:แยก|สะพาน|ถนน|ถ\.)\s*[ก-๙]{2,25}",
         r"(?:อำเภอ|อ\.|เขต|แขวง|ตำบล|ต\.)\s*[ก-๙]{2,20}",
         r"(?:ทำเนียบรัฐบาล|อาคารรัฐสภา|รัฐสภา|แม่สาย|ห้วยขวาง|ภาคเหนือ|ภาคตะวันออกเฉียงเหนือ|ภาคอีสาน|ภาคกลาง|ภาคใต้|ภาคตะวันออก|ประเทศญี่ปุ่น|ประเทศไทย|อาเซียน)",
     ]
@@ -427,6 +429,17 @@ def extract_entities(text: str) -> Tuple[List[Dict[str, str]], Dict[str, List[st
         if any(other["text"] != t and other["type"] == ty and t in other["text"] for other in normalized):
             continue
         final_entities.append(item)
+
+    # Guardrails: แก้ไขคำที่ตัดขาด เช่น แยกบรมราช + ชนนี -> แยกบรมราชชนนี
+    has_barom = any("บรมราช" in e["text"] or e["text"] == "ชนนี" for e in final_entities)
+    if has_barom:
+        non_split = [e for e in final_entities if e["text"] not in ("แยกบรมราช", "ชนนี", "บรมราช")]
+        non_split.append({"text": "แยกบรมราชชนนี", "type": "LOCATION"})
+        final_entities = non_split
+
+    for e in final_entities:
+        if re.search(r"(?:กองบังคับการ|กองบัญชาการ|บก\.|บช\.|ตำรวจจราจร)", e["text"]):
+            e["type"] = "ORGANIZATION"
 
     grouped = {
         "persons": [e["text"] for e in final_entities if e["type"] == "PERSON"],
@@ -672,13 +685,31 @@ def summarize(item: NewsIn) -> Dict[str, Any]:
     }
 
 
-# Vercel catch-all router เพื่อป้องกัน 404 Not Found จากการ rewrite path
+# Vercel catch-all router เพื่อป้องกัน 404 Not Found จากการ rewrite path และเสิร์ฟหน้าเว็บอัตโนมัติ
 @api.api_route("/{full_path:path}", methods=["GET", "POST", "OPTIONS", "HEAD", "PUT"])
 async def catch_all_router(request: Request, full_path: str = ""):
     raw_path = (full_path or "").strip("/").lower()
     query_path = (request.query_params.get("__path__") or request.query_params.get("path") or "").strip("/").lower()
     matched = (request.headers.get("x-matched-path") or request.headers.get("x-forwarded-uri") or "").strip("/").lower()
     combined = f"{raw_path} {query_path} {matched}".strip()
+
+    web_dir_local = HERE.parent / "web" if (HERE.parent / "web").exists() else HERE / "web"
+    index_html_file = web_dir_local / "index.html"
+
+    # เสิร์ฟไฟล์หน้าเว็บ HTML หากเปิดผ่านเบราว์เซอร์
+    accept_header = request.headers.get("accept", "")
+    if ("text/html" in accept_header or raw_path in ("", "index.html", "web", "web/index.html")) and "api" not in combined:
+        if index_html_file.exists():
+            return HTMLResponse(content=index_html_file.read_text(encoding="utf-8"), media_type="text/html")
+
+    # เสิร์ฟไฟล์ Static Data JSON / JS
+    if raw_path in ("news_500.json", "news_500.js", "live_10.json", "web_samples.json", "web_live_news.json"):
+        fpath = web_dir_local / raw_path
+        if not fpath.exists():
+            fpath = HERE.parent / raw_path
+        if fpath.exists():
+            media = "application/javascript" if raw_path.endswith(".js") else "application/json"
+            return Response(content=fpath.read_bytes(), media_type=media)
 
     if "summarize" in combined:
         if request.method == "POST":

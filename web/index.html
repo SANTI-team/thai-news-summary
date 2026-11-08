@@ -144,9 +144,27 @@
     .reading-text {
       line-height: 1.85 !important;
       word-break: normal !important;
-      overflow-wrap: anywhere !important;
+      overflow-wrap: break-word !important;
+      line-break: normal !important;
       text-rendering: optimizeLegibility;
       -webkit-font-smoothing: antialiased;
+    }
+    .reading-text ol {
+      margin-left: 1.25rem !important;
+      padding-left: 0.25rem !important;
+    }
+    .reading-text li {
+      margin-bottom: 0.6rem !important;
+      line-height: 1.85 !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+    }
+    .reading-text li::marker {
+      color: #991b1b;
+      font-weight: 700;
+    }
+    html.dark .reading-text li::marker {
+      color: #f87171;
     }
     /* Natural inline highlights without breaking Thai word flow */
     .ent-mark {
@@ -274,9 +292,10 @@
           id="btn-theme-toggle"
           type="button"
           aria-label="สลับโหมดมืดและสว่าง"
-          class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95 shadow-2xs"
+          class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95 shadow-2xs cursor-pointer"
         >
-          <span id="theme-icon" class="theme-icon-indicator" aria-hidden="true">🌙</span>
+          <svg id="theme-icon-sun" class="w-4 h-4 text-amber-500 hidden shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="theme-icon-moon" class="w-4 h-4 text-slate-600 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
           <span id="theme-label" class="hidden sm:inline">โหมดมืด</span>
         </button>
       </div>
@@ -286,7 +305,7 @@
   <!-- ==================================================================== -->
   <!-- พื้นที่ทำงานหลัก (2 คอลัมน์บนจอใหญ่ / 1 คอลัมน์บนมือถือ)                   -->
   <!-- ==================================================================== -->
-  <main class="flex-1 max-w-[1680px] w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6">
+  <main class="flex-1 max-w-[1680px] w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 sm:pb-8">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
 
       <!-- ================================================================ -->
@@ -326,12 +345,14 @@
               <span class="w-2 h-2 rounded-full bg-amber-600 shrink-0"></span>
               <span>อาชญากรรม</span>
             </button>
-            <button id="btn-fetch-live" type="button" class="h-9 flex items-center justify-center gap-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap">
-              <svg class="w-3.5 h-3.5 animate-spin hidden shrink-0 text-red-800" id="spinner-live" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
-              <span>📡 ข่าวสด</span>
+            <button id="btn-fetch-live" type="button" class="h-9 flex items-center justify-center gap-1.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap cursor-pointer">
+              <svg class="w-3.5 h-3.5 animate-spin hidden shrink-0 text-red-800 dark:text-red-400" id="spinner-live" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+              <svg class="w-3.5 h-3.5 shrink-0 text-slate-600 dark:text-slate-300" id="icon-live" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+              <span>ข่าวสด</span>
             </button>
-            <button id="btn-random-500" type="button" class="col-span-2 sm:col-span-1 h-9 flex items-center justify-center gap-1 px-2 rounded-md bg-red-800 hover:bg-red-900 text-white font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap">
-              <span>🎲 สุ่มข่าว</span>
+            <button id="btn-random-500" type="button" class="col-span-2 sm:col-span-1 h-9 flex items-center justify-center gap-1.5 px-2.5 rounded-md bg-red-800 hover:bg-red-900 active:bg-red-950 text-white font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap cursor-pointer">
+              <svg class="w-3.5 h-3.5 shrink-0 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>สุ่มข่าว</span>
             </button>
           </div>
         </div>
@@ -343,7 +364,7 @@
             
             <!-- แถบด้านบนของกล่องสี่เหลี่ยม: แสดงหัวข้อข่าว/ที่มา (ตัวอักษรไม่ตกหล่น ไม่ตัดทอน) -->
             <div class="border-b border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/80 px-3.5 py-2.5 flex items-start gap-2 text-xs">
-              <span class="text-red-800 dark:text-red-400 shrink-0 font-bold mt-0.5">📌</span>
+              <svg class="w-4 h-4 text-red-800 dark:text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               <span id="active-sample-tag" class="font-semibold text-slate-800 dark:text-slate-200 leading-relaxed break-words flex-1" title="แตะหรือวางเนื้อหาข่าวเพื่อแก้ไข">ข่าวที่กำลังเลือก</span>
             </div>
 
@@ -379,13 +400,14 @@
             <button
               id="btn-summarize"
               type="button"
-              class="w-full h-11 sm:h-12 rounded-md bg-red-800 hover:bg-red-900 active:scale-[0.98] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+              class="w-full h-11 sm:h-12 rounded-md bg-red-800 hover:bg-red-900 active:scale-[0.98] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs cursor-pointer"
             >
               <svg id="btn-spinner" class="hidden animate-spin w-4 h-4 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
               </svg>
-              <span id="btn-text">⚡ ประมวลผลสรุปใหม่</span>
+              <svg id="btn-icon" class="w-4 h-4 shrink-0 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span id="btn-text">ประมวลผลสรุปใหม่</span>
             </button>
           </div>
 
@@ -394,7 +416,7 @@
       </section>
 
       <!-- ================================================================ -->
-      <!-- ฝั่งขวา: ผลลัพธ์การสรุปข่าว และ ชื่อเฉพาะที่ตรวจพบ (NER)            -->
+      <!-- ฝั่งขวา: ผลลัพธ์การสรุปข่าว และ ชื่อเฉพาะที่ตรวจพบ -->
       <!-- ================================================================ -->
       <section class="lg:col-span-7 flex flex-col gap-5 sm:gap-6">
 
@@ -444,8 +466,9 @@
                       RL 35.7%
                     </span>
                   </div>
-                  <button id="btn-copy-mt5" type="button" class="text-xs font-medium text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 transition shrink-0 active:scale-95 shadow-2xs">
-                    คัดลอก
+                  <button id="btn-copy-mt5" type="button" class="text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white px-2.5 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1 cursor-pointer" title="คัดลอกบทสรุป mT5">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>คัดลอก</span>
                   </button>
                 </div>
 
@@ -460,33 +483,35 @@
               </div>
             </div>
 
-            <!-- ขวา: ตัดประโยคแรก (Lead Baseline) -->
+            <!-- ขวา: ตัดประโยคแรก (Lead Baseline / Markdown) -->
             <div class="p-4 sm:p-5 flex flex-col justify-between bg-slate-50/40">
               <div>
                 <div class="flex items-center justify-between gap-2 mb-2">
                   <div class="flex flex-wrap items-center gap-1.5 min-w-0">
-                    <span id="lead3-card-title" class="hidden sm:inline-block px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 whitespace-nowrap">
+                    <span id="lead3-card-title" class="hidden sm:inline-block px-2 py-0.5 rounded text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 whitespace-nowrap">
                       เปรียบเทียบ:
                     </span>
-                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="rounded border border-slate-300 bg-white px-2 py-0.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs max-w-[190px] xs:max-w-[220px] sm:max-w-none">
+                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs max-w-[190px] xs:max-w-[220px] sm:max-w-none">
                       <option value="lead3" selected>Lead-3 (Baseline · คนที่ 3)</option>
                       <option value="textrank">TextRank (Graph · คนที่ 2)</option>
                       <option value="reference">บทสรุปจริงของนักข่าว (Reference)</option>
                     </select>
+                    <span id="markdown-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 uppercase tracking-wider shrink-0" title="แสดงผลและคัดลอกในรูปแบบ Markdown">Markdown</span>
                   </div>
-                  <button id="btn-copy-lead3" type="button" class="text-xs font-medium text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 transition shrink-0 active:scale-95 shadow-2xs">
-                    คัดลอก
+                  <button id="btn-copy-lead3" type="button" class="text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white px-2.5 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1 cursor-pointer" title="คัดลอกบทสรุปในรูปแบบ Markdown">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>คัดลอก</span>
                   </button>
                 </div>
 
-                <div id="lead3-output" class="reading-text text-slate-800 min-h-[70px] sm:min-h-[100px] text-sm sm:text-base leading-relaxed py-1">
+                <div id="lead3-output" class="reading-text text-slate-800 dark:text-slate-200 min-h-[70px] sm:min-h-[100px] text-sm sm:text-base leading-relaxed py-1">
                   <span class="text-slate-400 text-xs sm:text-sm">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์</span>
                 </div>
               </div>
 
-              <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 gap-2">
+              <div class="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500 gap-2">
                 <span id="lead3-stat-line" class="truncate min-w-0">ความยาว: — ตัวอักษร</span>
-                <span id="lead3-ratio-badge" class="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-300 whitespace-nowrap shrink-0">ย่อลง —%</span>
+                <span id="lead3-ratio-badge" class="font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-600 whitespace-nowrap shrink-0">ย่อลง —%</span>
               </div>
             </div>
 
@@ -494,21 +519,21 @@
         </div>
 
         <!-- ============================================================== -->
-        <!-- ส่วนที่ 3: ชื่อเฉพาะที่ตรวจพบในข่าว (NER)                            -->
+        <!-- ส่วนที่ 3: ชื่อเฉพาะที่ตรวจพบในข่าว (Named Entities)                 -->
         <!-- ============================================================== -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
           <div class="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2">
             <div class="flex flex-wrap items-center gap-2 min-w-0">
               <div class="flex items-center gap-2 shrink-0">
                 <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">3</span>
-                <h2 class="text-sm sm:text-base font-bold text-slate-900 whitespace-nowrap">ชื่อเฉพาะที่ตรวจพบ (NER)</h2>
+                <h2 class="text-sm sm:text-base font-bold text-slate-900 whitespace-nowrap">ชื่อเฉพาะที่ตรวจพบ</h2>
               </div>
               <span class="text-xs font-semibold text-emerald-900 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-md whitespace-nowrap shrink-0">
                 พบ <span id="metric-ner-count">0</span> (<span id="metric-ner-preserved">ในสรุป 0</span>)
               </span>
             </div>
             <span class="hidden sm:inline-block text-[11px] text-slate-500">
-              <strong class="text-emerald-800">✓ สรุป</strong> = ปรากฏในบทสรุป
+              <strong class="text-emerald-800 dark:text-emerald-400">สรุป</strong> = ปรากฏในบทสรุป
             </span>
           </div>
 
@@ -707,9 +732,18 @@
 
     function updateThemeButtonUI() {
       const isDark = document.documentElement.classList.contains("dark");
-      const iconEl = $("theme-icon");
+      const sun = $("theme-icon-sun");
+      const moon = $("theme-icon-moon");
       const labelEl = $("theme-label");
-      if (iconEl) iconEl.textContent = isDark ? "☀️" : "🌙";
+      if (sun && moon) {
+        if (isDark) {
+          sun.classList.remove("hidden");
+          moon.classList.add("hidden");
+        } else {
+          sun.classList.add("hidden");
+          moon.classList.remove("hidden");
+        }
+      }
       if (labelEl) labelEl.textContent = isDark ? "โหมดสว่าง" : "โหมดมืด";
     }
 
@@ -828,7 +862,7 @@
       } else {
         btn.disabled = false;
         if (btnText.textContent === "กรุณากรอกหรือเลือกข่าวตัวอย่างก่อน") {
-          btnText.textContent = "⚡ ประมวลผลสรุปใหม่";
+          btnText.textContent = "ประมวลผลสรุปใหม่";
         }
       }
     }
@@ -839,7 +873,7 @@
       const val = $("news-input").value.trim();
       const btnText = $("btn-text");
       if (val.length > 0 && !btnText.textContent.includes("กำลัง")) {
-        btnText.textContent = "⚡ ประมวลผลสรุปข้อความนี้";
+        btnText.textContent = "ประมวลผลสรุปข้อความนี้";
       }
     });
 
@@ -847,7 +881,7 @@
       setTimeout(() => {
         const val = $("news-input").value.trim();
         if (val.length >= 20) {
-          $("active-sample-tag").textContent = "📋 ตรวจพบการวางข่าวใหม่ — กำลังประมวลผลสรุปอัตโนมัติ...";
+          $("active-sample-tag").textContent = "ตรวจพบการวางข่าวใหม่ — กำลังประมวลผลสรุปอัตโนมัติ...";
           updateInputCounters();
           runSummarization();
         }
@@ -949,7 +983,7 @@
 
       $("news-input").value = item.article;
       const rougeStr = item.rougeL ? ` (ROUGE-L ${item.rougeL}%)` : "";
-      const tag = `📡 ข่าวสด (${displayIndex}/${liveNewsCache.length}): ${item.source} — ${item.title}${rougeStr}`;
+      const tag = `ข่าวสด (${displayIndex}/${liveNewsCache.length}): ${item.source} — ${item.title}${rougeStr}`;
       $("active-sample-tag").textContent = tag;
       $("active-sample-tag").title = tag;
       updateInputCounters();
@@ -981,10 +1015,12 @@
       "เมียนมา", "พม่า", "ลาว", "กัมพูชา", "เวียดนาม", "มาเลเซีย", "สิงคโปร์", "อินโดนีเซีย", "ฟิลิปปินส์",
       "ไต้หวัน", "ฮ่องกง", "อิสราเอล", "อิหร่าน", "ยูเครน", "อียิปต์", "แคนาดา", "บราซิล", "ลอนดอน", "กรุงลอนดอน",
       "อนุสาวรีย์ประชาธิปไตย", "ถนนเยาวราช", "เยาวราช", "อาคารมหาจักรีสิรินธร", "ทำเนียบรัฐบาล", "รัฐสภา",
-      "ชะอำ", "ชายหาดชะอำ", "หาดชะอำ", "หัวหิน", "พัทยา", "บางแสน", "เกาะสมุย", "ท่าวาสุกรี", "เขาใหญ่"
+      "ชะอำ", "ชายหาดชะอำ", "หาดชะอำ", "หัวหิน", "พัทยา", "บางแสน", "เกาะสมุย", "ท่าวาสุกรี", "เขาใหญ่",
+      "แยกบรมราชชนนี", "ถนนบรมราชชนนี", "บรมราชชนนี", "สะพานพระราม 7", "สะพานพระราม 8", "แยกบางพลัด", "แยกบางขุนนนท์", "ถนนจรัญสนิทวงศ์"
     ];
 
     const THAI_ORG_KEYWORDS = [
+      "กองบังคับการตำรวจจราจร", "บก.จร.", "กองบัญชาการตำรวจนครบาล", "บช.น.",
       "กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม", "กระทรวงดิจิทัล", "กระทรวงดีอี",
       "กระทรวงการคลัง", "กระทรวงมหาดไทย", "กระทรวงสาธารณสุข", "กระทรวงศึกษาธิการ",
       "กระทรวงคมนาคม", "กระทรวงพาณิชย์", "กระทรวงยุติธรรม", "กระทรวงการต่างประเทศ",
@@ -1268,6 +1304,26 @@
           }
         } else {
           filtered.push(ent);
+        }
+      });
+
+      // ผสานกรณีคำเฉพาะสถานที่ที่ถูกตัดคำผิด เช่น แยกบรมราช + ชนนี
+      const hasBarom = filtered.some(e => e.text.includes("บรมราช") || e.text === "ชนนี");
+      if (hasBarom) {
+        const nonSplit = filtered.filter(e => e.text !== "แยกบรมราช" && e.text !== "ชนนี" && e.text !== "บรมราช");
+        nonSplit.push({
+          text: "แยกบรมราชชนนี",
+          type: "LOCATION",
+          aliases: ["บรมราชชนนี", "ถนนบรมราชชนนี"]
+        });
+        filtered.length = 0;
+        filtered.push(...nonSplit);
+      }
+
+      // ตรวจสอบหน่วยงานตำรวจ/จราจร ไม่ให้หลุดไปเป็นบุคคล (PERSON)
+      filtered.forEach(ent => {
+        if (/^(?:กองบังคับการ|กองบัญชาการ|บก\.|บช\.|ตำรวจจราจร)/.test(ent.text) || ent.text === "บก.จร.") {
+          ent.type = "ORGANIZATION";
         }
       });
 
@@ -1571,12 +1627,34 @@
       $("lead3-ratio-badge").textContent = `ย่อลง ${redPct}%`;
     }
 
+    function formatToMarkdownText(text) {
+      if (!text) return "";
+      const sents = splitThaiSentences(text);
+      if (sents.length <= 1) return text.trim();
+      return sents.map((s, idx) => `${idx + 1}. ${s}`).join("\n\n");
+    }
+
+    function renderMarkdownSummary(rawText, entities, enableHighlight) {
+      if (!rawText) {
+        return '<span class="text-slate-400 text-xs sm:text-sm">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์</span>';
+      }
+      const sents = splitThaiSentences(rawText);
+      if (sents.length <= 1) {
+        return highlightEntitiesInText(rawText, entities, enableHighlight);
+      }
+      const items = sents.map(s => {
+        const highlighted = highlightEntitiesInText(s, entities, enableHighlight);
+        return `<li class="pl-1 text-slate-800 dark:text-slate-200 leading-relaxed">${highlighted}</li>`;
+      }).join("");
+      return `<ol class="list-decimal list-outside ml-5 space-y-2 reading-text">${items}</ol>`;
+    }
+
     function renderSummaryTexts() {
       if (!lastResult) return;
       const showHighlight = $("toggle-highlight").checked;
       $("mt5-output").innerHTML = highlightEntitiesInText(lastResult.summary, lastResult.entities, showHighlight);
       const rightText = getActiveCompareText();
-      $("lead3-output").innerHTML = highlightEntitiesInText(rightText, lastResult.entities, showHighlight);
+      $("lead3-output").innerHTML = renderMarkdownSummary(rightText, lastResult.entities, showHighlight);
       updateRightCardStats(rightText);
     }
 
@@ -1630,7 +1708,7 @@
           <button type="button" class="ner-badge inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs sm:text-sm font-medium border cursor-pointer transition select-none max-w-full text-left leading-normal ${badgeStyles[key]}" data-ent-name="${escapeHtml(item.text)}" title="คลิกเพื่อเลื่อนดูตำแหน่งในบทสรุป">
             <span class="break-words">${escapeHtml(item.text)}</span>
             ${item.inSummary
-              ? `<span class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 whitespace-nowrap shrink-0" title="ปรากฏอยู่ในบทสรุป">✓ สรุป</span>`
+              ? `<span class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 whitespace-nowrap shrink-0" title="ปรากฏอยู่ในบทสรุป">สรุป</span>`
               : ``}
           </button>
         `).join("");
@@ -1640,11 +1718,12 @@
       $("metric-ner-preserved").textContent = `อยู่ในสรุป ${preservedCount} รายการ`;
     }
 
-    function copyTextSafely(text, btnElement) {
+    function copyTextSafely(text, btnElement, successMsg = "คัดลอกแล้ว") {
       if (!text || !btnElement) return;
+      const originalHTML = btnElement.innerHTML;
       const onSuccess = () => {
-        btnElement.textContent = "คัดลอกแล้ว";
-        setTimeout(() => { btnElement.textContent = "คัดลอก"; }, 1400);
+        btnElement.innerHTML = `<svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> <span>${escapeHtml(successMsg)}</span>`;
+        setTimeout(() => { btnElement.innerHTML = originalHTML; }, 1800);
       };
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
@@ -1675,14 +1754,16 @@
       if (copyMt5) {
         copyMt5.addEventListener("click", () => {
           if (lastResult && lastResult.summary) {
-            copyTextSafely(lastResult.summary, copyMt5);
+            copyTextSafely(lastResult.summary, copyMt5, "คัดลอกแล้ว");
           }
         });
       }
       if (copyLead3) {
         copyLead3.addEventListener("click", () => {
-          if (lastResult && lastResult.lead3) {
-            copyTextSafely(lastResult.lead3, copyLead3);
+          const rightText = getActiveCompareText();
+          if (rightText) {
+            const mdText = formatToMarkdownText(rightText);
+            copyTextSafely(mdText, copyLead3, "คัดลอก Markdown แล้ว");
           }
         });
       }
@@ -1815,7 +1896,7 @@
           const btnText = $("btn-text");
           const compSec = $("comparison-section");
 
-          btnText.textContent = "✓ ประมวลผลและอัปเดตบทสรุปแล้ว";
+          btnText.textContent = "ประมวลผลและอัปเดตบทสรุปแล้ว";
           summarizeBtn.classList.remove("bg-red-800", "hover:bg-red-900");
           summarizeBtn.classList.add("bg-emerald-700", "hover:bg-emerald-800");
 
@@ -1831,7 +1912,7 @@
           if (btnFeedbackTimer) clearTimeout(btnFeedbackTimer);
           btnFeedbackTimer = setTimeout(() => {
             if ($("news-input").value.trim().length > 0) {
-              btnText.textContent = "⚡ ประมวลผลสรุปใหม่";
+              btnText.textContent = "ประมวลผลสรุปใหม่";
             }
             summarizeBtn.classList.remove("bg-emerald-700", "hover:bg-emerald-800");
             summarizeBtn.classList.add("bg-red-800", "hover:bg-red-900");
@@ -1944,11 +2025,7 @@
           try {
             localStorage.setItem("thaisum-theme", isDark ? "dark" : "light");
           } catch (_) {}
-          document.querySelectorAll(".theme-icon-indicator").forEach(el => {
-            el.textContent = isDark ? "☀️" : "🌙";
-          });
-          const themeLabel = $("theme-label");
-          if (themeLabel) themeLabel.textContent = isDark ? "โหมดสว่าง" : "โหมดมืด";
+          updateThemeButtonUI();
         });
       }
     }
