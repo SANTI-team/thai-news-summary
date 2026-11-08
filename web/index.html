@@ -41,12 +41,17 @@
       max-width: 100vw;
       overflow-x: hidden;
     }
+    *, *::before, *::after {
+      transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
     body {
       font-family: "Noto Sans Thai", system-ui, -apple-system, sans-serif;
       background-color: #f8fafc;
-      color: #0f172a;
+      color: #1e293b;
       line-height: 1.6;
-      transition: background-color 0.2s ease, color 0.2s ease;
     }
     /* Prevent iOS auto-zoom on textarea/input focus without inflating small selects */
     @media (max-width: 640px) {
@@ -56,8 +61,8 @@
     }
     /* Dark mode overrides */
     html.dark body {
-      background-color: #0b1120;
-      color: #f1f5f9;
+      background-color: #0f172a;
+      color: #e2e8f0;
     }
     html.dark .bg-white {
       background-color: #1e293b !important;
@@ -79,7 +84,7 @@
     }
     html.dark .text-slate-900,
     html.dark .text-slate-800 {
-      color: #f8fafc !important;
+      color: #e2e8f0 !important;
     }
     html.dark .text-slate-700,
     html.dark .text-slate-600 {
@@ -92,8 +97,8 @@
     html.dark textarea,
     html.dark select {
       background-color: #0f172a !important;
-      color: #f8fafc !important;
-      border-color: #475569 !important;
+      color: #e2e8f0 !important;
+      border-color: #334155 !important;
     }
     #news-input {
       background-color: transparent !important;
@@ -207,44 +212,44 @@
       box-shadow: 0 0 8px rgba(245, 158, 11, 0.45) !important;
     }
     .ent-PERSON {
-      background-color: #dcfce7;
+      background-color: #e6f7ed;
       color: #14532d;
-      border-bottom-color: #16a34a;
-    }
-    .ent-LOCATION {
-      background-color: #fef3c7;
-      color: #78350f;
-      border-bottom-color: #d97706;
-    }
-    .ent-ORGANIZATION {
-      background-color: #dbeafe;
-      color: #1e3a8a;
-      border-bottom-color: #2563eb;
-    }
-    .ent-DATE, .ent-TIME {
-      background-color: #f3e8ff;
-      color: #581c87;
-      border-bottom-color: #9333ea;
-    }
-    html.dark .ent-PERSON {
-      background-color: rgba(22, 163, 74, 0.25);
-      color: #86efac;
       border-bottom-color: #22c55e;
     }
-    html.dark .ent-LOCATION {
-      background-color: rgba(217, 119, 6, 0.25);
-      color: #fde68a;
+    .ent-LOCATION {
+      background-color: #fef8e7;
+      color: #78350f;
       border-bottom-color: #f59e0b;
     }
-    html.dark .ent-ORGANIZATION {
-      background-color: rgba(37, 99, 235, 0.25);
-      color: #93c5fd;
+    .ent-ORGANIZATION {
+      background-color: #edf5ff;
+      color: #1e3a8a;
       border-bottom-color: #3b82f6;
     }
-    html.dark .ent-DATE, html.dark .ent-TIME {
-      background-color: rgba(147, 51, 234, 0.25);
-      color: #d8b4fe;
+    .ent-DATE, .ent-TIME {
+      background-color: #f7f0fe;
+      color: #581c87;
       border-bottom-color: #a855f7;
+    }
+    html.dark .ent-PERSON {
+      background-color: rgba(34, 197, 94, 0.16) !important;
+      color: #86efac !important;
+      border-bottom-color: rgba(74, 222, 128, 0.5) !important;
+    }
+    html.dark .ent-LOCATION {
+      background-color: rgba(245, 158, 11, 0.16) !important;
+      color: #fde68a !important;
+      border-bottom-color: rgba(251, 191, 36, 0.5) !important;
+    }
+    html.dark .ent-ORGANIZATION {
+      background-color: rgba(59, 130, 246, 0.16) !important;
+      color: #93c5fd !important;
+      border-bottom-color: rgba(96, 165, 250, 0.5) !important;
+    }
+    html.dark .ent-DATE, html.dark .ent-TIME {
+      background-color: rgba(168, 85, 247, 0.16) !important;
+      color: #d8b4fe !important;
+      border-bottom-color: rgba(192, 132, 252, 0.5) !important;
     }
     textarea::-webkit-scrollbar {
       width: 6px;
@@ -267,11 +272,11 @@
       border-left: 4px solid #2563eb !important;
     }
     html.dark #card-model-ai {
-      background-color: #1a1418 !important;
+      background-color: #1a1215 !important;
       border-left: 4px solid #ef4444 !important;
     }
     html.dark #card-model-compare {
-      background-color: #0f1828 !important;
+      background-color: #101927 !important;
       border-left: 4px solid #3b82f6 !important;
     }
   </style>
@@ -292,15 +297,11 @@
   <!-- ==================================================================== -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 backdrop-blur-md bg-white/95 dark:bg-slate-900/95 transition-colors shadow-2xs">
     <div class="w-full px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-3">
-      <!-- ซ้าย: โลโก้ + ชื่อระบบ + ป้ายโมเดล -->
-      <div class="flex items-center gap-2.5 min-w-0">
-        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-red-800 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-xs">
-          TS
-        </div>
-        <div class="flex items-center gap-2 min-w-0">
-          <h1 class="text-base sm:text-lg font-bold text-slate-900 whitespace-nowrap">
-            สรุปข่าววันนี้
-          </h1>
+      <!-- ซ้าย: ชื่อระบบ + ป้ายโมเดล (นำโลโก้ TS ออกตามคำสั่งเพื่อความกระชับและไม่สับสน) -->
+      <div class="flex items-center gap-2 min-w-0">
+        <h1 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+          สรุปข่าววันนี้
+        </h1>
           <span class="inline-block px-2.5 py-0.5 text-xs sm:text-sm font-bold rounded-md bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/70 dark:text-red-200 dark:border-red-700 whitespace-nowrap shrink-0 shadow-2xs">
             mT5
           </span>
@@ -310,7 +311,6 @@
           <span class="hidden md:inline-block px-2.5 py-0.5 text-xs sm:text-sm font-semibold rounded-md bg-slate-200 text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 whitespace-nowrap shrink-0 shadow-2xs" title="เปรียบเทียบกับ Lead-3 Baseline (26.1%) และ TextRank (25.5%)">
             Lead-3 26.1% · TextRank 25.5%
           </span>
-        </div>
       </div>
 
       <!-- ขวา: วันที่ + ปุ่มสลับโหมดมืด -->
@@ -460,22 +460,22 @@
         <!-- ============================================================== -->
         <div id="comparison-section" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden transition-all duration-200 scroll-mt-16">
           
-          <div class="px-3 py-2 sm:px-4 sm:py-2.5 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between gap-2 text-xs sm:text-sm">
-            <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div class="px-2.5 py-1.5 sm:px-4 sm:py-2.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 flex items-center justify-between gap-1.5 sm:gap-2 text-xs sm:text-sm">
+            <div class="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
               <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">2</span>
-              <h2 class="text-xs sm:text-sm md:text-base font-bold text-slate-900 whitespace-nowrap shrink-0">
+              <h2 class="text-xs sm:text-sm md:text-base font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap shrink-0">
                 <span class="sm:hidden">ผลสรุป</span><span class="hidden sm:inline">ผลลัพธ์การสรุปข่าว</span>
               </h2>
-              <span id="active-mode-pill" class="px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[10px] sm:text-xs font-bold rounded bg-red-50 text-red-900 border border-red-200 dark:bg-red-950/70 dark:text-red-200 dark:border-red-800 whitespace-nowrap shrink-0">
+              <span id="active-mode-pill" class="px-1.5 py-0.5 text-[10px] sm:text-xs font-bold rounded bg-red-50 text-red-900 border border-red-200 dark:bg-red-950/70 dark:text-red-200 dark:border-red-800 whitespace-nowrap shrink-0">
                 2 ประโยค
               </span>
-              <span id="truncation-badge" class="hidden px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[10px] sm:text-xs font-bold rounded bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/70 dark:text-amber-200 dark:border-amber-800 whitespace-nowrap shrink-0" title="เนื้อหาข่าวต้นฉบับยาวเกินข้อจำกัด 512 tokens ของโมเดล mT5">
-                <span class="sm:hidden">ยาวเกิน</span><span class="hidden sm:inline">เนื้อหายาวเกินเกณฑ์โมเดล</span>
+              <span id="truncation-badge" class="hidden px-1.5 py-0.5 text-[10px] sm:text-xs font-bold rounded bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/70 dark:text-amber-200 dark:border-amber-800 whitespace-nowrap shrink-0" title="เนื้อหาข่าวต้นฉบับยาวเกินข้อจำกัด 512 tokens ของโมเดล mT5">
+                <span class="sm:hidden">ยาวเกิน</span><span class="hidden sm:inline">เนื้อหายาวเกินเกณฑ์</span>
               </span>
             </div>
 
-            <!-- สวิตช์ไฮไลต์ชื่อเฉพาะ (ชิดขวาเพื่อความสมดุลของแถบ) -->
-            <label class="inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer select-none text-[10px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded border border-slate-300 dark:border-slate-600 shrink-0 shadow-2xs ml-auto">
+            <!-- สวิตช์ไฮไลต์ชื่อเฉพาะ -->
+            <label class="inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer select-none text-[10px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded border border-slate-300 dark:border-slate-600 shrink-0 shadow-2xs">
               <input id="toggle-highlight" type="checkbox" checked class="w-3.5 h-3.5 rounded border-slate-300 text-red-800 focus:ring-red-800 shrink-0">
               <span class="whitespace-nowrap">ไฮไลต์</span>
             </label>
@@ -521,7 +521,7 @@
                     <span class="px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded text-[10px] sm:text-xs md:text-sm font-bold bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950/80 dark:text-blue-200 dark:border-blue-700 whitespace-nowrap shadow-2xs shrink-0">
                       เปรียบเทียบ:
                     </span>
-                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="min-w-0 flex-1 max-w-[150px] xs:max-w-[190px] sm:max-w-none rounded border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-800 px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[10px] sm:text-xs md:text-sm font-bold text-blue-950 dark:text-blue-100 focus:outline-none focus:border-blue-600 cursor-pointer shadow-2xs truncate">
+                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="w-auto max-w-[150px] xs:max-w-[185px] sm:max-w-[210px] rounded border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-800 px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[10px] sm:text-xs md:text-sm font-bold text-blue-950 dark:text-blue-100 focus:outline-none focus:border-blue-600 cursor-pointer shadow-2xs truncate shrink-0">
                       <option value="lead3" selected>Lead-3 (Baseline)</option>
                       <option value="textrank">TextRank (Graph)</option>
                       <option value="reference">บทสรุปจริง (Reference)</option>
@@ -551,15 +551,15 @@
         <!-- ส่วนที่ 3: ชื่อเฉพาะที่ตรวจพบในข่าว (Named Entities)                 -->
         <!-- ============================================================== -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-          <div class="px-3 py-2 sm:px-4 sm:py-2.5 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between gap-2 text-xs sm:text-sm">
-            <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div class="px-2.5 py-1.5 sm:px-4 sm:py-2.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 flex items-center justify-between gap-1.5 sm:gap-2 text-xs sm:text-sm">
+            <div class="flex items-center gap-1 sm:gap-2 min-w-0">
               <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">3</span>
-              <h2 class="text-xs sm:text-sm md:text-base font-bold text-slate-900 whitespace-nowrap shrink-0">ชื่อเฉพาะที่ตรวจพบ</h2>
+              <h2 class="text-xs sm:text-sm md:text-base font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap shrink-0">ชื่อเฉพาะที่ตรวจพบ</h2>
               <span class="text-[10px] sm:text-xs font-bold text-emerald-950 bg-emerald-100 dark:bg-emerald-950/80 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded whitespace-nowrap shrink-0 shadow-2xs">
                 พบ <span id="metric-ner-count">0</span><span class="hidden sm:inline"> (<span id="metric-ner-preserved">ในสรุป 0</span>)</span>
               </span>
             </div>
-            <span class="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 bg-slate-200/90 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded shadow-2xs shrink-0 ml-auto">
+            <span class="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 bg-slate-200/90 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded shadow-2xs shrink-0">
               <span class="px-1 py-0.2 sm:px-1.5 sm:py-0.5 text-[9px] sm:text-[10px] font-bold rounded bg-emerald-600 text-white dark:bg-emerald-500 dark:text-slate-950">สรุป</span>
               <span class="hidden sm:inline">= ปรากฏในบทสรุป</span>
             </span>
@@ -638,11 +638,11 @@
     </div>
   </main>
 
-  <!-- ส่วนท้ายเว็บ (กะทัดรัด พอดีขอบล่าง ไร้ช่องว่างตกค้าง) -->
-  <footer class="mt-auto py-2.5 sm:py-3 border-t border-slate-200 bg-white text-xs sm:text-sm text-slate-500">
+  <!-- ส่วนท้ายเว็บ (กะทัดรัด พอดีขอบล่าง ไร้ช่องว่างตกค้าง สบายตาในโหมดมืด) -->
+  <footer class="mt-auto py-2.5 sm:py-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
     <div class="w-full px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-2">
       <div>สรุปข่าววันนี้ (ThaiSum Dataset) · โมเดล mT5 Fine-tuned (ROUGE-L 30.8%) เทียบกับ Lead Baseline</div>
-      <div class="text-slate-600 font-medium">คลังข้อมูลทดสอบ 500 ข่าวจริง</div>
+      <div class="text-slate-600 dark:text-slate-300 font-medium">คลังข้อมูลทดสอบ 500 ข่าวจริง</div>
     </div>
   </footer>
 
@@ -1072,7 +1072,7 @@
       "จุฬาลงกรณ์มหาวิทยาลัย", "มหาวิทยาลัยธรรมศาสตร์", "มหาวิทยาลัยเกษตรศาสตร์", "มหาวิทยาลัยมหิดล",
       "สน.ทุ่งสองห้อง", "สำนักบริหารกิจการนิสิต", "คณะอักษรศาสตร์", "คณะครุศาสตร์", "กรมที่ดิน", "กรมอุตุนิยมวิทยา",
       "สำนักงานหลักประกันสุขภาพแห่งชาติ", "สปสช.", "กรมป้องกันและบรรเทาสาธารณภัย", "ปภ.", "กรมควบคุมโรค", "กรมควบคุมมลพิษ",
-      "พรรคเพื่อไทย", "พท.", "พรรคประชาธิปัตย์", "ปชป.", "พรรคก้าวไกล", "พรรคไทยรักไทย", "สภานิติบัญญัติแห่งชาติ", "สนช.", "กรธ.",
+      "พรรคเพื่อไทย", "พท.", "พรรคประชาธิปัตย์", "ปชป.", "พรรคก้าวไกล", "พรรคไทยรักไทย", "สภานิติบัญญัติแห่งชาติ", "สนช.", "กรธ.", "คณะกรรมการร่างรัฐธรรมนูญ", "ส.ส.", "ส.ว.", "สมาชิกสภาผู้แทนราษฎร", "สมาชิกวุฒิสภา", "ผู้ตรวจการแผ่นดิน", "ผู้ตรวจฯ", "พรรคการเมือง",
       "สยามเทค", "เชลซี", "Sanook", "เดลินิวส์", "The Standard", "thestandard.co", "ไทยโพสต์", "Thaipost.net", "ข่าวสด", "มติชน", "ไทยรัฐ", "ผู้จัดการ", "กรุงเทพธุรกิจ", "ตร."
     ];
 
@@ -1129,6 +1129,14 @@
       "กระทรวงเกษตร": ["กระทรวงเกษตรและสหกรณ์", "กระทรวงเกษตรฯ", "เกษตรฯ"],
       "สภานิติบัญญัติแห่งชาติ": ["สนช."],
       "สนช.": ["สภานิติบัญญัติแห่งชาติ"],
+      "ส.ส.": ["สมาชิกสภาผู้แทนราษฎร"],
+      "สมาชิกสภาผู้แทนราษฎร": ["ส.ส."],
+      "ส.ว.": ["สมาชิกวุฒิสภา"],
+      "สมาชิกวุฒิสภา": ["ส.ว."],
+      "ผู้ตรวจการแผ่นดิน": ["ผู้ตรวจฯ"],
+      "ผู้ตรวจฯ": ["ผู้ตรวจการแผ่นดิน"],
+      "กรธ.": ["คณะกรรมการร่างรัฐธรรมนูญ"],
+      "คณะกรรมการร่างรัฐธรรมนูญ": ["กรธ."],
       "พรรคเพื่อไทย": ["พท."],
       "พท.": ["พรรคเพื่อไทย"],
       "พรรคประชาธิปัตย์": ["ปชป."],
@@ -1249,7 +1257,12 @@
         if (text.includes(p)) addExact(p, "LOCATION", ALIAS_MAP[p] || []);
       });
       COUNTRIES_AND_PLACES.forEach(pl => {
-        if (text.includes(pl)) addExact(pl, "LOCATION", ALIAS_MAP[pl] || []);
+        if (pl === "จีน") {
+          const stripped = text.replace(/ปราจีนบุรี|ปราจีน/g, "");
+          if (stripped.includes("จีน")) addExact(pl, "LOCATION", ALIAS_MAP[pl] || []);
+        } else if (text.includes(pl)) {
+          addExact(pl, "LOCATION", ALIAS_MAP[pl] || []);
+        }
       });
 
       // จังหวัดที่มีคำกำกวม (เช่น ตราด/เลย/แพร่/ตาก) ตรวจจับเฉพาะเมื่อมี จ./จังหวัด นำหน้า เพื่อป้องกันการตัดคำผิด
@@ -1775,12 +1788,15 @@
       $("metric-ner-count").textContent = (entities || []).length;
       $("metric-ner-preserved").textContent = `ในสรุป ${preservedCount}`;
 
-      // จัดวางการ์ดองค์กรแบบไดนามิก (ตามคำสั่ง: บุคคลไม่ยาวเกินให้อยู่ตำแหน่งเดิม ถ้าตัวอักษร/รายการยาวให้ปรับไปคอลัมน์ขวา)
+      // จัดวางการ์ดองค์กรแบบไดนามิก: บุคคลไม่ยาวเกินให้อยู่ตำแหน่งเดิม (ซ้าย ใต้บุคคล) ถ้าบุคคลยาว/เยอะให้ปรับไปคอลัมน์ขวา (ใต้วันเวลา) เพื่อเฉลี่ยพื้นที่ให้สมดุล
       const colLeft = $("ner-col-left");
       const colRight = $("ner-col-right");
       const cardOrg = $("card-ORGANIZATION");
       if (colLeft && colRight && cardOrg) {
-        if ((buckets.PERSON || []).length > 10) {
+        const personItems = buckets.PERSON || [];
+        const totalPersonChars = personItems.reduce((acc, cur) => acc + (cur.text ? cur.text.length : 0), 0);
+        const rightCount = (buckets.LOCATION || []).length + (buckets.DATETIME || []).length;
+        if (personItems.length > 8 || (totalPersonChars > 80 && personItems.length > rightCount)) {
           colRight.appendChild(cardOrg);
         } else {
           colLeft.appendChild(cardOrg);
