@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>ระบบสรุปข่าวภาษาไทยอัตโนมัติ — ThaiSum (mT5 & Lead-3)</title>
+  <title>สรุปข่าววันนี้ — ระบบสรุปข่าวภาษาไทยอัตโนมัติ (mT5 & Lead-3)</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23991b1b'/%3E%3Cpath d='M13 14h22v3.5H13V14zm0 8h22v3.5H13V22zm0 8h14v3.5H13V30z' fill='%23fff'/%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -220,7 +220,7 @@
         </div>
         <div>
           <div class="flex items-center gap-2.5 flex-wrap">
-            <h1 class="text-xl font-bold text-slate-900">ระบบสรุปข่าวภาษาไทยอัตโนมัติ</h1>
+            <h1 class="text-xl font-bold text-slate-900">สรุปข่าววันนี้</h1>
             <span class="px-2.5 py-0.5 text-xs font-semibold rounded-md bg-slate-100 text-slate-700 border border-slate-300">
               โมเดล mT5-ThaiSum
             </span>
@@ -425,9 +425,9 @@
                 </div>
               </div>
 
-              <div class="mt-5 pt-3.5 border-t border-slate-200 flex items-center justify-between text-xs sm:text-[13.5px] flex-nowrap gap-2">
-                <span id="mt5-stat-line" class="text-slate-600 whitespace-nowrap truncate">ความยาว: — ตัวอักษร</span>
-                <span id="mt5-ratio-badge" class="font-bold text-red-800 bg-red-50 px-2.5 py-0.5 rounded border border-red-200 whitespace-nowrap shrink-0">ย่อลง —%</span>
+              <div class="mt-5 pt-3.5 border-t border-slate-200 flex items-center justify-between text-xs sm:text-[13.5px] flex-nowrap gap-2 w-full min-w-0">
+                <span id="mt5-stat-line" class="text-slate-600 whitespace-nowrap truncate min-w-0">ความยาว: — ตัวอักษร</span>
+                <span id="mt5-ratio-badge" class="font-bold text-red-800 bg-red-50 px-2 py-0.5 rounded border border-red-200 whitespace-nowrap shrink-0 text-xs">ย่อลง —%</span>
               </div>
             </div>
 
@@ -450,9 +450,9 @@
                 </div>
               </div>
 
-              <div class="mt-5 pt-3.5 border-t border-slate-200 flex items-center justify-between text-xs sm:text-[13.5px] flex-nowrap gap-2">
-                <span id="lead3-stat-line" class="text-slate-600 whitespace-nowrap truncate">ความยาว: — ตัวอักษร</span>
-                <span id="lead3-ratio-badge" class="font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded border border-slate-300 whitespace-nowrap shrink-0">ย่อลง —%</span>
+              <div class="mt-5 pt-3.5 border-t border-slate-200 flex items-center justify-between text-xs sm:text-[13.5px] flex-nowrap gap-2 w-full min-w-0">
+                <span id="lead3-stat-line" class="text-slate-600 whitespace-nowrap truncate min-w-0">ความยาว: — ตัวอักษร</span>
+                <span id="lead3-ratio-badge" class="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-300 whitespace-nowrap shrink-0 text-xs">ย่อลง —%</span>
               </div>
             </div>
 
@@ -546,7 +546,7 @@
   <!-- ส่วนท้ายเว็บ -->
   <footer class="mt-auto py-4 border-t border-slate-200 bg-white text-sm text-slate-500">
     <div class="max-w-[1680px] mx-auto px-5 sm:px-8 flex flex-wrap items-center justify-between gap-2">
-      <div>โครงงานสรุปข่าวภาษาไทย (ThaiSum Dataset) · โมเดล mT5 Fine-tuned (ROUGE-L 63.2%) เปรียบเทียบกับ Lead Baseline</div>
+      <div>สรุปข่าววันนี้ (ThaiSum Dataset) · โมเดล mT5 Fine-tuned (ROUGE-L 63.2%) เปรียบเทียบกับ Lead Baseline</div>
       <div class="text-slate-600 font-medium">คลังข้อมูลทดสอบ 500 ข่าวจริง</div>
     </div>
   </footer>
@@ -1015,28 +1015,42 @@
       "คณะรัฐมนตรี": ["ครม."],
       "ครม.": ["คณะรัฐมนตรี"],
       "กรุงเทพมหานคร": ["กทม.", "กรุงเทพฯ"],
+      "กรุงเทพฯ": ["กทม.", "กรุงเทพมหานคร"],
       "กทม.": ["กรุงเทพมหานคร", "กรุงเทพฯ"],
-      "สำนักงานหลักประกันสุขภาพแห่งชาติ": ["สปสช."],
-      "สปสช.": ["สำนักงานหลักประกันสุขภาพแห่งชาติ"],
+      "สำนักงานหลักประกันสุขภาพแห่งชาติ": ["สปสช.", "บัตรทอง"],
+      "สปสช.": ["สำนักงานหลักประกันสุขภาพแห่งชาติ", "บัตรทอง"],
+      "บัตรทอง": ["สำนักงานหลักประกันสุขภาพแห่งชาติ", "สปสช."],
       "ธนาคารแห่งประเทศไทย": ["ธปท.", "แบงก์ชาติ"],
-      "ธปท.": ["ธนาคารแห่งประเทศไทย"],
+      "ธปท.": ["ธนาคารแห่งประเทศไทย", "แบงก์ชาติ"],
+      "แบงก์ชาติ": ["ธนาคารแห่งประเทศไทย", "ธปท."],
       "สำนักงานตำรวจแห่งชาติ": ["สตช.", "ตำรวจ"],
+      "สตช.": ["สำนักงานตำรวจแห่งชาติ", "ตำรวจ"],
+      "ตำรวจ": ["สำนักงานตำรวจแห่งชาติ", "สตช."],
       "กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม": ["กระทรวงดีอี", "ดีอี"],
       "กระทรวงดีอี": ["กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม", "ดีอี"],
-      "ดีอี": ["กระทรวงดีอี"],
-      "กรมอุตุนิยมวิทยา": ["กรมอุตุฯ"],
-      "กรมอุตุฯ": ["กรมอุตุนิยมวิทยา"],
+      "ดีอี": ["กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม", "กระทรวงดีอี"],
+      "กรมอุตุนิยมวิทยา": ["กรมอุตุฯ", "กรมอุตุ", "อุตุฯ"],
+      "กรมอุตุฯ": ["กรมอุตุนิยมวิทยา", "กรมอุตุ"],
+      "กรมอุตุ": ["กรมอุตุนิยมวิทยา", "กรมอุตุฯ"],
       "กรมสอบสวนคดีพิเศษ": ["ดีเอสไอ"],
       "ดีเอสไอ": ["กรมสอบสวนคดีพิเศษ"],
       "คณะกรรมการนโยบายการเงิน": ["กนง."],
       "กนง.": ["คณะกรรมการนโยบายการเงิน"],
-      "กรมป้องกันและบรรเทาสาธารณภัย": ["ปภ."],
-      "ปภ.": ["กรมป้องกันและบรรเทาสาธารณภัย"],
-      "กระทรวงศึกษาธิการ": ["ศธ."],
-      "ศธ.": ["กระทรวงศึกษาธิการ"],
+      "กรมป้องกันและบรรเทาสาธารณภัย": ["ปภ.", "สำนักงานป้องกันและบรรเทาสาธารณภัย"],
+      "สำนักงานป้องกันและบรรเทาสาธารณภัย": ["ปภ.", "กรมป้องกันและบรรเทาสาธารณภัย"],
+      "ปภ.": ["กรมป้องกันและบรรเทาสาธารณภัย", "สำนักงานป้องกันและบรรเทาสาธารณภัย"],
+      "กระทรวงศึกษาธิการ": ["ศธ.", "กระทรวงศึกษา"],
+      "ศธ.": ["กระทรวงศึกษาธิการ", "กระทรวงศึกษา"],
+      "กระทรวงสาธารณสุข": ["สธ.", "กระทรวงสธ."],
+      "สธ.": ["กระทรวงสาธารณสุข"],
+      "กรมควบคุมโรค": ["คร."],
       "กระทรวงการคลัง": ["คลัง"],
+      "คลัง": ["กระทรวงการคลัง"],
       "กระทรวงมหาดไทย": ["มหาดไทย"],
+      "มหาดไทย": ["กระทรวงมหาดไทย"],
       "กระทรวงเกษตรและสหกรณ์": ["กระทรวงเกษตรฯ", "กระทรวงเกษตร", "เกษตรฯ"],
+      "กระทรวงเกษตรฯ": ["กระทรวงเกษตรและสหกรณ์", "กระทรวงเกษตร", "เกษตรฯ"],
+      "กระทรวงเกษตร": ["กระทรวงเกษตรและสหกรณ์", "กระทรวงเกษตรฯ", "เกษตรฯ"],
       "สภานิติบัญญัติแห่งชาติ": ["สนช."],
       "สนช.": ["สภานิติบัญญัติแห่งชาติ"],
       "พรรคเพื่อไทย": ["พท."],
@@ -1044,7 +1058,25 @@
       "พรรคประชาธิปัตย์": ["ปชป."],
       "ปชป.": ["พรรคประชาธิปัตย์"],
       "นายกรัฐมนตรี": ["นายกฯ"],
-      "นายกฯ": ["นายกรัฐมนตรี"]
+      "นายกฯ": ["นายกรัฐมนตรี"],
+      "เยาวราช": ["ถนนเยาวราช"],
+      "ถนนเยาวราช": ["เยาวราช"],
+      "มีชัย ฤชุพันธุ์": ["มีชัย"],
+      "มีชัย": ["มีชัย ฤชุพันธุ์"],
+      "สมชัย ศรีสุทธิยากร": ["สมชัย"],
+      "สมชัย": ["สมชัย ศรีสุทธิยากร"],
+      "สมคิด เชื้อคง": ["สมคิด"],
+      "สมคิด": ["สมคิด เชื้อคง"],
+      "พรเพชร วิชิตชลชัย": ["พรเพชร"],
+      "พรเพชร": ["พรเพชร วิชิตชลชัย"],
+      "ประยุทธ์ จันทร์โอชา": ["ประยุทธ์", "บิ๊กตู่"],
+      "ประวิตร วงษ์สุวรรณ": ["ประวิตร", "บิ๊กป้อม"],
+      "ยิ่งลักษณ์ ชินวัตร": ["ยิ่งลักษณ์", "ทนายปู"],
+      "อภิสิทธิ์ เวชชาชีวะ": ["อภิสิทธิ์"],
+      "ธนาธร จึงรุ่งเรืองกิจ": ["ธนาธร"],
+      "พิธา ลิ้มเจริญรัตน์": ["พิธา"],
+      "เศรษฐา ทวีสิน": ["เศรษฐา"],
+      "อนุทิน ชาญวีรกูล": ["อนุทิน"]
     };
 
     const KNOWN_PERSON_NAMES = [
@@ -1052,11 +1084,14 @@
       "มีชัย ฤชุพันธุ์", "มีชัย", "สมชัย ศรีสุทธิยากร", "สมชัย", "สมคิด เชื้อคง", "สมคิด", "พรเพชร วิชิตชลชัย", "พรเพชร",
       "ประยุทธ์ จันทร์โอชา", "ประยุทธ์", "บิ๊กตู่", "ประวิตร วงษ์สุวรรณ", "ประวิตร", "บิ๊กป้อม", "ทักษิณ ชินวัตร", "ทักษิณ",
       "ยิ่งลักษณ์ ชินวัตร", "ยิ่งลักษณ์", "ทนายปู", "อภิสิทธิ์ เวชชาชีวะ", "อภิสิทธิ์", "ธนาธร จึงรุ่งเรืองกิจ", "ธนาธร",
-      "พิธา ลิ้มเจริญรัตน์", "พิธา", "เศรษฐา ทวีสิน", "เศรษฐา", "อนุทิน ชาญวีรกูล", "อนุทิน", "ชวน หลีกภัย", "ชวน",
+      "พิธา ลิ้มเจริญรัตน์", "พิธา", "เศรษฐา ทวีสิน", "เศรษฐา", "อนุทิน ชาญวีรกูล", "อนุทิน", "ชวน หลีกภัย",
       "ปีเตอร์ เช็ก", "โชเซ มูรินโญ", "มูรินโญ", "โดนัลด์ ทรัมป์", "ทรัมป์", "โจ ไบเดน", "ไบเดน", "วลาดิเมียร์ ปูติน", "ปูติน", "สี จิ้นผิง"
     ];
 
-    const ENTITY_STOP_SUFFIX = /(?:จับมือ|เตือนภัย|เตือน|เร่ง|สร้าง|เกิด|เปิดเผย|รายงาน|ระบุ|เผยแพร่|เผยว่า|เผย|ซึ่ง|และ|ของ|เมื่อ|เนื่องจาก|ตาม|อย่าง|หลังจาก|หลัง|เพื่อ|โดย|ว่า|เป็น|ถูก|รวมถึง|ทั้งนี้|ตั้งอยู่|พร้อม|เตรียม|ลงพื้นที่|ทวีต|แถลง|สั่งการ|สั่ง|เดินทาง|เสียชีวิต|บาดเจ็บ|ต่างประเทศ|ใกล้เคียง|เข้ามา|ออกมา|พบว่า|กล่าวว่า|กล่าวถึง|กล่าว|ตอบคำถาม|ตอบว่า|ตอบ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำว่า|ย้ำ|ปฏิเสธ|คาดว่า|เชื่อว่า|มุ่งแต่|อยาก|กลายเป็น|ไม่ได้|ไม่สนใจ|ไม่|ยังไม่มี|ยัง|ในวัน|ในข้อหา|อยู่ที่|อยู่ระหว่าง|อยู่ใน|ลงมือ|ทำงาน|มีมติ|มีการ|ได้พัฒนา|ได้มี|ได้เปิด|เปรียบเทียบ|ทำให้|คู่แข่ง|เช่นกัน|จัดทำ|ก็ดี|ก็ได้|ก็ยัง).*/;
+    const SORTED_KNOWN_ORGS = [...THAI_ORG_KEYWORDS].sort((a, b) => b.length - a.length);
+    const SORTED_KNOWN_LOCS = [...THAI_PROVINCES, ...COUNTRIES_AND_PLACES].sort((a, b) => b.length - a.length);
+
+    const ENTITY_STOP_SUFFIX = /(?:จับมือ|เตือนภัย|เตือน|เร่ง|สร้าง|เกิด|เปิดเผย|รายงาน|ระบุ|เผยแพร่|เผยว่า|เผย|ซึ่ง|และ|ของ|เมื่อ|เนื่องจาก|ตาม|อย่าง|หลังจาก|หลัง|เพื่อ|โดย|ว่า|เป็น|ถูก|รวมถึง|ทั้งนี้|ตั้งอยู่|พร้อม|เตรียม|รับมือ|ลงพื้นที่|ทวีต|แถลง|สั่งการ|สั่ง|เดินทาง|เสียชีวิต|บาดเจ็บ|ต่างประเทศ|ใกล้เคียง|เข้ามา|ออกมา|พบว่า|กล่าวว่า|กล่าวถึง|กล่าว|ตอบคำถาม|ตอบว่า|ตอบ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำว่า|ย้ำ|ปฏิเสธ|คาดว่า|เชื่อว่า|มุ่งแต่|อยาก|กลายเป็น|ไม่ได้|ไม่สนใจ|ไม่|ยังไม่มี|ยัง|ในวัน|ในข้อหา|อยู่ที่|อยู่ระหว่าง|อยู่ใน|ในพื้นที่|ลงมือ|ทำงาน|มีมติ|จัดหน่วย|จัดสรร|จัดตั้ง|จัด|เดินหน้า|ออกหน่วย|ออกประกาศ|ออก|เปิดตัว|ส่งเสริม|ร่วมมือ).*/;
 
     function cleanEntityText(raw) {
       return raw.replace(ENTITY_STOP_SUFFIX, "").replace(/[,\.\(\)"'“”]+$/g, "").trim();
@@ -1072,7 +1107,8 @@
         const clean = entText.trim();
         if (clean.length >= 2 && !seen.has(clean)) {
           seen.add(clean);
-          rawEntities.push({ text: clean, type, aliases: [...aliases] });
+          const allAliases = Array.from(new Set([...aliases, ...(ALIAS_MAP[clean] || [])]));
+          rawEntities.push({ text: clean, type, aliases: allAliases });
         }
       };
 
@@ -1127,7 +1163,11 @@
       while ((m = locRegex.exec(text)) !== null) {
         if (/^(?:ต\.ค|เม\.ย|พ\.ย|ก\.พ|มี\.ค|พ\.ค|มิ\.ย|ก\.ค|ส\.ค|ก\.ย|ธ\.ค|ม\.ค|อ\.ส\.ม\.ท|อ\.ก\.ค\.ศ|อ\.ต\.ก|อ\.ส่งเสริม)/.test(m[0])) continue;
         const c = cleanEntityText(m[0]);
-        if (c.length >= 4 && !/^(?:กรุง|ถนน|จังหวัด|อำเภอ|ตำบล|สนามบิน)$/.test(c)) {
+        const bare = c.replace(/^(?:จังหวัด|จ\.|อำเภอ|อ\.|ตำบล|ต\.|ถนน|ถ\.)\s*(?:ในพื้นที่\s*)?/, '').trim();
+        const matchedLoc = SORTED_KNOWN_LOCS.find(pl => bare === pl || bare.startsWith(pl));
+        if (matchedLoc) {
+          addExact(matchedLoc, "LOCATION", ALIAS_MAP[matchedLoc] || []);
+        } else if (c.length >= 4 && !/^(?:กรุง|ถนน|จังหวัด|อำเภอ|ตำบล|สนามบิน)$/.test(c)) {
           addExact(c, "LOCATION");
         }
       }
@@ -1141,9 +1181,15 @@
 
       const orgRegex = /(?<![ก-๙A-Za-z\d\.])(?:กระทรวง[ก-๙]{2,25}|กรม[ก-๙]{2,25}|สำนักงาน[ก-๙]{2,28}|สำนักข่าว[ก-๙A-Za-z]{2,22}|กองทัพ[ก-๙]{2,20}|กองบังคับการ[ก-๙]{2,25}|กองปราบปราม|กองกำลัง[ก-๙]{2,25}|(?:สน\.|สภ\.)[ก-๙]{2,22}|พรรค(?!(?:การเมือง|พวก|เดียว|นั้น|นี้|อื่น|ใหญ่|เล็ก|ร่วม|ฝ่ายค้าน|รัฐบาล|ต้อง|เลย|คน|รับใช้|เหนียวแน่น|เทพ|เจริญ))[ก-๙]{2,22}|มหาวิทยาลัย[ก-๙]{2,25}|สมาคม[ก-๙]{2,25}|มูลนิธิ[ก-๙]{2,25}|บริษัท\s*[ก-๙A-Za-z0-9\.\-]{2,22}|โรงพยาบาล[ก-๙]{2,25}|รพ\.[ก-๙]{2,22})/g;
       while ((m = orgRegex.exec(text)) !== null) {
-        const c = cleanEntityText(m[0]);
-        if (c.length >= 5 && !/^(?:สำนักข่าว|สำนักงาน|กระทรวง|กรม|กองทัพ|โรงพยาบาล|บริษัท|สมาคม|พรรค|มหาวิทยาลัย|มูลนิธิ)$/.test(c)) {
-          addExact(c, "ORGANIZATION", ALIAS_MAP[c] || []);
+        const raw = m[0].trim();
+        const matchedKnown = SORTED_KNOWN_ORGS.find(k => k.length >= 3 && raw.startsWith(k));
+        if (matchedKnown) {
+          addExact(matchedKnown, "ORGANIZATION", ALIAS_MAP[matchedKnown] || []);
+        } else {
+          const c = cleanEntityText(raw);
+          if (c.length >= 5 && !/^(?:สำนักข่าว|สำนักงาน|กระทรวง|กรม|กองทัพ|โรงพยาบาล|บริษัท|สมาคม|พรรค|มหาวิทยาลัย|มูลนิธิ)$/.test(c)) {
+            addExact(c, "ORGANIZATION", ALIAS_MAP[c] || []);
+          }
         }
       }
 
@@ -1157,8 +1203,30 @@
         addExact(m[0], "TIME");
       }
 
-      // 5. ลดความซ้ำซ้อน
-      return rawEntities.filter((ent, idx, arr) => {
+      // 5. รวมความสัมพันธ์ เชื่อมโยงนามแฝง (Alias Merging) และลดความซ้ำซ้อน
+      const filtered = [];
+      rawEntities.forEach(ent => {
+        const existing = filtered.find(other => 
+          other.type === ent.type && (
+            other.text === ent.text ||
+            (other.aliases && other.aliases.includes(ent.text)) ||
+            (ent.aliases && ent.aliases.includes(other.text))
+          )
+        );
+
+        if (existing) {
+          if (ent.aliases) {
+            ent.aliases.forEach(a => { if (!existing.aliases.includes(a)) existing.aliases.push(a); });
+          }
+          if (!existing.aliases.includes(ent.text) && existing.text !== ent.text) {
+            existing.aliases.push(ent.text);
+          }
+        } else {
+          filtered.push(ent);
+        }
+      });
+
+      return filtered.filter((ent, idx, arr) => {
         if (ent.type === "PERSON" && !ent.text.includes(" ")) {
           const hasFullName = arr.some((other, oIdx) => oIdx !== idx && other.type === "PERSON" && other.text.startsWith(ent.text + " "));
           if (hasFullName) return false;
