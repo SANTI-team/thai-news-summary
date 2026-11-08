@@ -403,6 +403,14 @@
             </label>
           </div>
 
+          <!-- แถบแสดงชื่อเรื่อง / พาดหัวข่าวสรุป -->
+          <div id="display-headline-box" class="px-6 py-3.5 bg-slate-50 border-b border-slate-200 flex items-start gap-2.5">
+            <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-red-800 text-white shrink-0 mt-0.5">ชื่อเรื่อง</span>
+            <h3 id="display-headline-text" class="text-base font-bold text-slate-900 leading-snug">
+              —
+            </h3>
+          </div>
+
           <!-- กล่องเปรียบเทียบ 2 คอลัมน์ โปร่งสบาย อ่านง่าย -->
           <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200">
             
@@ -456,6 +464,73 @@
               </div>
             </div>
 
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- ส่วนความคิดเห็นและบทวิเคราะห์ในข่าว (Opinion & Commentary Analysis) -->
+        <!-- ============================================================== -->
+        <div id="opinion-analysis-section" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <span class="w-6 h-6 rounded-full bg-red-800 text-white text-xs font-bold flex items-center justify-center shrink-0">💬</span>
+              <h2 class="text-base font-bold text-slate-900">ความคิดเห็นและบทวิเคราะห์ในข่าว</h2>
+              <span id="opinion-sentiment-pill" class="px-3 py-0.5 text-xs font-bold rounded-md bg-blue-50 text-blue-900 border border-blue-200">
+                โทนข่าว: กำลังวิเคราะห์
+              </span>
+            </div>
+            <span class="text-xs text-slate-500">จำแนกความคิดเห็น ถ้อยแถลง และมุมมองของแหล่งข่าว</span>
+          </div>
+
+          <div class="p-5 flex flex-col gap-4">
+            <!-- สัดส่วน ข้อเท็จจริง vs ความคิดเห็น -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                    ข้อเท็จจริงในข่าว (Facts)
+                  </span>
+                  <span id="fact-percent-badge" class="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">80%</span>
+                </div>
+                <p id="fact-summary-text" class="text-xs text-slate-600 leading-relaxed">
+                  มีข้อมูลเชิงประจักษ์ สถานที่ วันเวลา หรือตัวเลขสถิติที่ตรวจสอบได้
+                </p>
+              </div>
+
+              <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    ความคิดเห็นและถ้อยแถลง (Opinions)
+                  </span>
+                  <span id="opinion-percent-badge" class="text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">20%</span>
+                </div>
+                <p id="opinion-summary-text" class="text-xs text-slate-600 leading-relaxed">
+                  มีการอ้างอิงคำพูด ทัศนะ หรือการแถลงความคิดเห็นของบุคคล
+                </p>
+              </div>
+            </div>
+
+            <!-- ถ้อยแถลงและความคิดเห็นสำคัญ -->
+            <div class="rounded-lg border border-slate-200 p-3.5 bg-white">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <span>📢 ความคิดเห็นและคำแถลงสำคัญที่ตรวจพบ:</span>
+              </h4>
+              <div id="opinion-quotes-list" class="space-y-1.5 text-sm text-slate-800">
+                <span class="text-sm text-slate-400">ยังไม่มีข้อมูล</span>
+              </div>
+            </div>
+
+            <!-- ความคิดเห็นและข้อสังเกตจาก AI -->
+            <div class="rounded-lg bg-red-50/40 border border-red-200/70 p-3.5">
+              <h4 class="text-xs font-bold text-red-900 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <span>💡 ความคิดเห็นและข้อสังเกตจาก AI:</span>
+              </h4>
+              <p id="ai-commentary-text" class="text-sm text-slate-800 leading-relaxed">
+                รอการประมวลผลสรุปข่าว...
+              </p>
+            </div>
           </div>
         </div>
 
@@ -828,6 +903,7 @@
     $("btn-clear").addEventListener("click", () => {
       resetSummarizeBtnStyle();
       $("news-input").value = "";
+      if ($("news-title-input")) $("news-title-input").value = "";
       $("active-sample-tag").textContent = "ล้างข้อความแล้ว — วางเนื้อหาข่าวใหม่หรือกดปุ่มเลือกข่าวจากคลังทดสอบ 500 ข่าวด้านบน";
       $("error-banner").classList.add("hidden");
       updateInputCounters();
@@ -1610,6 +1686,82 @@
       }
     }
 
+    // ====================================================================
+    // วิเคราะห์ความคิดเห็น ถ้อยแถลง และบทวิเคราะห์ข่าว (Opinion Analysis)
+    // ====================================================================
+    function analyzeOpinionsAndCommentary(text, entities, title) {
+      text = (text || "").trim();
+      if (!text) {
+        return {
+          sentimentLabel: "ไม่มีข้อมูล",
+          factPercent: 50,
+          opinionPercent: 50,
+          quotes: ["กรุณากรอกหรือเลือกข่าวเพื่อวิเคราะห์ความคิดเห็น"],
+          aiCommentary: "ระบบจะวิเคราะห์ความคิดเห็นและข้อเท็จจริงอัตโนมัติเมื่อเริ่มสรุปข่าว"
+        };
+      }
+
+      const quotes = [];
+      const quoteRegex = /(?:["“]([^"”]{8,150})["”])/g;
+      let m;
+      while ((m = quoteRegex.exec(text)) !== null && quotes.length < 3) {
+        const q = m[1].trim();
+        if (q.length >= 8 && !quotes.includes(q)) {
+          quotes.push(q);
+        }
+      }
+
+      const statementRegex = /([ก-๙A-Za-z0-9.s]{2,20})\s*(?:กล่าวว่า|เผยว่า|ชี้ว่า|ระบุว่า|ระบุ|เตือนว่า|มองว่า|ย้ำว่า|จวก|ซัด|แถลงว่า|เรียกร้องว่า|เสนอว่า)\s*([ก-๙A-Za-z0-9\s\.\-]{10,120})/g;
+      while ((m = statementRegex.exec(text)) !== null && quotes.length < 3) {
+        const speaker = m[1].trim();
+        const statement = m[2].trim();
+        const formatted = `"${statement}" (โดย ${speaker})`;
+        if (!quotes.includes(statement) && !quotes.includes(formatted)) {
+          quotes.push(formatted);
+        }
+      }
+
+      const opinionKeywords = ["เห็นว่า", "มองว่า", "ชี้ว่า", "เชื่อว่า", "เตือนว่า", "จวก", "ซัด", "ถล่ม", "ควร", "น่าจะ", "อาจจะ", "ไม่เห็นด้วย", "ค้าน", "ขอให้", "วอน", "วิจารณ์", "ข้อเรียกร้อง"];
+      let opinionWordCount = 0;
+      opinionKeywords.forEach(w => {
+        const matches = text.split(w).length - 1;
+        opinionWordCount += matches;
+      });
+
+      const hasNumbersOrDates = /\d{1,4}\s*(?:ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.|บาท|คน|แห่ง|คัน|ราย|%|เปอร์เซ็นต์)/.test(text);
+      let opinionPercent = Math.min(70, Math.max(15, (quotes.length * 15) + (opinionWordCount * 8)));
+      if (hasNumbersOrDates) opinionPercent = Math.max(15, opinionPercent - 15);
+      const factPercent = 100 - opinionPercent;
+
+      let toneLabel = "รายงานข้อเท็จจริง (Objective News)";
+      let aiCommentary = "";
+
+      if (/เตือน|พายุ|ภัย|ระวัง|ระบาด|อันตราย|ฝนตกหนัก|น้ำท่วม/.test(text)) {
+        toneLabel = "แจ้งเตือน / เฝ้าระวังสถานการณ์";
+        aiCommentary = "ข่าวนี้เน้นการแจ้งเตือนภัยและแนวทางป้องกันความเสียหาย ประชาชนและหน่วยงานที่เกี่ยวข้องควรติดตามข้อมูลประกาศอย่างใกล้ชิด";
+      } else if (/ม็อบ|ชุมนุม|ประท้วง|เรียกร้อง|คัดค้าน|อภิปราย|แถลงการณ์|จวก|ซัด/.test(text)) {
+        toneLabel = "ประเด็นความคิดเห็น / วิวาทะทางการเมือง";
+        aiCommentary = "ข่าวนี้มีการแสดงทัศนะและข้อเรียกร้องจากหลายฝ่ายอย่างเข้มข้น มีทั้งข้อเท็จจริงของเหตุการณ์และการแสดงจุดยืนเชิงนโยบาย";
+      } else if (/เศรษฐกิจ|หุ้น|การค้า|ตลาด|ส่งออก|นำเข้า|กำไร|ขาดทุน|ดอกเบี้ย/.test(text)) {
+        toneLabel = "การวิเคราะห์เศรษฐกิจและการเงิน";
+        aiCommentary = "ข่าวนี้มีข้อมูลตัวเลขสถิติและผลกระทบต่อภาคธุรกิจ ควรจับตาดูการปรับตัวของตลาดและนโยบายภาครัฐที่เกี่ยวข้อง";
+      } else if (quotes.length > 0) {
+        toneLabel = "การแถลงข่าวและแสดงทัศนะของแหล่งข่าว";
+        aiCommentary = "ข่าวนี้เน้นการสะท้อนมุมมองจากแหล่งข่าวหลัก โดยมีการอ้างอิงคำพูดเพื่อสนับสนุนประเด็นสำคัญของเนื้อหา";
+      } else {
+        toneLabel = "รายงานข้อเท็จจริงทั่วไป";
+        aiCommentary = "ข่าวนี้มุ่งเน้นการรายงานเหตุการณ์ที่เกิดขึ้นตามลำดับ โดยนำเสนอข้อเท็จจริงและรายละเอียดเชิงประจักษ์เป็นหลัก";
+      }
+
+      return {
+        sentimentLabel: toneLabel,
+        factPercent: factPercent,
+        opinionPercent: opinionPercent,
+        quotes: quotes.length > 0 ? quotes : ["ไม่พบประโยคคำพูดหรือถ้อยแถลงในเครื่องหมายคำพูด ข่าวนี้เน้นการบรรยายข้อเท็จจริง"],
+        aiCommentary: aiCommentary
+      };
+    }
+
     async function runSummarization() {
       const text = $("news-input").value.trim();
       const maxLength = parseInt($("max-length").value, 10) || 96;
@@ -1799,6 +1951,7 @@
       setupNerInteraction();
       const defaultSample = SAMPLE_NEWS.politics;
       $("news-input").value = defaultSample.text;
+      if ($("news-title-input")) $("news-title-input").value = defaultSample.title || defaultSample.label;
       $("active-sample-tag").textContent = `ข่าวเริ่มต้น: ${defaultSample.label} (ความแม่นยำ ROUGE-L ${defaultSample.rougeL}%)`;
       updateInputCounters();
       runSummarization();
