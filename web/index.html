@@ -391,15 +391,15 @@
             ></textarea>
 
             <!-- แถบด้านล่างของกล่องสี่เหลี่ยม: ตัวนับคำ และระดับการสรุป (รองรับมือถือไม่ให้ตัวอักษรตกขอบ) -->
-            <div class="border-t border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/80 px-3 py-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 text-xs text-slate-600 dark:text-slate-300">
-              <div class="flex items-center gap-1.5 font-medium whitespace-nowrap">
-                <span id="char-count" class="text-slate-800 dark:text-slate-100 font-bold">0 ตัวอักษร</span>
-                <span class="text-slate-300 dark:text-slate-600">|</span>
-                <span id="sentence-count" class="text-red-800 dark:text-red-400 font-semibold">0 ประโยค</span>
+            <div class="border-t border-slate-200 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/90 px-3.5 py-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-xs sm:text-sm">
+              <div class="flex items-center gap-2 font-semibold whitespace-nowrap">
+                <span id="char-count" class="text-slate-900 dark:text-slate-100 font-bold">0 ตัวอักษร</span>
+                <span class="text-slate-400 dark:text-slate-500 font-bold">|</span>
+                <span id="sentence-count" class="text-red-800 dark:text-red-400 font-bold">0 ประโยค</span>
               </div>
-              <div class="flex items-center gap-1.5 whitespace-nowrap ml-auto">
-                <label for="max-length" class="font-semibold text-slate-700 dark:text-slate-200">ระดับ:</label>
-                <select id="max-length" class="rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-red-800 cursor-pointer">
+              <div class="flex items-center gap-2 whitespace-nowrap ml-auto">
+                <label for="max-length" class="font-bold text-slate-800 dark:text-slate-200">ระดับ:</label>
+                <select id="max-length" class="rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2.5 py-1 text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs">
                   <option value="64">1 ประโยค</option>
                   <option value="96" selected>2 ประโยค</option>
                   <option value="140">3-4 ประโยค</option>
@@ -482,15 +482,15 @@
             <div class="p-3.5 sm:p-5 flex flex-col justify-between bg-white">
               <div>
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-                  <div class="flex flex-wrap items-center gap-1.5 min-w-0">
-                    <span id="mt5-card-title" class="px-2.5 py-0.5 rounded text-xs sm:text-sm font-bold bg-red-50 text-red-900 border border-red-200 leading-snug break-words">
+                  <div class="flex flex-wrap items-center gap-2 min-w-0">
+                    <span id="mt5-card-title" class="px-3 py-1 rounded-md text-xs sm:text-sm font-bold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/70 dark:text-red-200 dark:border-red-700 leading-snug break-words shadow-2xs">
                       สรุปด้วย AI (mT5 · 2 ประโยค)
                     </span>
-                    <span id="mt5-rougel-badge" class="hidden px-2 py-0.5 text-xs font-bold rounded bg-emerald-50 text-emerald-800 border border-emerald-200 whitespace-nowrap shrink-0" title="ROUGE-L ของข่าวนี้เทียบกับบทสรุปจริง">
+                    <span id="mt5-rougel-badge" class="hidden px-2.5 py-1 text-xs sm:text-sm font-bold rounded-md bg-emerald-100 text-emerald-950 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-200 dark:border-emerald-700 whitespace-nowrap shrink-0 shadow-2xs" title="ROUGE-L ของข่าวนี้เทียบกับบทสรุปจริง">
                       RL 35.7%
                     </span>
                   </div>
-                  <button id="btn-copy-mt5" type="button" class="text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white px-2.5 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1 cursor-pointer ml-auto" title="คัดลอกบทสรุป mT5">
+                  <button id="btn-copy-mt5" type="button" class="text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1.5 cursor-pointer ml-auto" title="คัดลอกบทสรุป mT5">
                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     <span>คัดลอก</span>
                   </button>
@@ -507,21 +507,21 @@
               </div>
             </div>
 
-            <!-- ขวา: ตัดประโยคแรก (Lead Baseline / Markdown) -->
+            <!-- ขวา: โมเดลเปรียบเทียบ (Lead Baseline / TextRank / Reference) -->
             <div class="p-3.5 sm:p-5 flex flex-col justify-between bg-slate-50/40">
               <div>
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-                  <div class="flex flex-wrap items-center gap-1.5 min-w-0">
-                    <span id="lead3-card-title" class="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 leading-snug break-words">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <label for="compare-model-select" class="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 whitespace-nowrap">
                       เปรียบเทียบ:
-                    </span>
-                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs max-w-full">
+                    </label>
+                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2.5 py-1 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs">
                       <option value="lead3" selected>Lead-3 (Baseline)</option>
                       <option value="textrank">TextRank (Graph)</option>
                       <option value="reference">บทสรุปจริงของนักข่าว (Reference)</option>
                     </select>
                   </div>
-                  <button id="btn-copy-lead3" type="button" class="text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white px-2.5 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1 cursor-pointer ml-auto" title="คัดลอกบทสรุป">
+                  <button id="btn-copy-lead3" type="button" class="text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1.5 cursor-pointer ml-auto" title="คัดลอกบทสรุป">
                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     <span>คัดลอก</span>
                   </button>
@@ -1384,15 +1384,15 @@
       if (maxLength <= 70) {
         targetCount = 1;
         modeLabel = "สั้นกระชับ (1 ประโยค)";
-        leadCardTitle = "ตัดประโยคแรก (Lead-1 · 1 ประโยคแรก)";
+        leadCardTitle = "เปรียบเทียบ:";
       } else if (maxLength <= 110) {
         targetCount = 2;
         modeLabel = "มาตรฐาน (2 ประโยค)";
-        leadCardTitle = "ตัดประโยคแรก (Lead-2 · 2 ประโยคแรก)";
+        leadCardTitle = "เปรียบเทียบ:";
       } else {
         targetCount = 4;
         modeLabel = "ละเอียด (3-4 ประโยค)";
-        leadCardTitle = "ตัดประโยคแรก (Lead-3 · 3-4 ประโยคแรก)";
+        leadCardTitle = "เปรียบเทียบ:";
       }
 
       // ไม่มีบทสรุป mT5 ที่คำนวณไว้ล่วงหน้า (ข่าวที่ผู้ใช้พิมพ์เอง) → บนเว็บนี้ไม่ได้รันโมเดลจริง ใช้วิธีเลือกประโยคแทน
@@ -1872,9 +1872,9 @@
         if ($("mt5-card-title") && data.mt5_card_title) {
           $("mt5-card-title").textContent = data.mt5_card_title;
           if (data.is_mt5) {
-            $("mt5-card-title").className = "px-2.5 py-0.5 rounded text-xs sm:text-sm font-bold bg-red-50 text-red-900 border border-red-200 leading-snug break-words";
+            $("mt5-card-title").className = "px-3 py-1 rounded-md text-xs sm:text-sm font-bold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/70 dark:text-red-200 dark:border-red-700 leading-snug break-words shadow-2xs";
           } else {
-            $("mt5-card-title").className = "px-2.5 py-0.5 rounded text-xs sm:text-sm font-bold bg-amber-50 text-amber-900 border border-amber-300 leading-snug break-words";
+            $("mt5-card-title").className = "px-3 py-1 rounded-md text-xs sm:text-sm font-bold bg-amber-100 text-amber-950 border border-amber-300 dark:bg-amber-950/70 dark:text-amber-200 dark:border-amber-700 leading-snug break-words shadow-2xs";
           }
         }
         if ($("lead3-card-title") && data.lead_card_title) {
