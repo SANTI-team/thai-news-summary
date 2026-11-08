@@ -86,7 +86,7 @@
       background-color: #94a3b8;
     }
   </style>
-  <script src="news_500.js"></script>
+  <script src="news_500.js" defer></script>
 </head>
 <body class="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased">
 
@@ -719,7 +719,7 @@
           // 1. ลองดึงสดแบบ Real-time จาก Google News RSS ประเทศไทย
           try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            const timeoutId = setTimeout(() => controller.abort(), 3500);
             const rssUrl = encodeURIComponent("https://news.google.com/rss?hl=th&gl=TH&ceid=TH:th");
             const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`, { signal: controller.signal });
             clearTimeout(timeoutId);
@@ -1173,24 +1173,50 @@
       $("metric-ner-preserved").textContent = `อยู่ในสรุป ${preservedCount} รายการ`;
     }
 
+    function copyTextSafely(text, btnElement) {
+      if (!text || !btnElement) return;
+      const onSuccess = () => {
+        const orig = btnElement.textContent;
+        btnElement.textContent = "คัดลอกแล้ว";
+        setTimeout(() => { btnElement.textContent = orig; }, 1400);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+          fallbackCopyText(text, onSuccess);
+        });
+      } else {
+        fallbackCopyText(text, onSuccess);
+      }
+    }
+
+    function fallbackCopyText(text, onSuccess) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        onSuccess();
+      } catch (_) {}
+      document.body.removeChild(ta);
+    }
+
     function setupCopyButtons() {
       const copyMt5 = $("btn-copy-mt5");
       const copyLead3 = $("btn-copy-lead3");
       if (copyMt5) {
         copyMt5.addEventListener("click", () => {
           if (lastResult && lastResult.summary) {
-            navigator.clipboard.writeText(lastResult.summary);
-            copyMt5.textContent = "คัดลอกแล้ว";
-            setTimeout(() => { copyMt5.textContent = "คัดลอก"; }, 1200);
+            copyTextSafely(lastResult.summary, copyMt5);
           }
         });
       }
       if (copyLead3) {
         copyLead3.addEventListener("click", () => {
           if (lastResult && lastResult.lead3) {
-            navigator.clipboard.writeText(lastResult.lead3);
-            copyLead3.textContent = "คัดลอกแล้ว";
-            setTimeout(() => { copyLead3.textContent = "คัดลอก"; }, 1200);
+            copyTextSafely(lastResult.lead3, copyLead3);
           }
         });
       }
@@ -1319,3 +1345,4 @@
   </script>
 </body>
 </html>
+
