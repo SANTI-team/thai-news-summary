@@ -1,12 +1,5 @@
-gradio
-pythainlp
-scikit-learn
-pandas
-# ใช้ตอนสลับไปโมเดล WangchanBERTa
-transformers
-torch
-sentencepiece
+fastapi==0.115.6
+pydantic>=2.0.0
+pythainlp>=5.0.0
+python-crfsuite>=0.9.10
 
-# เว็บสรุปข่าว (api.py)
-fastapi
-uvicorn
