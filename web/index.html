@@ -176,10 +176,13 @@
       padding-left: 0.25rem !important;
     }
     .reading-text li {
-      margin-bottom: 0.6rem !important;
-      line-height: 1.85 !important;
+      margin-bottom: 0.35rem !important;
+      line-height: 1.8 !important;
       word-break: normal !important;
       overflow-wrap: break-word !important;
+    }
+    .reading-text li:last-child {
+      margin-bottom: 0 !important;
     }
     .reading-text li::marker {
       color: #991b1b;
@@ -494,11 +497,11 @@
             </label>
           </div>
 
-          <!-- กล่องเปรียบเทียบ 2 คอลัมน์ (mT5 vs Comparison - แยกโทนสีแดง vs สีฟ้าชัดเจน) -->
-          <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+          <!-- กล่องเปรียบเทียบ 2 คอลัมน์ (mT5 vs Comparison - แต่ละการ์ดปิดจบพอดีเนื้อหา ไม่มีช่องว่างเว้นทิ้งไว้) -->
+          <div class="p-2.5 sm:p-3.5 md:p-4 grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3.5 items-start bg-slate-50/50 dark:bg-slate-950/40">
             
-            <!-- ซ้าย: สรุปด้วย AI (mT5) — ธีมสีแดงพรีเมียม -->
-            <div id="card-model-ai" class="p-3 sm:p-4 md:p-5 flex flex-col">
+            <!-- ซ้าย: สรุปด้วย AI (mT5) — การ์ดสีแดงพรีเมียม สเกลพอดีเนื้อหา -->
+            <div id="card-model-ai" class="p-3 sm:p-4 md:p-4.5 rounded-lg border border-red-200/90 dark:border-red-900/60 shadow-2xs flex flex-col">
               <div>
                 <div class="flex items-center justify-between gap-1 sm:gap-1.5 mb-1 sm:mb-1.5 flex-nowrap">
                   <div class="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
@@ -526,8 +529,8 @@
               </div>
             </div>
 
-            <!-- ขวา: โมเดลเปรียบเทียบ (Lead Baseline / TextRank / Reference) — ธีมสีฟ้าแยกชัดเจน -->
-            <div id="card-model-compare" class="p-3 sm:p-4 md:p-5 flex flex-col">
+            <!-- ขวา: โมเดลเปรียบเทียบ (Lead Baseline / TextRank / Reference) — การ์ดสีฟ้า สเกลพอดีเนื้อหา -->
+            <div id="card-model-compare" class="p-3 sm:p-4 md:p-4.5 rounded-lg border border-blue-200/90 dark:border-blue-900/60 shadow-2xs flex flex-col">
               <div>
                 <div class="flex items-center justify-between gap-1 sm:gap-1.5 mb-1 sm:mb-1.5 flex-nowrap">
                   <div class="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
@@ -1750,7 +1753,7 @@
         const highlighted = highlightEntitiesInText(s, entities, enableHighlight);
         return `<li class="pl-1 text-slate-800 dark:text-slate-200 leading-relaxed">${highlighted}</li>`;
       }).join("");
-      return `<ol class="list-decimal list-outside ml-5 space-y-2 reading-text">${items}</ol>`;
+      return `<ol class="list-decimal list-outside ml-4.5 space-y-1.5 reading-text">${items}</ol>`;
     }
 
     function renderSummaryTexts() {
