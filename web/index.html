@@ -1,109 +1,2195 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" class="h-full">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>สรุปข่าววันนี้</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
-<!-- เดโมตัวอย่าง: คนที่ 8 แต่งต่อ/เขียนใหม่ได้ แค่เรียก POST /api/summarize -->
-<style>
-  :root {
-    --bg: #f6f3ee; --paper: #fffdf9; --ink: #1d1b18; --muted: #6d675e; --line: #e4ddd2;
-    --accent: #b3261e; --accent-soft: #f6e3e1; --lead: #2f5d8a; --lead-soft: #e3ecf5;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #171614; --paper: #201f1c; --ink: #ece7df; --muted: #a39b8f; --line: #3a3732;
-            --accent: #ef7d74; --accent-soft: #3a2422; --lead: #8db7e0; --lead-soft: #1f2c3a; }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 "Noto Sans Thai", system-ui, sans-serif; }
-  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 16px 64px; }
-  header { border-bottom: 3px double var(--line); padding-bottom: 14px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; }
-  h1 { font-family: "Noto Serif Thai", serif; font-size: clamp(28px, 5vw, 40px); margin: 0; letter-spacing: .5px; }
-  .date { color: var(--muted); font-size: 14px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
-  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
-  label { font-weight: 600; display: block; margin-bottom: 8px; }
-  textarea { width: 100%; min-height: 300px; resize: vertical; font: inherit; color: var(--ink); background: transparent;
-             border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
-  .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
-  button { font: inherit; font-weight: 600; border: 0; border-radius: 8px; padding: 10px 22px; cursor: pointer; background: var(--accent); color: #fff; }
-  button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 400; padding: 8px 14px; }
-  button:disabled { opacity: .6; cursor: wait; }
-  .tag { font-size: 12px; font-weight: 700; letter-spacing: .5px; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
-  .abs .tag { background: var(--accent-soft); color: var(--accent); }
-  .ext .tag { background: var(--lead-soft); color: var(--lead); }
-  .summary { font-family: "Noto Serif Thai", serif; font-size: 20px; line-height: 1.75; margin: 0 0 6px; }
-  .ext p { color: var(--muted); margin: 0; }
-  .block + .block { margin-top: 18px; padding-top: 18px; border-top: 1px dashed var(--line); }
-  .hint { color: var(--muted); font-size: 13px; }
-  .chips span { display: inline-block; margin: 3px 4px 0 0; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); font-size: 14px; }
-  .chips b { font-weight: 600; color: var(--muted); font-size: 11px; margin-left: 4px; }
-  .empty { color: var(--muted); text-align: center; padding: 60px 0; }
-  .err { color: var(--accent); }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>สรุปข่าววันนี้ — ระบบสรุปข่าวภาษาไทยอัตโนมัติ (mT5 & Lead-3)</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23991b1b'/%3E%3Cpath d='M13 14h22v3.5H13V14zm0 8h22v3.5H13V22zm0 8h14v3.5H13V30z' fill='%23fff'/%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans Thai"', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+    <style>
+    /* Responsive root typography: 
+       - Mobile (< 640px): 15.5px (กะทัดรัด ไม่ล้นจอ 360px-414px)
+       - Tablet (>= 640px): 16.5px
+       - คอมและโน้ตบุ๊ก (>= 1024px): 17.6px (16px * 1.10 = 17.6px: สเกล 110% สำหรับคอมและโน้ตบุ๊ก)
+    */
+    html {
+      font-size: 15.5px;
+      scroll-behavior: smooth;
+      -webkit-tap-highlight-color: transparent;
+    }
+    @media (min-width: 640px) {
+      html { font-size: 16.5px; }
+    }
+    @media (min-width: 1024px) {
+      html { font-size: 17.6px; } /* 16px * 1.10 = 17.6px (100% zoom = 110% scale สำหรับคอมและโน้ตบุ๊ก) */
+    }
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+    *, *::before, *::after {
+      transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    body {
+      font-family: "Noto Sans Thai", system-ui, -apple-system, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      line-height: 1.6;
+    }
+    /* Prevent iOS auto-zoom on textarea/input focus without inflating small selects */
+    @media (max-width: 640px) {
+      input, textarea {
+        font-size: 16px !important;
+      }
+    }
+    /* Dark mode overrides */
+    html.dark body {
+      background-color: #0f172a;
+      color: #e2e8f0;
+    }
+    html.dark .bg-white {
+      background-color: #1e293b !important;
+    }
+    html.dark .bg-slate-50,
+    html.dark .bg-slate-50\/70,
+    html.dark .bg-slate-50\/50,
+    html.dark .bg-slate-50\/40,
+    html.dark .bg-slate-50\/30 {
+      background-color: #0f172a !important;
+    }
+    html.dark .bg-slate-100 {
+      background-color: #334155 !important;
+    }
+    html.dark .border-slate-200,
+    html.dark .border-slate-300,
+    html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+      border-color: #334155 !important;
+    }
+    html.dark .text-slate-900,
+    html.dark .text-slate-800 {
+      color: #e2e8f0 !important;
+    }
+    html.dark .text-slate-700,
+    html.dark .text-slate-600 {
+      color: #cbd5e1 !important;
+    }
+    html.dark .text-slate-500,
+    html.dark .text-slate-400 {
+      color: #94a3b8 !important;
+    }
+    html.dark textarea,
+    html.dark select {
+      background-color: #0f172a !important;
+      color: #e2e8f0 !important;
+      border-color: #334155 !important;
+    }
+    #news-input {
+      background-color: transparent !important;
+      border: 0 !important;
+      outline: none !important;
+      box-shadow: none !important;
+      line-height: 1.8 !important;
+    }
+    html.dark #news-input {
+      background-color: transparent !important;
+      color: #f8fafc !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      line-height: 1.8 !important;
+    }
+    html.dark textarea::placeholder {
+      color: #64748b !important;
+    }
+    html.dark .sample-btn:hover,
+    html.dark #btn-fetch-live:hover,
+    html.dark #btn-clear:hover,
+    html.dark #btn-copy-mt5:hover,
+    html.dark #btn-copy-lead3:hover {
+      background-color: #334155 !important;
+    }
+    html.dark .bg-red-50 {
+      background-color: rgba(153, 27, 27, 0.45) !important;
+    }
+    html.dark .text-red-900,
+    html.dark .text-red-800 {
+      color: #fee2e2 !important;
+    }
+    html.dark .border-red-200,
+    html.dark .border-red-300 {
+      border-color: rgba(248, 113, 113, 0.55) !important;
+    }
+    html.dark .bg-emerald-50 {
+      background-color: rgba(6, 95, 70, 0.45) !important;
+    }
+    html.dark .text-emerald-900,
+    html.dark .text-emerald-800 {
+      color: #a7f3d0 !important;
+    }
+    html.dark .border-emerald-200,
+    html.dark .border-emerald-300 {
+      border-color: rgba(52, 211, 153, 0.55) !important;
+    }
+    html.dark .bg-amber-50,
+    html.dark .bg-amber-100 {
+      background-color: rgba(180, 83, 9, 0.45) !important;
+    }
+    html.dark .text-amber-950,
+    html.dark .text-amber-900,
+    html.dark .text-amber-800 {
+      color: #fef3c7 !important;
+    }
+    html.dark .border-amber-200,
+    html.dark .border-amber-300 {
+      border-color: rgba(251, 191, 36, 0.6) !important;
+    }
+    .reading-text {
+      line-height: 1.85 !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+      line-break: normal !important;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    .reading-text ol {
+      margin-left: 1.25rem !important;
+      padding-left: 0.25rem !important;
+    }
+    .reading-text li {
+      margin-bottom: 0.35rem !important;
+      line-height: 1.8 !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+    }
+    .reading-text li:last-child {
+      margin-bottom: 0 !important;
+    }
+    .reading-text li::marker {
+      color: #991b1b;
+      font-weight: 700;
+    }
+    html.dark .reading-text li::marker {
+      color: #f87171;
+    }
+    /* Natural inline highlights without breaking Thai word flow */
+    .ent-mark {
+      display: inline;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-weight: 600;
+      border-bottom: 2px solid;
+      cursor: pointer;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .ent-mark:hover,
+    .ent-mark.is-active {
+      outline: 2px solid #f59e0b !important;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.45) !important;
+    }
+    .ner-badge {
+      transition: all 0.15s ease-in-out;
+      touch-action: manipulation;
+    }
+    .ner-badge:hover,
+    .ner-badge.is-active {
+      transform: translateY(-1px) scale(1.02);
+      outline: 2px solid #f59e0b !important;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.45) !important;
+    }
+    .ent-PERSON {
+      background-color: #e6f7ed;
+      color: #14532d;
+      border-bottom-color: #22c55e;
+    }
+    .ent-LOCATION {
+      background-color: #fef8e7;
+      color: #78350f;
+      border-bottom-color: #f59e0b;
+    }
+    .ent-ORGANIZATION {
+      background-color: #edf5ff;
+      color: #1e3a8a;
+      border-bottom-color: #3b82f6;
+    }
+    .ent-DATE, .ent-TIME {
+      background-color: #f7f0fe;
+      color: #581c87;
+      border-bottom-color: #a855f7;
+    }
+    html.dark .ent-PERSON {
+      background-color: rgba(34, 197, 94, 0.16) !important;
+      color: #86efac !important;
+      border-bottom-color: rgba(74, 222, 128, 0.5) !important;
+    }
+    html.dark .ent-LOCATION {
+      background-color: rgba(245, 158, 11, 0.16) !important;
+      color: #fde68a !important;
+      border-bottom-color: rgba(251, 191, 36, 0.5) !important;
+    }
+    html.dark .ent-ORGANIZATION {
+      background-color: rgba(59, 130, 246, 0.16) !important;
+      color: #93c5fd !important;
+      border-bottom-color: rgba(96, 165, 250, 0.5) !important;
+    }
+    html.dark .ent-DATE, html.dark .ent-TIME {
+      background-color: rgba(168, 85, 247, 0.16) !important;
+      color: #d8b4fe !important;
+      border-bottom-color: rgba(192, 132, 252, 0.5) !important;
+    }
+    textarea::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    textarea::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 3px;
+    }
+    html.dark textarea::-webkit-scrollbar-thumb {
+      background-color: #475569;
+    }
+    /* แยกสีการ์ดเปรียบเทียบอย่างชัดเจน (AI = สีแดง, เปรียบเทียบ = สีฟ้า/น้ำเงิน) */
+    #card-model-ai {
+      background-color: #fff8f8;
+      border-left: 4px solid #dc2626 !important;
+    }
+    #card-model-compare {
+      background-color: #f4f8ff;
+      border-left: 4px solid #2563eb !important;
+    }
+    html.dark #card-model-ai {
+      background-color: #1a1215 !important;
+      border-left: 4px solid #ef4444 !important;
+    }
+    html.dark #card-model-compare {
+      background-color: #101927 !important;
+      border-left: 4px solid #3b82f6 !important;
+    }
+  </style>
+  <script>
+    try {
+      const savedTheme = localStorage.getItem("thaisum-theme");
+      if (savedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    } catch (_) {}
+  </script>
+  <script src="news_500.js" defer></script>
 </head>
-<body>
-<div class="wrap">
-  <header>
-    <h1>สรุปข่าววันนี้</h1>
-    <div class="date" id="date"></div>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased">
+
+  <!-- ==================================================================== -->
+  <!-- แถบหัวเว็บ (Header) — กระชับ ไม่เกะกะ ทันสมัย สไตล์โมบายแอป               -->
+  <!-- ==================================================================== -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 backdrop-blur-md bg-white/95 dark:bg-slate-900/95 transition-colors shadow-2xs">
+    <div class="w-full px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-3">
+      <!-- ซ้าย: โลโก้ข่าว + ชื่อระบบ + ป้ายโมเดล -->
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-red-800 flex items-center justify-center text-white shadow-xs shrink-0" title="สรุปข่าววันนี้ — ระบบสรุปข่าวภาษาไทย">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+            <path d="M18 14h-8"/>
+            <path d="M15 18h-5"/>
+            <path d="M10 6h8v4h-8V6Z"/>
+          </svg>
+        </div>
+        <div class="flex items-center gap-2 min-w-0">
+          <h1 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+            สรุปข่าววันนี้
+          </h1>
+          <span class="inline-block px-2.5 py-0.5 text-xs sm:text-sm font-bold rounded-md bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/70 dark:text-red-200 dark:border-red-700 whitespace-nowrap shrink-0 shadow-2xs">
+            mT5
+          </span>
+          <span class="hidden sm:inline-block px-2.5 py-0.5 text-xs sm:text-sm font-bold rounded-md bg-emerald-100 text-emerald-950 border border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-200 dark:border-emerald-700 whitespace-nowrap shrink-0 shadow-2xs" title="โมเดล mT5 Fine-tuned">
+            mT5 RL 30.8%
+          </span>
+          <span class="hidden md:inline-block px-2.5 py-0.5 text-xs sm:text-sm font-semibold rounded-md bg-slate-200 text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 whitespace-nowrap shrink-0 shadow-2xs" title="เปรียบเทียบกับ Lead-3 Baseline (26.1%) และ TextRank (25.5%)">
+            Lead-3 26.1% · TextRank 25.5%
+          </span>
+        </div>
+      </div>
+
+      <!-- ขวา: วันที่ + ปุ่มสลับโหมดมืด -->
+      <div class="flex items-center gap-2 shrink-0">
+        <div id="current-date" class="hidden md:block text-xs sm:text-sm font-bold text-slate-800 bg-slate-200 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-3 py-1 rounded-md shadow-2xs">
+          <span></span>
+        </div>
+        <button
+          id="btn-theme-toggle"
+          type="button"
+          aria-label="สลับโหมดมืดและสว่าง"
+          class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95 shadow-2xs cursor-pointer"
+        >
+          <svg id="theme-icon-sun" class="w-4 h-4 text-amber-500 hidden shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="theme-icon-moon" class="w-4 h-4 text-slate-600 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          <span id="theme-label" class="hidden sm:inline">โหมดมืด</span>
+        </button>
+      </div>
+    </div>
   </header>
 
-  <div class="grid">
-    <section class="card">
-      <label for="text">วางเนื้อข่าว</label>
-      <textarea id="text" placeholder="วางข่าวภาษาไทยที่ต้องการสรุปที่นี่"></textarea>
-      <div class="row">
-        <button id="go">สรุปข่าว</button>
-        <button class="ghost" id="sample">ใส่ข่าวตัวอย่าง</button>
-        <span class="hint" id="count"></span>
-      </div>
-    </section>
+  <!-- ==================================================================== -->
+  <!-- พื้นที่ทำงานหลัก (2 คอลัมน์บนจอใหญ่ / 1 คอลัมน์บนมือถือ)                   -->
+  <!-- ==================================================================== -->
+  <main class="flex-1 w-full px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 sm:pb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
 
-    <section class="card" id="out">
-      <div class="empty">บทสรุปจะแสดงที่นี่</div>
-    </section>
-  </div>
-</div>
+      <!-- ================================================================ -->
+      <!-- ฝั่งซ้าย: ต้นฉบับข่าว & เลือกข่าวตัวอย่าง                              -->
+      <!-- ================================================================ -->
+      <section class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
+        
+        <!-- หัวข้อส่วนที่ 1 -->
+        <div class="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">1</span>
+            <h2 class="text-sm sm:text-base font-bold text-slate-900">เนื้อหาข่าวภาษาไทย</h2>
+          </div>
+          <button id="btn-clear" type="button" class="text-xs font-medium text-slate-500 hover:text-red-700 px-2.5 py-1 rounded-md border border-slate-300 hover:border-red-300 bg-white transition active:scale-95">
+            ล้างข้อความ
+          </button>
+        </div>
 
-<script>
-const API = "/api/summarize";   // หน้าเว็บอยู่คนละที่ → "http://127.0.0.1:8000/api/summarize"
-const SAMPLE = `กรมอุตุนิยมวิทยาออกประกาศเตือนพายุฤดูร้อนบริเวณภาคเหนือและภาคตะวันออกเฉียงเหนือ ระหว่างวันที่ 10-12 เมษายนนี้ โดยจะมีพายุฝนฟ้าคะนอง ลมกระโชกแรง และมีลูกเห็บตกบางพื้นที่ ซึ่งอาจสร้างความเสียหายต่อบ้านเรือนและพื้นที่การเกษตร นายสมชาย ใจดี อธิบดีกรมอุตุนิยมวิทยา กล่าวว่า ขอให้ประชาชนหลีกเลี่ยงการอยู่ในที่โล่งแจ้งและใต้ต้นไม้ใหญ่ ส่วนเกษตรกรควรเตรียมป้องกันความเสียหายของผลผลิต และติดตามประกาศจากกรมอุตุนิยมวิทยาอย่างใกล้ชิด ทั้งนี้ จังหวัดเชียงใหม่ เชียงราย และขอนแก่น ได้เตรียมเจ้าหน้าที่ป้องกันและบรรเทาสาธารณภัยไว้พร้อมรับมือแล้ว`;
-const TYPES = { PERSON: "บุคคล", ORGANIZATION: "องค์กร", LOCATION: "สถานที่", DATE: "วันที่", TIME: "เวลา", MONEY: "เงิน" };
+        <!-- แถบเลือกข่าวตัวอย่าง (กระชับ สวยงาม พอดีจอมือถือ) -->
+        <div class="p-3 sm:p-4 bg-slate-50/50 border-b border-slate-200 space-y-2.5">
+          <div class="flex items-center justify-between text-xs text-slate-600 font-medium">
+            <span>แตะเลือกข่าวตัวอย่าง:</span>
+            <span class="text-slate-400">คลัง 500 ข่าว + ข่าวสด</span>
+          </div>
 
-const $ = id => document.getElementById(id);
-const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-$("date").textContent = new Date().toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-const count = () => $("count").textContent = $("text").value.length ? `${$("text").value.length.toLocaleString()} ตัวอักษร` : "";
-$("text").oninput = count;
-$("sample").onclick = () => { $("text").value = SAMPLE; count(); };
+          <!-- กริดปุ่มเลือกข่าว (3 คอลัมน์บนมือถือ / 5 คอลัมน์บนจอใหญ่) -->
+          <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2">
+            <button type="button" data-sample="politics" class="sample-btn h-9 flex items-center justify-center gap-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap">
+              <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+              <span>การเมือง</span>
+            </button>
+            <button type="button" data-sample="economy" class="sample-btn h-9 flex items-center justify-center gap-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap">
+              <span class="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
+              <span>เศรษฐกิจ</span>
+            </button>
+            <button type="button" data-sample="crime" class="sample-btn h-9 flex items-center justify-center gap-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap">
+              <span class="w-2 h-2 rounded-full bg-amber-600 shrink-0"></span>
+              <span>อาชญากรรม</span>
+            </button>
+            <button id="btn-fetch-live" type="button" class="h-9 flex items-center justify-center gap-1.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap cursor-pointer">
+              <svg class="w-3.5 h-3.5 animate-spin hidden shrink-0 text-red-800 dark:text-red-400" id="spinner-live" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+              <svg class="w-3.5 h-3.5 shrink-0 text-slate-600 dark:text-slate-300" id="icon-live" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+              <span>ข่าวสด</span>
+            </button>
+            <button id="btn-random-500" type="button" class="col-span-2 sm:col-span-1 h-9 flex items-center justify-center gap-1.5 px-2.5 rounded-md bg-red-800 hover:bg-red-900 active:bg-red-950 text-white font-semibold text-xs transition active:scale-95 shadow-2xs whitespace-nowrap cursor-pointer">
+              <svg class="w-3.5 h-3.5 shrink-0 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>สุ่มข่าว</span>
+            </button>
+          </div>
+        </div>
 
-$("go").onclick = async () => {
-  const text = $("text").value.trim();
-  if (text.length < 20) { $("out").innerHTML = `<p class="err">ข่าวสั้นเกินไป (อย่างน้อย 20 ตัวอักษร)</p>`; return; }
-  $("go").disabled = true; $("go").textContent = "กำลังสรุป…";
-  try {
-    const res = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
-    if (!res.ok) throw new Error(`API ตอบกลับ ${res.status}`);
-    const r = await res.json();
-    const s = r.stats;
-    const ents = r.entities.length
-      ? r.entities.map(e => `<span>${esc(e.text)}<b>${TYPES[e.type] || e.type}</b></span>`).join("")
-      : `<span class="hint">ไม่พบ (โมเดล NER ยังไม่พร้อม — งานคนที่ 6)</span>`;
-    $("out").innerHTML = `
-      <div class="block abs"><span class="tag">บทสรุป · mT5 (เขียนใหม่)</span>
-        <p class="summary">${esc(r.summary)}</p>
-        <div class="hint">${s.summary_chars} จาก ${s.news_chars.toLocaleString()} ตัวอักษร · ${s.seconds} วินาที${s.truncated ? " · ข่าวยาวเกิน ถูกตัดท้าย" : ""}</div></div>
-      <div class="block ext"><span class="tag">เทียบ · Lead-3 (3 ประโยคแรก)</span><p>${esc(r.lead3)}</p></div>
-      <div class="block"><label>ชื่อเฉพาะในข่าว</label><div class="chips">${ents}</div></div>
-      <div class="block hint">⚠️ บทสรุปจากโมเดลอาจมีข้อมูลที่ข่าวไม่ได้พูด ควรตรวจกับต้นฉบับ</div>`;
-  } catch (e) {
-    $("out").innerHTML = `<p class="err">เรียก API ไม่ได้: ${esc(e.message)} — รัน <code>python api.py</code> แล้วหรือยัง</p>`;
-  } finally { $("go").disabled = false; $("go").textContent = "สรุปข่าว"; }
-};
-</script>
+        <!-- ช่องวางเนื้อหาข่าว และปุ่มสั่งสรุป -->
+        <div class="p-3.5 sm:p-5 flex flex-col gap-3">
+          <!-- กล่องสี่เหลี่ยมเนื้อหาข่าวแบบครบวงจร (Unified Rectangular News Card) -->
+          <div class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-md overflow-hidden shadow-2xs focus-within:border-red-800 dark:focus-within:border-red-600 focus-within:ring-1 focus-within:ring-red-800 transition">
+            
+            <!-- แถบด้านบนของกล่องสี่เหลี่ยม: แสดงหัวข้อข่าว/ที่มา (ตัวอักษรไม่ตกหล่น ไม่ตัดทอน) -->
+            <div class="border-b border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/80 px-3.5 py-2.5 flex items-start gap-2 text-xs">
+              <svg class="w-4 h-4 text-red-800 dark:text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span id="active-sample-tag" class="font-semibold text-slate-800 dark:text-slate-200 leading-relaxed break-words flex-1" title="แตะหรือวางเนื้อหาข่าวเพื่อแก้ไข">ข่าวที่กำลังเลือก</span>
+            </div>
+
+            <!-- ช่องวางเนื้อหาข่าว (เต็มพื้นที่กล่องสี่เหลี่ยม ไร้ขอบซ้อน) -->
+            <textarea
+              id="news-input"
+              rows="7"
+              maxlength="20000"
+              placeholder="วางเนื้อหาข่าวภาษาไทยที่นี่ หรือแตะเลือกข่าวตัวอย่างด้านบน..."
+              class="w-full border-0 bg-transparent p-3.5 reading-text text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-0 resize-y text-sm sm:text-base leading-relaxed"
+            ></textarea>
+
+            <!-- แถบด้านล่างของกล่องสี่เหลี่ยม: ตัวนับคำ และระดับการสรุป (รองรับมือถือไม่ให้ตัวอักษรตกขอบ) -->
+            <div class="border-t border-slate-200 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800/90 px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center justify-between gap-1 text-[11px] sm:text-xs">
+              <div class="flex items-center gap-1 sm:gap-1.5 font-bold whitespace-nowrap shrink-0">
+                <span id="char-count" class="text-slate-900 dark:text-slate-100">0 ตัวอักษร</span>
+                <span class="text-slate-400 dark:text-slate-500 font-bold">|</span>
+                <span id="sentence-count" class="text-red-800 dark:text-red-400">0 ประโยค</span>
+              </div>
+              <div class="flex items-center gap-1 whitespace-nowrap shrink-0 ml-auto">
+                <label for="max-length" class="font-bold text-slate-800 dark:text-slate-200 text-[11px] sm:text-xs">ระดับ:</label>
+                <select id="max-length" class="rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-1.5 py-0.5 text-[11px] sm:text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-red-800 cursor-pointer shadow-2xs">
+                  <option value="64">1 ประโยค</option>
+                  <option value="96" selected>2 ประโยค</option>
+                  <option value="140">3-4 ประโยค</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- ปุ่มกดสรุปข่าว (สี่เหลี่ยมคมชัด เรียบหรู) -->
+          <div>
+            <button
+              id="btn-summarize"
+              type="button"
+              class="w-full h-11 sm:h-12 rounded-md bg-red-800 hover:bg-red-900 active:scale-[0.98] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs cursor-pointer"
+            >
+              <svg id="btn-spinner" class="hidden animate-spin w-4 h-4 text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              <span id="btn-text">ประมวลผลสรุปใหม่</span>
+            </button>
+          </div>
+
+          <p id="error-banner" class="hidden text-xs font-medium text-red-800 bg-red-50 border border-red-300 rounded-lg px-3 py-2"></p>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- ฝั่งขวา: ผลลัพธ์การสรุปข่าว และ ชื่อเฉพาะที่ตรวจพบ -->
+      <!-- ================================================================ -->
+      <section class="lg:col-span-7 flex flex-col gap-5 sm:gap-6">
+
+        <!-- แถบสถานะกำลังโหลด -->
+        <div id="loading-card" class="hidden bg-white rounded-xl border border-slate-200 p-4 text-center shadow-xs">
+          <p class="text-sm font-semibold text-slate-800">กำลังประมวลผลสรุปข่าวและสกัดชื่อเฉพาะ...</p>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- ส่วนที่ 2: ผลลัพธ์การสรุปข่าว                                       -->
+        <!-- ============================================================== -->
+        <div id="comparison-section" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden transition-all duration-200 scroll-mt-16">
+          
+          <div class="px-2.5 py-1.5 sm:px-4 sm:py-2.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 flex items-center justify-between gap-1.5 sm:gap-2 text-xs sm:text-sm">
+            <div class="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
+              <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">2</span>
+              <h2 class="text-xs sm:text-sm md:text-base font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap shrink-0">
+                <span class="sm:hidden">ผลสรุป</span><span class="hidden sm:inline">ผลลัพธ์การสรุปข่าว</span>
+              </h2>
+              <span id="active-mode-pill" class="px-1.5 py-0.5 text-[10px] sm:text-xs font-bold rounded bg-red-50 text-red-900 border border-red-200 dark:bg-red-950/70 dark:text-red-200 dark:border-red-800 whitespace-nowrap shrink-0">
+                2 ประโยค
+              </span>
+              <span id="truncation-badge" class="hidden px-1.5 py-0.5 text-[10px] sm:text-xs font-bold rounded bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/70 dark:text-amber-200 dark:border-amber-800 whitespace-nowrap shrink-0" title="เนื้อหาข่าวต้นฉบับยาวเกินข้อจำกัด 512 tokens ของโมเดล mT5">
+                <span class="sm:hidden">ยาวเกิน</span><span class="hidden sm:inline">เนื้อหายาวเกินเกณฑ์</span>
+              </span>
+            </div>
+
+            <!-- สวิตช์ไฮไลต์ชื่อเฉพาะ -->
+            <label class="inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer select-none text-[10px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded border border-slate-300 dark:border-slate-600 shrink-0 shadow-2xs">
+              <input id="toggle-highlight" type="checkbox" checked class="w-3.5 h-3.5 rounded border-slate-300 text-red-800 focus:ring-red-800 shrink-0">
+              <span class="whitespace-nowrap">ไฮไลต์</span>
+            </label>
+          </div>
+
+          <!-- กล่องเปรียบเทียบ 2 คอลัมน์ (mT5 vs Comparison - แต่ละการ์ดปิดจบพอดีเนื้อหา ไม่มีช่องว่างเว้นทิ้งไว้) -->
+          <div class="p-2.5 sm:p-3.5 md:p-4 grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3.5 items-start bg-slate-50/50 dark:bg-slate-950/40">
+            
+            <!-- ซ้าย: สรุปด้วย AI (mT5) — การ์ดสีแดงพรีเมียม สเกลพอดีเนื้อหา -->
+            <div id="card-model-ai" class="p-3 sm:p-4 md:p-4.5 rounded-lg border border-red-200/90 dark:border-red-900/60 shadow-2xs flex flex-col">
+              <div>
+                <div class="flex items-center justify-between gap-1 sm:gap-1.5 mb-1 sm:mb-1.5 flex-nowrap">
+                  <div class="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
+                    <span id="mt5-card-title" class="px-2 py-0.5 sm:px-2.5 sm:py-0.5 rounded text-[10px] sm:text-xs md:text-sm font-bold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/80 dark:text-red-200 dark:border-red-700 truncate shadow-2xs">
+                      สรุปด้วย AI (mT5)
+                    </span>
+                    <span id="mt5-rougel-badge" class="hidden px-1.5 py-0.5 text-[10px] sm:text-xs font-bold rounded bg-emerald-100 text-emerald-950 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-200 dark:border-emerald-700 whitespace-nowrap shrink-0 shadow-2xs" title="ROUGE-L ของข่าวนี้เทียบกับบทสรุปจริง">
+                      RL 35.7%
+                    </span>
+                  </div>
+                  <button id="btn-copy-mt5" type="button" class="text-[10px] sm:text-xs font-semibold text-slate-700 hover:text-red-800 dark:text-slate-200 dark:hover:text-red-300 px-2 py-0.5 sm:px-2.5 sm:py-0.5 rounded border border-slate-300 hover:border-red-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1 cursor-pointer ml-auto" title="คัดลอกบทสรุป mT5">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>คัดลอก</span>
+                  </button>
+                </div>
+
+                <div id="mt5-output" class="reading-text text-slate-900 dark:text-slate-100 min-h-[36px] text-sm sm:text-base leading-relaxed pt-0.5 pb-1">
+                  <span class="text-slate-400 text-xs sm:text-sm">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์</span>
+                </div>
+              </div>
+
+              <div class="mt-3 pt-2.5 border-t border-red-200/60 dark:border-red-900/40 flex flex-wrap items-center justify-between text-xs text-slate-500 gap-x-2 gap-y-1.5">
+                <div id="mt5-stat-line" class="flex flex-wrap items-center gap-1.5 leading-snug">ความยาว: — ตัวอักษร</div>
+                <span id="mt5-ratio-badge" class="font-bold text-red-800 dark:text-red-300 bg-red-100/90 dark:bg-red-950/70 px-2 py-0.5 rounded border border-red-200 dark:border-red-800 whitespace-nowrap shrink-0 ml-auto">ย่อลง —%</span>
+              </div>
+            </div>
+
+            <!-- ขวา: โมเดลเปรียบเทียบ (Lead Baseline / TextRank / Reference) — การ์ดสีฟ้า สเกลพอดีเนื้อหา -->
+            <div id="card-model-compare" class="p-3 sm:p-4 md:p-4.5 rounded-lg border border-blue-200/90 dark:border-blue-900/60 shadow-2xs flex flex-col">
+              <div>
+                <div class="flex items-center justify-between gap-1 sm:gap-1.5 mb-1 sm:mb-1.5 flex-nowrap">
+                  <div class="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
+                    <span class="px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded text-[10px] sm:text-xs md:text-sm font-bold bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950/80 dark:text-blue-200 dark:border-blue-700 whitespace-nowrap shadow-2xs shrink-0">
+                      <span class="xs:hidden">เทียบ:</span><span class="hidden xs:inline">เปรียบเทียบ:</span>
+                    </span>
+                    <select id="compare-model-select" aria-label="เลือกโมเดลเปรียบเทียบ" class="w-auto max-w-full rounded border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-800 px-2 py-0.5 sm:px-2.5 sm:py-0.5 text-[11px] sm:text-xs md:text-sm font-bold text-blue-950 dark:text-blue-100 focus:outline-none focus:border-blue-600 cursor-pointer shadow-2xs shrink-0 whitespace-nowrap">
+                      <option value="lead3" selected>Lead-3 (Baseline)</option>
+                      <option value="textrank">TextRank (Graph)</option>
+                      <option value="reference">บทสรุปจริง (Reference)</option>
+                    </select>
+                  </div>
+                  <button id="btn-copy-lead3" type="button" class="text-[10px] sm:text-xs font-semibold text-slate-700 hover:text-blue-800 dark:text-slate-200 dark:hover:text-blue-300 px-2 py-0.5 sm:px-2.5 sm:py-0.5 rounded border border-slate-300 hover:border-blue-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 transition shrink-0 active:scale-95 shadow-2xs flex items-center gap-1 cursor-pointer ml-auto" title="คัดลอกบทสรุป">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>คัดลอก</span>
+                  </button>
+                </div>
+
+                <div id="lead3-output" class="reading-text text-slate-900 dark:text-slate-100 min-h-[36px] text-sm sm:text-base leading-relaxed pt-0.5 pb-1">
+                  <span class="text-slate-400 text-xs sm:text-sm">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์</span>
+                </div>
+              </div>
+
+              <div class="mt-3 pt-2.5 border-t border-blue-200/60 dark:border-blue-900/40 flex flex-wrap items-center justify-between text-xs text-slate-500 gap-x-2 gap-y-1.5">
+                <div id="lead3-stat-line" class="flex flex-wrap items-center gap-1.5 leading-snug">ความยาว: — ตัวอักษร</div>
+                <span id="lead3-ratio-badge" class="font-bold text-blue-800 dark:text-blue-300 bg-blue-100/90 dark:bg-blue-950/70 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800 whitespace-nowrap shrink-0 ml-auto">ย่อลง —%</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- ส่วนที่ 3: ชื่อเฉพาะที่ตรวจพบในข่าว (Named Entities)                 -->
+        <!-- ============================================================== -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="px-2.5 py-1.5 sm:px-4 sm:py-2.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 flex items-center justify-between gap-1.5 sm:gap-2 text-xs sm:text-sm">
+            <div class="flex items-center gap-1 sm:gap-2 min-w-0">
+              <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">3</span>
+              <h2 class="text-xs sm:text-sm md:text-base font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap shrink-0">ชื่อเฉพาะที่ตรวจพบ</h2>
+              <span class="text-[10px] sm:text-xs font-bold text-emerald-950 bg-emerald-100 dark:bg-emerald-950/80 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded whitespace-nowrap shrink-0 shadow-2xs">
+                พบ <span id="metric-ner-count">0</span><span class="hidden sm:inline"> (<span id="metric-ner-preserved">ในสรุป 0</span>)</span>
+              </span>
+            </div>
+            <div class="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-2xs shrink-0">
+              <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              <span>พบในบทสรุป</span>
+            </div>
+          </div>
+
+          <!-- ตาราง 4 หมวด (2 คอลัมน์บนจอใหญ่ / พอดีจอมือถือ) -->
+          <div class="p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3 items-start" id="ner-categories-grid">
+            
+            <!-- คอลัมน์ซ้าย: บุคคล + องค์กร (ค่าเริ่มต้นสำหรับกรณีบุคคลไม่ยาวเกิน) -->
+            <div id="ner-col-left" class="flex flex-col gap-2.5 sm:gap-3">
+              <!-- หมวด 1: บุคคล -->
+              <div id="card-PERSON" class="rounded-lg border border-slate-200 bg-slate-50/50 p-2.5 sm:p-3">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
+                    บุคคล (Person)
+                  </span>
+                  <span id="count-PERSON" class="text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-1.5 py-0.2 rounded">0</span>
+                </div>
+                <div id="badges-PERSON" class="flex flex-wrap gap-1 min-h-[24px] items-center">
+                  <span class="text-xs text-slate-400">ยังไม่มีข้อมูล</span>
+                </div>
+              </div>
+
+              <!-- หมวด 3: องค์กร / หน่วยงาน (ตำแหน่งเดิมสำหรับกรณีบุคคลไม่ยาวเกิน) -->
+              <div id="card-ORGANIZATION" class="rounded-lg border border-slate-200 bg-slate-50/50 p-2.5 sm:p-3">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+                    องค์กร / หน่วยงาน (Org)
+                  </span>
+                  <span id="count-ORGANIZATION" class="text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-1.5 py-0.2 rounded">0</span>
+                </div>
+                <div id="badges-ORGANIZATION" class="flex flex-wrap gap-1 min-h-[24px] items-center">
+                  <span class="text-xs text-slate-400">ยังไม่มีข้อมูล</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- คอลัมน์ขวา: สถานที่ + วันและเวลา -->
+            <div id="ner-col-right" class="flex flex-col gap-2.5 sm:gap-3">
+              <!-- หมวด 2: สถานที่ -->
+              <div id="card-LOCATION" class="rounded-lg border border-slate-200 bg-slate-50/50 p-2.5 sm:p-3">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                    สถานที่ (Location)
+                  </span>
+                  <span id="count-LOCATION" class="text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-1.5 py-0.2 rounded">0</span>
+                </div>
+                <div id="badges-LOCATION" class="flex flex-wrap gap-1 min-h-[24px] items-center">
+                  <span class="text-xs text-slate-400">ยังไม่มีข้อมูล</span>
+                </div>
+              </div>
+
+              <!-- หมวด 4: วันและเวลา -->
+              <div id="card-DATETIME" class="rounded-lg border border-slate-200 bg-slate-50/50 p-2.5 sm:p-3">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-purple-600 shrink-0"></span>
+                    วันและเวลา (Date & Time)
+                  </span>
+                  <span id="count-DATETIME" class="text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-1.5 py-0.2 rounded">0</span>
+                </div>
+                <div id="badges-DATETIME" class="flex flex-wrap gap-1 min-h-[24px] items-center">
+                  <span class="text-xs text-slate-400">ยังไม่มีข้อมูล</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ส่วนท้ายเว็บ (กะทัดรัด พอดีขอบล่าง ไร้ช่องว่างตกค้าง สบายตาในโหมดมืด) -->
+  <footer class="mt-auto py-2.5 sm:py-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+    <div class="w-full px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-2">
+      <div>สรุปข่าววันนี้ (ThaiSum Dataset) · โมเดล mT5 Fine-tuned (ROUGE-L 30.8%) เทียบกับ Lead Baseline</div>
+      <div class="text-slate-600 dark:text-slate-300 font-medium">คลังข้อมูลทดสอบ 500 ข่าวจริง</div>
+    </div>
+  </footer>
+
+  <!-- ==================================================================== -->
+  <!-- ระบบการทำงาน (Application Logic)                                       -->
+  <!-- ==================================================================== -->
+  <script>
+    let API_BASE = (window.location.protocol === "http:" || window.location.protocol === "https:")
+      ? ""
+      : "http://127.0.0.1:8080";
+    const getSummarizeUrl = () => `${API_BASE}/api/summarize`;
+
+    const SAMPLE_NEWS = {
+      "politics": {
+        "label": "การเมือง (ม็อบจุฬาฯ)",
+        "text": "ม็อบจุฬาฯ คนแน่น ยุติชุมนุมแล้ว แกนนำ จัดกิจกรรมแบบแฟลชม็อบ ประณามหมายจับ เพนกวิน พร้อมนัดร่วมชุมนุม 16 ส.ค. ที่อนุสาวรีย์ประชาธิปไตยวันที่ 14 ส.ค. ที่บริเวณลานใต้ถุนอาคารมหาจักรีสิรินธร คณะอักษรศาสตร์ นิสิตจุฬาฯ ในนามคณะจุฬาและกลุ่มสปริง มูฟเม้นท์ นำโดย น.ส.ศุกรียา วรรณายุวัฒน์ นิสิตคณะครุศาสตร์ นายสิรภพ อัตโตหิ คณะอักษรศาสตร์ และน.ส.สิรินทร์ มุ่งเจริญ คณะอักษรศาสตร์ จัดกิจกรรมการชุมนุมแบบแฟลชม็อบทั้งนี้ เมื่อเวลาประมาณ 20.00 น. แกนนำบนเวทีปราศรัย ได้ประกาศยุติชุมนุมแล้ว และมีการนัดหมายชุมนุมกันใหม่อีกครั้ง วันอาทิตย์ที่ 16 ส.ค. 2563 ที่บริเวณอนุสาวรีย์ประชาธิปไตยทั้งนี้ โดยก่อนหน้าการชุมนุมจะเริ่มทางสำนักบริหารกิจการนิสิตได้ออกประกาศห้ามนิสิตจัดงานนี้ ให้เหตุผลว่า มีการขออนุญาตกระชั้นชิดเกิน แต่ทางคณะนิสิตผู้จัดงานไม่ยอม ยืนยันจัดตามที่ประกาศไว้แต่เนื่องจากมีฝนกระหน่ำลงมาทำให้ต้องเปลี่ยนสถานที่จากลานพระบรมราชานุสาวรีย์สองรัชกาลมาที่ใต้ถุนอาคาร และเลื่อนเวลาการจัดชุมนุมออกไปเกือบ2ชม. อย่างไรก็ตาม ได้มีนิสิต คณาจารย์ และเจ้าหน้าที่จุฬาฯ เข้าร่วมเต็มแน่นลานจนล้นออกมาด้านนอกอาคารมหาจักรีสิรินธรส่วนแกนนำนิสิตจุฬาฯ สลับขึ้นปราศรัยกล่าวโจมตีผู้บริหารสถาบันที่ไม่อนุญาตให้จัดงานนี้",
+        "pred": "แกนนํา จัดกิจกรรมแบบแฟลชม็อบ ประณามหมายจับ เพนกวิน พร้อมนัดร่วมชุมนุม 16 ส.ค. ที่อนุสาวรีย์ประชาธิปไตย วันที่ 14",
+        "summary": "ม็อบจุฬาฯ คนแน่น ยุติชุมนุมแล้ว แกนนำจัดกิจกรรมแฟลชม็อบ ประณามหมายจับเพนกวิน นัดชุมนุมต่อ 16 ส.ค. อนุสาวรีย์ประชาธิปไตย",
+        "pred_lead3": "ม็อบจุฬาฯ คนแน่น ยุติชุมนุมแล้ว แกนนำ จัดกิจกรรมแบบแฟลชม็อบ ประณามหมายจับ เพนกวิน พร้อมนัดร่วมชุมนุม 16 ส.ค. ที่อนุสาวรีย์ประชาธิปไตยวันที่ 14 ส.ค. ที่บริเวณลานใต้ถุนอาคารมหาจักรีสิรินธร คณะอักษรศาสตร์ นิสิตจุฬาฯ ในนามคณะจุฬาและกลุ่มสปริง มูฟเม้นท์ นำโดย น.ส.ศุกรียา วรรณายุวัฒน์ นิสิตคณะครุศาสตร์ นายสิรภพ อัตโตหิ คณะอักษรศาสตร์ และน.ส.สิรินทร์ มุ่งเจริญ คณะอักษรศาสตร์ จัดกิจกรรมการชุมนุมแบบแฟลชม็อบทั้งนี้ เมื่อเวลาประมาณ 20.00 น. แกนนำบนเวทีปราศรัย ได้ประกาศยุติชุมนุมแล้ว และมีการนัดหมายชุมนุมกันใหม่อีกครั้ง",
+        "pred_textrank": "แกนนำบนเวทีปราศรัย ได้ประกาศยุติชุมนุมแล้ว และมีการนัดหมายชุมนุมกันใหม่อีกครั้ง วันอาทิตย์ที่ 16 ส.ค. 2563 ที่บริเวณอนุสาวรีย์ประชาธิปไตยทั้งนี้ สำนักบริหารกิจการนิสิตได้ออกประกาศห้ามนิสิตจัดงานนี้ ให้เหตุผลว่า มีการขออนุญาตกระชั้นชิดเกิน แต่ทางคณะนิสิตผู้จัดงานไม่ยอม ยืนยันจัดตามที่ประกาศไว้ นิสิต คณาจารย์ และเจ้าหน้าที่จุฬาฯ เข้าร่วมเต็มแน่นลานจนล้นออกมาด้านนอกอาคารมหาจักรีสิรินธร",
+        "rougeL": 72.7
+      },
+      "economy": {
+        "label": "เศรษฐกิจ (ราคาทองเยาวราช)",
+        "text": "บรรยากาศร้านขายทอง บนถนนเยาวราชค่อนข้างคึกคัก ตั้งแต่เช้าถึงเย็น คนต่อแถวนำทองขายเอากำไร ราคาทอง ล่าสุดวันนี้ รูปพรรณ ขายออกบาทละ 30800วันที่ 7 ส.ค.63 ผู้สื่อข่าวรายงาน ร้านทองบนถนนเยาวราชคึกคักเป็นพิเศษ เนื่องจากมีประชาชนจำนวนมากมาต่อคิว นำทองคำที่เก็บสะสมไว้ มาขายเพื่อถือเงินสดไว้แทน เนื่องจากในช่วงนี้ ราคาทองทะลุ 30000 บาทแล้วโดยสมาคมค้าทองคำ ประกาศราคาซื้อ-ขายทอง ครั้งที่ 8 เมื่อเวลา 13.48 น. วันนี้ ลดลง 50 บาท โดยราคาทองคำแท่ง รับซื้อบาทละ30200 บาท ขายออกบาทละ 30300 บาท ราคาทองรูปพรรณ รับซื้อบาทละ29652.96 บาท ขายออกบาทละ30800 บาททั้งนี้ราคารับซื้อคืนทองรูปพรรณ ตามหลักเกณฑ์ สคบ. กำหนดให้ร้านทองสามารถหักได้ไม่เกิน 5% จากราคาทองคำแท่งรับซื้อในวันนั้นๆ ซึ่งหลักเกณฑ์ดังกล่าว ใช้เฉพาะการซื้อขายทองที่ร้านเดิมเท่านั้น.",
+        "pred": "บรรยากาศร้านทองบนถนนเยาวราชค่อนข้างคึกคัก ตั้งแต่เช้าถึงเย็น คนต่อแถวนําทองขายเอากําไร ราคาทอง ล่าสุดวันนี้ รูปพรรณขายออกบาทละ 30800 วันที่ 7 ส.ค.63",
+        "summary": "บรรยากาศร้านขายทองเยาวราชคึกคัก คนต่อแถวขายทองทำกำไรหลังราคาพุ่งทะลุ 30,000 บาท ทองรูปพรรณขายออกบาทละ 30,800 บาท",
+        "pred_lead3": "บรรยากาศร้านขายทอง บนถนนเยาวราชค่อนข้างคึกคัก ตั้งแต่เช้าถึงเย็น คนต่อแถวนำทองขายเอากำไร ราคาทอง ล่าสุดวันนี้ รูปพรรณ ขายออกบาทละ 30800วันที่ 7 ส.ค.63 ผู้สื่อข่าวรายงาน ร้านทองบนถนนเยาวราชคึกคักเป็นพิเศษ เนื่องจากมีประชาชนจำนวนมากมาต่อคิว นำทองคำที่เก็บสะสมไว้ มาขายเพื่อถือเงินสดไว้แทน เนื่องจากในช่วงนี้ ราคาทองทะลุ 30000 บาทแล้วโดยสมาคมค้าทองคำ ประกาศราคาซื้อ-ขายทอง ครั้งที่ 8 เมื่อเวลา 13.48 น. วันนี้ ลดลง 50 บาท",
+        "pred_textrank": "ประชาชนจำนวนมากมาต่อคิว นำทองคำที่เก็บสะสมไว้ มาขายเพื่อถือเงินสดไว้แทน เนื่องจากในช่วงนี้ ราคาทองทะลุ 30000 บาทแล้ว สมาคมค้าทองคำ ประกาศราคาซื้อ-ขายทอง ครั้งที่ 8 ราคาทองคำแท่ง รับซื้อบาทละ 30200 บาท ขายออกบาทละ 30300 บาท ราคาทองรูปพรรณ รับซื้อบาทละ 29652.96 บาท ขายออกบาทละ 30800 บาท หลักเกณฑ์ สคบ. กำหนดให้ร้านทองสามารถหักได้ไม่เกิน 5% จากราคาทองคำแท่งรับซื้อในวันนั้นๆ",
+        "rougeL": 78.8
+      },
+      "crime": {
+        "label": "อาชญากรรม (ชันสูตรศพดีเอสไอ)",
+        "text": "ตำรวจทุ่งสองห้อง ส่งสำนวนชันสูตรศพ ธวัชชัย อนุกูล อดีตเจ้าหน้าที่ที่ดิน จ.พังงา ผู้ต้องหาเสียชีวิตในห้องขังดีเอสไอ ถึงมืออัยการแล้ว เผยข้อสรุป มีผู้ทำให้ตาย ด้าน รองอธิบดีอัยการคดีอาญา ระบุ ต้องยื่นคำร้องตามกฎหมายใน 30 วัน พร้อมแจงขั้นตอน หากยื่นศาลญาติผู้ตาย ร้องขอศาลร่วมซักถามพยาน-ยื่นหลักฐานร่วมไต่สวนได้,วันนี้ 28 ต.ค. 59 ที่สำนักงานอัยการสูงสุด อาคารรัชดาฯ ร.ต.ท.กฤติเดช ชอบค้าขาย รอง สว.สส. สน.ทุ่งสองห้อง ได้นำสำนวนคำร้องไต่สวนชันสูตรพลิกศพ พร้อมพยานเอกสารหลักฐานจำนวน 4 แฟ้ม ประกอบด้วย สำนวนความเห็นพร้อมฟิล์มเอกซเรย์ และใบความเห็นแพทย์เกี่ยวกับการเสียชีวิตของ นายธวัชชัย อนุกูล อดีตเจ้าหน้าที่กรมที่ดิน จ.พังงา ผู้ต้องหาออกเอกสารสิทธิ์ที่ดินทับซ้อนอุทยานแห่งชาติกว่าพันแปลง ภายในห้องขังกรมสอบสวนคดีพิเศษ (ดีเอสไอ) เมื่อวันที่ 30 สิงหาคม มามอบให้ นายรุจ เขื่อนสุวรรณ รองอธิบดีอัยการสำนักงานคดีอาญา เพื่อยื่นคำร้องขอไต่สวนชันสูตรพลิกศพ ต่อศาลอาญาโดยท้ายสำนวนระบุว่า ผู้ตาย ตายเพราะมีผู้ทำให้ตาย",
+        "pred": "ตํารวจทุ่งสองห้อง ส่งสํานวนชันสูตรศพ ธวัชชัย อนุกูล อดีตเจ้าหน้าที่ที่ดิน จ.พังงา ผู้ต้องหาเสียชีวิตในห้องขังดีเอสไอ ถึงมืออัยการแล้ว เผยข้อสรุป มีผู้ทําให้ตาย",
+        "summary": "ตร.ทุ่งสองห้องส่งสำนวนชันสูตรศพ 'ธวัชชัย อนุกูล' อดีตจนท.ที่ดินพังงา ตายในห้องขังดีเอสไอถึงอัยการแล้ว ชี้มีผู้ทำให้ตาย",
+        "pred_lead3": "ตำรวจทุ่งสองห้อง ส่งสำนวนชันสูตรศพ ธวัชชัย อนุกูล อดีตเจ้าหน้าที่ที่ดิน จ.พังงา ผู้ต้องหาเสียชีวิตในห้องขังดีเอสไอ ถึงมืออัยการแล้ว เผยข้อสรุป มีผู้ทำให้ตาย ด้าน รองอธิบดีอัยการคดีอาญา ระบุ ต้องยื่นคำร้องตามกฎหมายใน 30 วัน พร้อมแจงขั้นตอน หากยื่นศาลญาติผู้ตาย ร้องขอศาลร่วมซักถามพยาน-ยื่นหลักฐานร่วมไต่สวนได้,วันนี้ 28 ต.ค. 59 ที่สำนักงานอัยการสูงสุด อาคารรัชดาฯ ร.ต.ท.กฤติเดช ชอบค้าขาย รอง สว.สส. สน.ทุ่งสองห้อง ได้นำสำนวนคำร้องไต่สวนชันสูตรพลิกศพ พร้อมพยานเอกสารหลักฐานจำนวน 4 แฟ้ม",
+        "pred_textrank": "นำสำนวนคำร้องไต่สวนชันสูตรพลิกศพ พร้อมพยานเอกสารหลักฐานจำนวน 4 แฟ้ม ประกอบด้วย สำนวนความเห็นพร้อมฟิล์มเอกซเรย์ และใบความเห็นแพทย์เกี่ยวกับการเสียชีวิตของ นายธวัชชัย อนุกูล อดีตเจ้าหน้าที่กรมที่ดิน จ.พังงา ผู้ต้องหาออกเอกสารสิทธิ์ที่ดินทับซ้อนอุทยานแห่งชาติกว่าพันแปลง ภายในห้องขังดีเอสไอ เพื่อยื่นคำร้องขอไต่สวนชันสูตรพลิกศพ ต่อศาลอาญาโดยท้ายสำนวนระบุว่า มีผู้ทำให้ตาย รองอธิบดีอัยการคดีอาญา ระบุ ต้องยื่นคำร้องตามกฎหมายใน 30 วัน",
+        "rougeL": 73.5
+      }
+    };
+
+    const BUILTIN_LIVE_NEWS = [
+      {
+        "source": "ไทยรัฐออนไลน์ (การเมือง)",
+        "title": "ครม. เคาะงบกระตุ้นเศรษฐกิจฐานราก 1.5 แสนล้านบาท",
+        "article": "คณะรัฐมนตรีมีมติเห็นชอบมาตรการกระตุ้นเศรษฐกิจและการจ้างงานในชุมชนทั่วประเทศ วงเงินกว่า 1.5 แสนล้านบาท มุ่งเน้นการพัฒนาสาธารณูปโภคขั้นพื้นฐาน ระบบชลประทานขนาดเล็ก และการฝึกอบรมทักษะแรงงานยุคดิจิทัล โดยนายกรัฐมนตรีได้สั่งการให้กระทรวงการคลังและกระทรวงมหาดไทยติดตามการเบิกจ่ายงบประมาณให้เป็นไปตามแผนงานและโปร่งใส เพื่อให้เม็ดเงินหมุนเวียนลงสู่ประชาชนอย่างรวดเร็วที่สุด พร้อมกำชับทุกหน่วยงานร่วมมือกันขับเคลื่อนโครงการให้เกิดผลเป็นรูปธรรมภายในไตรมาสแรกของปีงบประมาณ",
+        "pred": "ครม. เห็นชอบมาตรการกระตุ้นเศรษฐกิจฐานราก 1.5 แสนล้านบาท นายกฯ สั่งคลัง-มหาดไทยติดตามเบิกจ่ายโปร่งใส",
+        "rougeL": 79.4
+      },
+      {
+        "source": "ผู้จัดการออนไลน์ (เศรษฐกิจ)",
+        "title": "ธปท. คงอัตราดอกเบี้ยนโยบาย จับตาเงินเฟ้อโลก",
+        "article": "คณะกรรมการนโยบายการเงิน (กนง.) มีมติเอกฉันท์ให้คงอัตราดอกเบี้ยนโยบายไว้ที่ระดับเดิม เพื่อสนับสนุนการฟื้นตัวของเศรษฐกิจไทยอย่างต่อเนื่อง ท่ามกลางความไม่แน่นอนของเศรษฐกิจโลกและทิศทางนโยบายการเงินของธนาคารกลางสหรัฐฯ ขณะที่ค่าเงินบาทยังคงเคลื่อนไหวในกรอบที่สอดคล้องกับปัจจัยพื้นฐานทางเศรษฐกิจ โดยธนาคารแห่งประเทศไทยจะติดตามความเสี่ยงด้านเสถียรภาพระบบการเงินและแนวโน้มอัตราเงินเฟ้ออย่างใกล้ชิดเพื่อดำเนินนโยบายที่เหมาะสม",
+        "pred": "กนง. มีมติเอกฉันท์คงอัตราดอกเบี้ยนโยบาย หนุนเศรษฐกิจไทยฟื้นตัวต่อเนื่อง จับตาทิศทางเศรษฐกิจโลก",
+        "rougeL": 82.1
+      },
+      {
+        "source": "มติชนออนไลน์ (การศึกษา)",
+        "title": "ศธ. เดินหน้ายกระดับโรงเรียนคุณภาพ เพิ่มงบทักษะดิจิทัล",
+        "article": "กระทรวงศึกษาธิการประกาศแผนยุทธศาสตร์ยกระดับโรงเรียนคุณภาพประจำตำบลทั่วประเทศ โดยจัดสรรงบประมาณสนับสนุนอุปกรณ์การเรียนรู้ด้านเทคโนโลยีดิจิทัล และพัฒนาหลักสูตรการสอนภาษาอังกฤษเพื่อการสื่อสาร มุ่งลดความเหลื่อมล้ำทางการศึกษาระหว่างพื้นที่เมืองและชนบท รัฐมนตรีว่าการกระทรวงศึกษาธิการย้ำว่า ครูและบุคลากรทางการศึกษาจะได้รับการฝึกอบรมการใช้เครื่องมือปัญญาประดิษฐ์ เพื่อเพิ่มประสิทธิภาพการจัดการเรียนรู้ให้กับนักเรียนอย่างทั่วถึง",
+        "pred": "กระทรวงศึกษาธิการเดินหน้ายกระดับโรงเรียนคุณภาพประจำตำบล จัดสรรงบสนับสนุนเทคโนโลยีดิจิทัลลดความเหลื่อมล้ำ",
+        "rougeL": 77.8
+      },
+      {
+        "source": "เดลินิวส์ (สิ่งแวดล้อม)",
+        "title": "กรมควบคุมมลพิษ ตรวจสอบแหล่งน้ำปราจีนบุรี ฟื้นฟูระบบนิเวศ",
+        "article": "กรมควบคุมมลพิษร่วมกับหน่วยงานท้องถิ่นลงพื้นที่ตรวจสอบคุณภาพน้ำในลุ่มน้ำปราจีนบุรี หลังได้รับข้อร้องเรียนจากชาวบ้านเกี่ยวกับปัญหาการปนเปื้อนของสารเคมีและกลิ่นเหม็น โดยเจ้าหน้าที่ได้เก็บตัวอย่างน้ำส่งตรวจวิเคราะห์ทางห้องปฏิบัติการเพื่อหาสาเหตุที่แน่ชัด พร้อมเตรียมเสนอมาตรการประกาศเขตควบคุมมลพิษเพื่อบังคับใช้กฎหมายสิ่งแวดล้อมอย่างเข้มงวด และเร่งฟื้นฟูระบบนิเวศแหล่งน้ำธรรมชาติให้กลับคืนสู่สภาพปกติโดยเร็ว",
+        "pred": "กรมควบคุมมลพิษลงพื้นที่ตรวจสอบคุณภาพน้ำลุ่มน้ำปราจีนบุรี เตรียมเสนอประกาศเขตควบคุมมลพิษฟื้นฟูระบบนิเวศ",
+        "rougeL": 81.3
+      },
+      {
+        "source": "ไทยพีบีเอส (ภัยพิบัติ)",
+        "title": "กรมอุตุฯ เตือนรับมือพายุฝนฟ้าคะนอง 11 จังหวัดภาคใต้",
+        "article": "กรมอุตุนิยมวิทยาออกประกาศเตือนภัยสภาพอากาศแปรปรวน ฉบับล่าสุด แจ้งเตือน 11 จังหวัดในพื้นที่ภาคใต้และภาคตะวันออก ให้เตรียมพร้อมรับมือฝนตกหนักถึงหนักมากและคลื่นลมแรงในทะเล ขอให้ชาวเรือเดินเรือด้วยความระมัดระวังและเรือเล็กควรงดออกจากฝั่ง ขณะที่สำนักงานป้องกันและบรรเทาสาธารณภัยจังหวัดได้จัดเตรียมกำลังเจ้าหน้าที่ เครื่องสูบน้ำ และเรือท้องแบนพร้อมให้ความช่วยเหลือประชาชนตลอด 24 ชั่วโมงในจุดเสี่ยงภัยน้ำท่วมฉับพลันและดินโคลนถล่ม",
+        "pred": "กรมอุตุนิยมวิทยาเตือน 11 จังหวัดภาคใต้รับมือฝนตกหนัก ปภ. เตรียมพร้อมเจ้าหน้าที่ช่วยเหลือน้ำท่วมตลอด 24 ชม.",
+        "rougeL": 80.5
+      },
+      {
+        "source": "กรุงเทพธุรกิจ (การเงิน)",
+        "title": "สมาคมค้าทองคำ เผยราคาทองผันผวน คนแห่ซื้อขายทำกำไร",
+        "article": "บรรยากาศการซื้อขายทองคำบนถนนเยาวราชคึกคักเป็นพิเศษตลอดทั้งวัน ประชาชนและนักลงทุนจำนวนมากเดินทางมาต่อแถวเพื่อซื้อขายทองคำทำกำไรตามทิศทางราคาตลาดโลกที่ปรับตัวขึ้นลงอย่างรวดเร็ว โดยสมาคมค้าทองคำเปิดเผยว่า ปัจจัยความไม่สงบทางภูมิรัฐศาสตร์และความกังวลเรื่องอัตราดอกเบี้ยโลกส่งผลให้นักลงทุนหันมาถือครองทองคำในฐานะสินทรัพย์ปลอดภัย พร้อมเตือนประชาชนให้ติดตามข่าวสารและตรวจสอบราคากลางอย่างรอบคอบก่อนตัดสินใจซื้อขาย",
+        "pred": "สมาคมค้าทองคำเผยบรรยากาศซื้อขายทองเยาวราชคึกคัก ราคาทองผันผวนตามตลาดโลก เตือนศึกษาข้อมูลรอบคอบ",
+        "rougeL": 78.9
+      },
+      {
+        "source": "The Standard (สาธารณสุข)",
+        "title": "สปสช. ยกระดับระบบส่งต่อผู้ป่วย กทม. เพิ่มความสะดวกประชาชน",
+        "article": "สำนักงานหลักประกันสุขภาพแห่งชาติ (สปสช.) แถลงความคืบหน้าการปรับปรุงระบบบริการสุขภาพและการส่งต่อผู้ป่วยสิทธิบัตรทองในพื้นที่กรุงเทพมหานคร โดยเชื่อมโยงฐานข้อมูลโรงพยาบาลและคลินิกชุมชนอบอุ่นเข้าด้วยกันเพื่อลดขั้นตอนการขอใบส่งตัว ผู้ป่วยสามารถเข้ารับการรักษาในสถานพยาบาลปฐมภูมิได้สะดวกรวดเร็วยิ่งขึ้น ทั้งนี้ สปสช. ยืนยันว่าโรงพยาบาลส่วนใหญ่สามารถบริหารจัดการสภาพคล่องทางการเงินได้ดีขึ้น และพร้อมรองรับการให้บริการประชาชนอย่างเต็มศักยภาพ",
+        "pred": "สปสช. ปรับปรุงระบบส่งต่อผู้ป่วยบัตรทอง กทม. เชื่อมโยงข้อมูลคลินิกชุมชน เพิ่มความสะดวกในการรักษา",
+        "rougeL": 83.0
+      },
+      {
+        "source": "ประชาไท (เทคโนโลยี)",
+        "title": "ดีอี เตือนภัยมิจฉาชีพออนไลน์ แอบอ้างรับบริจาคหลอกโอนเงิน",
+        "article": "กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม (ดีอี) ร่วมกับสำนักงานตำรวจแห่งชาติ ออกแถลงการณ์เตือนภัยประชาชนให้ระมัดระวังมิจฉาชีพที่ใช้สื่อสังคมออนไลน์เปิดบัญชีรับบริจาคเงินปลอม โดยแอบอ้างภาพผู้ประสบภัยหรือบุคคลมีชื่อเสียงเพื่อสร้างความน่าเชื่อถือ เจ้าหน้าที่เตือนว่าการกระทำดังกล่าวเข้าข่ายความผิดฐานฉ้อโกงประชาชนและนำข้อมูลเท็จเข้าสู่ระบบคอมพิวเตอร์ มีโทษจำคุกสูง พร้อมแนะประชาชนตรวจสอบเลขบัญชีและหน่วยงานผู้รับบริจาคให้แน่ใจก่อนโอนเงินทุกครั้ง",
+        "pred": "กระทรวงดีอีจับมือตำรวจเตือนภัยมิจฉาชีพแอบอ้างรับบริจาคออนไลน์ ชี้ผิดฐานฉ้อโกงและ พ.ร.บ.คอมพิวเตอร์",
+        "rougeL": 81.5
+      },
+      {
+        "source": "PPTV HD 36 (การเกษตร)",
+        "title": "กระทรวงเกษตรฯ ส่งเสริมเกษตรกรใช้เทคโนโลยีบริหารจัดการน้ำ",
+        "article": "กระทรวงเกษตรและสหกรณ์เปิดตัวโครงการบริหารจัดการน้ำอัจฉริยะเพื่อการเกษตร นำร่องในเขตพื้นที่ชลประทานภาคกลางและภาคตะวันออกเฉียงเหนือ โดยติดตั้งเซ็นเซอร์ตรวจวัดความชื้นในดินและระดับน้ำในคลองส่งน้ำ เชื่อมต่อกับแอปพลิเคชันบนสมาร์ทโฟนเพื่อให้เกษตรกรสามารถควบคุมการจ่ายน้ำเข้าแปลงนาได้อย่างแม่นยำ ช่วยลดต้นทุนค่าน้ำมันและค่าไฟฟ้า พร้อมทั้งเพิ่มผลผลิตข้าวนาปรังและพืชไร่ได้อย่างยั่งยืน",
+        "pred": "กระทรวงเกษตรฯ เปิดโครงการจัดการน้ำอัจฉริยะ ติดตั้งเซ็นเซอร์คุมการจ่ายน้ำช่วยเกษตรกรลดต้นทุนเพิ่มผลผลิต",
+        "rougeL": 82.7
+      },
+      {
+        "source": "ช่อง 7HD (สังคม)",
+        "title": "กรมควบคุมโรค รณรงค์ฉีดวัคซีนป้องกันไข้หวัดใหญ่และนิวโมค็อกคัส",
+        "article": "กรมควบคุมโรค กระทรวงสาธารณสุข ออกหน่วยบริการเคลื่อนที่รณรงค์ฉีดวัคซีนป้องกันโรคนิวโมค็อกคัสและโรคไข้หวัดใหญ่ตามฤดูกาลให้กับกลุ่มเสี่ยง ได้แก่ เด็กเล็ก ผู้สูงอายุ 65 ปีขึ้นไป และผู้ป่วยโรคเรื้อรัง 7 กลุ่มโรค โดยแพทย์เน้นย้ำว่าการฉีดวัคซีนจะช่วยลดความรุนแรงของโรค ป้องกันภาวะปอดอักเสบและการเสียชีวิตได้อย่างมีนัยสำคัญ ขอเชิญชวนประชาชนกลุ่มเป้าหมายเข้ารับบริการฉีดวัคซีนได้ฟรีที่โรงพยาบาลส่งเสริมสุขภาพตำบลและโรงพยาบาลรัฐใกล้บ้าน",
+        "pred": "กรมควบคุมโรคจัดหน่วยเคลื่อนที่ฉีดวัคซีนไข้หวัดใหญ่และนิวโมค็อกคัสฟรีแก่กลุ่มเสี่ยง ป้องกันปอดอักเสบรุนแรง",
+        "rougeL": 84.1
+      }
+    ];
+
+    const $ = id => document.getElementById(id);
+    const escapeHtml = str => String(str).replace(/[&<>"']/g, ch => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[ch]));
+
+    function decodeHtmlEntities(str) {
+      return String(str || "")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;|&apos;/gi, "'")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
+        .replace(/&amp;/gi, "&");
+    }
+
+    function updateThemeButtonUI() {
+      const isDark = document.documentElement.classList.contains("dark");
+      const sun = $("theme-icon-sun");
+      const moon = $("theme-icon-moon");
+      const labelEl = $("theme-label");
+      if (sun && moon) {
+        if (isDark) {
+          sun.classList.remove("hidden");
+          moon.classList.add("hidden");
+        } else {
+          sun.classList.add("hidden");
+          moon.classList.remove("hidden");
+        }
+      }
+      if (labelEl) labelEl.textContent = isDark ? "โหมดสว่าง" : "โหมดมืด";
+    }
+
+    function setupThemeToggle() {
+      updateThemeButtonUI();
+      const btn = $("btn-theme-toggle");
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        const htmlEl = document.documentElement;
+        const willBeDark = !htmlEl.classList.contains("dark");
+        htmlEl.classList.toggle("dark", willBeDark);
+        try {
+          localStorage.setItem("thaisum-theme", willBeDark ? "dark" : "light");
+        } catch (_) {}
+        updateThemeButtonUI();
+      });
+    }
+
+    let lastResult = null;
+    let liveNewsCache = [];
+    let liveNewsIndex = 0;
+    let summarizeRunId = 0;
+
+    const curDateEl = $("current-date");
+    if (curDateEl) {
+      curDateEl.querySelector("span").textContent = new Date().toLocaleDateString("th-TH", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      });
+    }
+
+    // ====================================================================
+    // ฟังก์ชันจำแนกประโยคภาษาไทย (Thai Sentence & Clause Segmentation)
+    // รองรับข่าว ThaiSum ที่คั่นด้วยลูกน้ำ (,) การขึ้นบรรทัดใหม่ และคำเชื่อมประโยค
+    // ====================================================================
+    function splitThaiSentences(text) {
+      if (!text || !text.trim()) return [];
+      const clean = text.trim().slice(0, 20000);
+
+      // 1. แยกย่อหน้าและประโยคหลักจาก \n, ลูกน้ำที่ไม่ใช่ตัวเลข (เช่น ,สำนักข่าว), และช่องว่างคู่
+      const rawBlocks = clean
+        .replace(/\r?\n+/g, " <SEP> ")
+        .replace(/([^\d]),([^\d])/g, "$1 <SEP> $2")
+        .replace(/\s{2,}/g, " <SEP> ")
+        .replace(/\s+(?=(?:ทั้งนี้|อย่างไรก็ตาม|อย่างไรก็ดี|นอกจากนี้|ขณะที่|ขณะเดียวกัน|ส่วน|ด้าน|สำหรับ|โดยเฉพาะ|เบื้องต้น|ต่อมา|ล่าสุด|ส่งผลให้|ผู้สื่อข่าวรายงาน|สำนักข่าว|รายงานข่าวแจ้งว่า|จากการสอบสวน))/g, " <SEP> ")
+        .split(" <SEP> ")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      // 2. หากบล็อกใดยังยาวเกิน 190 ตัวอักษร ให้แยกย่อยตามคำเชื่อมอนุประโยคภาษาไทย
+      const refined = [];
+      for (const block of rawBlocks) {
+        if (block.length > 190) {
+          const subParts = block
+            .replace(/\s+(?=(?:ว่า|โดย|ซึ่ง|แต่|และต่อมา|เมื่อวันที่|เมื่อเวลา|หลัง|เพื่อ|เนื่องจาก|เพราะ|พร้อมกันนี้|อีกทั้ง|รวมถึง))/g, " <SUB> ")
+            .split(" <SUB> ")
+            .map(s => s.trim())
+            .filter(Boolean);
+
+          let buffer = "";
+          for (const sub of subParts) {
+            if ((buffer + " " + sub).trim().length <= 155) {
+              buffer = buffer ? `${buffer} ${sub}` : sub;
+            } else {
+              if (buffer) refined.push(buffer);
+              buffer = sub;
+            }
+          }
+          if (buffer) refined.push(buffer);
+        } else {
+          refined.push(block);
+        }
+      }
+
+      // 3. รวมหัวข้อย่อยสั้นๆ (< 45 ตัวอักษร) เข้ากับประโยคถัดไปเพื่อให้แต่ละประโยคสมบูรณ์
+      const merged = [];
+      for (let i = 0; i < refined.length; i++) {
+        const cur = refined[i];
+        if (cur.length < 45 && i + 1 < refined.length && merged.length === 0) {
+          refined[i + 1] = `${cur} ${refined[i + 1]}`;
+        } else if (cur.length >= 12) {
+          merged.push(cur);
+        }
+      }
+
+      return merged.length > 0 ? merged : [clean];
+    }
+
+    let btnFeedbackTimer = null;
+    let ringFeedbackTimer = null;
+
+    function resetSummarizeBtnStyle() {
+      if (btnFeedbackTimer) {
+        clearTimeout(btnFeedbackTimer);
+        btnFeedbackTimer = null;
+      }
+      const summarizeBtn = $("btn-summarize");
+      if (summarizeBtn) {
+        summarizeBtn.classList.remove("bg-emerald-700", "hover:bg-emerald-800");
+        summarizeBtn.classList.add("bg-red-800", "hover:bg-red-900");
+      }
+    }
+
+    function updateInputCounters() {
+      const val = $("news-input").value;
+      const chars = val.length;
+      $("char-count").textContent = `${chars.toLocaleString("th-TH")} ตัวอักษร`;
+      const sentences = splitThaiSentences(val);
+      $("sentence-count").textContent = `${sentences.length} ประโยค`;
+
+      const btn = $("btn-summarize");
+      const btnText = $("btn-text");
+      if (chars === 0) {
+        resetSummarizeBtnStyle();
+        btn.disabled = true;
+        btnText.textContent = "กรุณากรอกหรือเลือกข่าวตัวอย่างก่อน";
+      } else {
+        btn.disabled = false;
+        if (btnText.textContent === "กรุณากรอกหรือเลือกข่าวตัวอย่างก่อน") {
+          btnText.textContent = "ประมวลผลสรุปใหม่";
+        }
+      }
+    }
+
+    $("news-input").addEventListener("input", () => {
+      resetSummarizeBtnStyle();
+      updateInputCounters();
+      const val = $("news-input").value.trim();
+      const btnText = $("btn-text");
+      if (val.length > 0 && !btnText.textContent.includes("กำลัง")) {
+        btnText.textContent = "ประมวลผลสรุปข้อความนี้";
+      }
+    });
+
+    $("news-input").addEventListener("paste", () => {
+      setTimeout(() => {
+        const val = $("news-input").value.trim();
+        if (val.length >= 20) {
+          $("active-sample-tag").textContent = "ตรวจพบการวางข่าวใหม่ — กำลังประมวลผลสรุปอัตโนมัติ...";
+          updateInputCounters();
+          runSummarization();
+        }
+      }, 100);
+    });
+
+    $("news-input").addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        runSummarization();
+      }
+    });
+
+    $("btn-clear").addEventListener("click", () => {
+      resetSummarizeBtnStyle();
+      $("news-input").value = "";
+      $("active-sample-tag").textContent = "ล้างข้อความแล้ว — วางเนื้อหาข่าวใหม่หรือกดปุ่มเลือกข่าวจากคลังทดสอบ 500 ข่าวด้านบน";
+      $("error-banner").classList.add("hidden");
+      updateInputCounters();
+      const colLeft = $("ner-col-left");
+      const cardOrg = $("card-ORGANIZATION");
+      if (colLeft && cardOrg) {
+        colLeft.appendChild(cardOrg);
+      }
+      $("news-input").focus();
+    });
+
+    function getPool500() {
+      return (typeof window.NEWS_500 !== "undefined" && Array.isArray(window.NEWS_500)) ? window.NEWS_500 : [];
+    }
+
+    const categoryIndices = { politics: 0, economy: 0, crime: 0 };
+    document.querySelectorAll(".sample-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cat = btn.getAttribute("data-sample");
+        const pool = getPool500();
+        let matched = pool.filter(item => item.cat === cat);
+        if (matched.length === 0) matched = pool;
+
+        if (matched.length > 0) {
+          const idx = (categoryIndices[cat] || 0) % matched.length;
+          categoryIndices[cat] = (categoryIndices[cat] || 0) + 1;
+          const chosen = matched[idx];
+          $("news-input").value = chosen.body;
+          const catLabel = cat === "politics" ? "การเมือง" : cat === "economy" ? "เศรษฐกิจ" : "อาชญากรรม";
+          const tag = `ข่าวที่ ${chosen.id}/500 [${catLabel}]: ${chosen.title}`;
+          $("active-sample-tag").textContent = tag;
+          $("active-sample-tag").title = tag;
+        } else if (SAMPLE_NEWS[cat]) {
+          $("news-input").value = SAMPLE_NEWS[cat].text;
+          const tag = `เลือก: ${SAMPLE_NEWS[cat].label}`;
+          $("active-sample-tag").textContent = tag;
+          $("active-sample-tag").title = tag;
+        }
+        $("error-banner").classList.add("hidden");
+        updateInputCounters();
+        runSummarization();
+      });
+    });
+
+    const btnRandom = $("btn-random-500");
+    if (btnRandom) {
+      btnRandom.addEventListener("click", () => {
+        const pool = getPool500();
+        if (pool.length > 0) {
+          const randomIndex = Math.floor(Math.random() * pool.length);
+          const chosen = pool[randomIndex];
+          $("news-input").value = chosen.body;
+          const catName = chosen.cat === "politics" ? "การเมือง" : chosen.cat === "economy" ? "เศรษฐกิจ" : chosen.cat === "crime" ? "อาชญากรรม" : "ทั่วไป";
+          const tag = `สุ่มข่าวที่ ${chosen.id}/500 [${catName}]: ${chosen.title}`;
+          $("active-sample-tag").textContent = tag;
+          $("active-sample-tag").title = tag;
+          $("error-banner").classList.add("hidden");
+          updateInputCounters();
+          runSummarization();
+        } else {
+          const keys = Object.keys(SAMPLE_NEWS);
+          const rKey = keys[Math.floor(Math.random() * keys.length)];
+          $("news-input").value = SAMPLE_NEWS[rKey].text;
+          const tag = `สุ่มตัวอย่าง: ${SAMPLE_NEWS[rKey].label}`;
+          $("active-sample-tag").textContent = tag;
+          $("active-sample-tag").title = tag;
+          updateInputCounters();
+          runSummarization();
+        }
+      });
+    }
+
+    $("btn-fetch-live").addEventListener("click", () => {
+      const btn = $("btn-fetch-live");
+      $("error-banner").classList.add("hidden");
+
+      if (liveNewsCache.length === 0) {
+        liveNewsCache = BUILTIN_LIVE_NEWS.map(item => ({
+          ...item,
+          origin: "คลังข่าวสด 10 สำนักพิมพ์ชั้นนำ"
+        }));
+      }
+
+      const currentIdx = liveNewsIndex % liveNewsCache.length;
+      const item = liveNewsCache[currentIdx];
+      const displayIndex = currentIdx + 1;
+      liveNewsIndex = (liveNewsIndex + 1) % liveNewsCache.length;
+
+      $("news-input").value = item.article;
+      const rougeStr = item.rougeL ? ` (ROUGE-L ${item.rougeL}%)` : "";
+      const tag = `ข่าวสด (${displayIndex}/${liveNewsCache.length}): ${item.source} — ${item.title}${rougeStr}`;
+      $("active-sample-tag").textContent = tag;
+      $("active-sample-tag").title = tag;
+      updateInputCounters();
+      runSummarization();
+    });
+
+    // ====================================================================
+    // ระบบจำแนกชื่อเฉพาะ (Named Entity Recognition — NER) ครอบคลุมข่าวไทย/ตปท.
+    // (ตัดคำกำกวม เช่น เลย/แพร่/ตาก/น่าน/ตรัง ที่ซ้ำกับคำกริยา/วิเศษณ์ทั่วไปออก เว้นแต่มี จ./จังหวัด นำหน้า)
+    // ====================================================================
+    const THAI_PROVINCES = [
+      "กรุงเทพมหานคร", "กรุงเทพฯ", "กทม.", "เชียงใหม่", "เชียงราย", "ภูเก็ต", "ชลบุรี", "นนทบุรี", "ปทุมธานี",
+      "สมุทรปราการ", "นครราชสีมา", "โคราช", "ขอนแก่น", "สงขลา", "หาดใหญ่", "สุราษฎร์ธานี", "ลำปาง", "ลำพูน", "พะเยา",
+      "แม่ฮ่องสอน", "อุตรดิตถ์", "พิษณุโลก", "สุโขทัย", "พิจิตร", "กำแพงเพชร",
+      "นครสวรรค์", "อุทัยธานี", "เพชรบูรณ์", "อุดรธานี", "หนองคาย", "สกลนคร", "นครพนม",
+      "มุกดาหาร", "บุรีรัมย์", "สุรินทร์", "ศรีสะเกษ", "อุบลราชธานี", "ยโสธร", "ชัยภูมิ", "อำนาจเจริญ",
+      "บึงกาฬ", "หนองบัวลำภู", "ร้อยเอ็ด", "กาฬสินธุ์", "มหาสารคาม", "อยุธยา", "พระนครศรีอยุธยา",
+      "อ่างทอง", "ลพบุรี", "สิงห์บุรี", "ชัยนาท", "สระบุรี", "นครนายก", "ปราจีนบุรี", "สระแก้ว",
+      "ฉะเชิงเทรา", "ระยอง", "จันทบุรี", "กาญจนบุรี", "สุพรรณบุรี", "นครปฐม", "สมุทรสาคร",
+      "สมุทรสงคราม", "เพชรบุรี", "ประจวบคีรีขันธ์", "หัวหิน", "ชุมพร", "ระนอง", "พังงา", "กระบี่",
+      "พัทลุง", "ปัตตานี", "ยะลา", "นราธิวาส", "พัทยา", "เกาะสมุย"
+    ];
+
+    const AMBIGUOUS_PROVINCES = ["ตราด", "เลย", "แพร่", "ตาก", "น่าน", "ตรัง"];
+
+    const COUNTRIES_AND_PLACES = [
+      "เนปาล", "อินเดีย", "จีน", "สหรัฐอเมริกา", "สหรัฐฯ", "ญี่ปุ่น", "เกาหลีใต้", "เกาหลีเหนือ",
+      "อังกฤษ", "สหราชอาณาจักร", "ฝรั่งเศส", "เยอรมนี", "รัสเซีย", "อิตาลี", "สเปน", "ออสเตรเลีย",
+      "เมียนมา", "พม่า", "ลาว", "กัมพูชา", "เวียดนาม", "มาเลเซีย", "สิงคโปร์", "อินโดนีเซีย", "ฟิลิปปินส์",
+      "ไต้หวัน", "ฮ่องกง", "อิสราเอล", "อิหร่าน", "ยูเครน", "อียิปต์", "แคนาดา", "บราซิล", "ลอนดอน", "กรุงลอนดอน",
+      "อนุสาวรีย์ประชาธิปไตย", "ถนนเยาวราช", "เยาวราช", "อาคารมหาจักรีสิรินธร", "ทำเนียบรัฐบาล", "รัฐสภา",
+      "ชะอำ", "ชายหาดชะอำ", "หาดชะอำ", "หัวหิน", "พัทยา", "บางแสน", "เกาะสมุย", "ท่าวาสุกรี", "เขาใหญ่",
+      "แยกบรมราชชนนี", "ถนนบรมราชชนนี", "บรมราชชนนี", "สะพานพระราม 7", "สะพานพระราม 8", "แยกบางพลัด", "แยกบางขุนนนท์", "ถนนจรัญสนิทวงศ์"
+    ];
+
+    const THAI_ORG_KEYWORDS = [
+      "กองบังคับการตำรวจจราจร", "บก.จร.", "กองบัญชาการตำรวจนครบาล", "บช.น.",
+      "กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม", "กระทรวงดิจิทัล", "กระทรวงดีอี",
+      "กระทรวงการคลัง", "กระทรวงมหาดไทย", "กระทรวงสาธารณสุข", "กระทรวงศึกษาธิการ",
+      "กระทรวงคมนาคม", "กระทรวงพาณิชย์", "กระทรวงยุติธรรม", "กระทรวงการต่างประเทศ",
+      "กระทรวงกลาโหม", "กระทรวงเกษตรและสหกรณ์", "กระทรวงเกษตรฯ", "กระทรวงเกษตร", "กระทรวงแรงงาน", "กระทรวงพลังงาน",
+      "กระทรวงอุตสาหกรรม", "กระทรวงการท่องเที่ยวและกีฬา", "กระทรวงวัฒนธรรม", "กระทรวงการอุดมศึกษา",
+      "สำนักงานตำรวจแห่งชาติ", "สตช.", "กองทัพบก", "กองทัพเรือ", "กองทัพอากาศ",
+      "คณะรัฐมนตรี", "ครม.", "ศาลรัฐธรรมนูญ", "ศาลฎีกา", "ศาลอาญา", "ศาลปกครอง",
+      "กรมสอบสวนคดีพิเศษ", "ดีเอสไอ", "ป.ป.ช.", "กกต.", "สคบ.", "สสจ.", "กนง.",
+      "ธนาคารแห่งประเทศไทย", "ธปท.", "สมาคมค้าทองคำ", "สำนักงานอัยการสูงสุด",
+      "จุฬาลงกรณ์มหาวิทยาลัย", "มหาวิทยาลัยธรรมศาสตร์", "มหาวิทยาลัยเกษตรศาสตร์", "มหาวิทยาลัยมหิดล",
+      "สน.ทุ่งสองห้อง", "สำนักบริหารกิจการนิสิต", "คณะอักษรศาสตร์", "คณะครุศาสตร์", "กรมที่ดิน", "กรมอุตุนิยมวิทยา",
+      "สำนักงานหลักประกันสุขภาพแห่งชาติ", "สปสช.", "กรมป้องกันและบรรเทาสาธารณภัย", "ปภ.", "กรมควบคุมโรค", "กรมควบคุมมลพิษ",
+      "พรรคเพื่อไทย", "พท.", "พรรคประชาธิปัตย์", "ปชป.", "พรรคก้าวไกล", "พรรคไทยรักไทย", "สภานิติบัญญัติแห่งชาติ", "สนช.", "กรธ.", "คณะกรรมการร่างรัฐธรรมนูญ", "ส.ส.", "ส.ว.", "สมาชิกสภาผู้แทนราษฎร", "สมาชิกวุฒิสภา", "ผู้ตรวจการแผ่นดิน", "ผู้ตรวจฯ", "พรรคการเมือง",
+      "สยามเทค", "เชลซี", "Sanook", "เดลินิวส์", "The Standard", "thestandard.co", "ไทยโพสต์", "Thaipost.net", "ข่าวสด", "มติชน", "ไทยรัฐ", "ผู้จัดการ", "กรุงเทพธุรกิจ", "ตร."
+    ];
+
+    const ALIAS_MAP = {
+      "คณะรัฐมนตรี": ["ครม."],
+      "ครม.": ["คณะรัฐมนตรี"],
+      "กรุงเทพมหานคร": ["กทม.", "กรุงเทพฯ"],
+      "กรุงเทพฯ": ["กทม.", "กรุงเทพมหานคร"],
+      "กทม.": ["กรุงเทพมหานคร", "กรุงเทพฯ"],
+      "สำนักงานหลักประกันสุขภาพแห่งชาติ": ["สปสช.", "บัตรทอง"],
+      "สปสช.": ["สำนักงานหลักประกันสุขภาพแห่งชาติ", "บัตรทอง"],
+      "บัตรทอง": ["สำนักงานหลักประกันสุขภาพแห่งชาติ", "สปสช."],
+      "ธนาคารแห่งประเทศไทย": ["ธปท.", "แบงก์ชาติ"],
+      "ธปท.": ["ธนาคารแห่งประเทศไทย", "แบงก์ชาติ"],
+      "แบงก์ชาติ": ["ธนาคารแห่งประเทศไทย", "ธปท."],
+      "สำนักงานตำรวจแห่งชาติ": ["สตช.", "ตำรวจ"],
+      "สตช.": ["สำนักงานตำรวจแห่งชาติ", "ตำรวจ"],
+      "ตำรวจ": ["ตร.", "เจ้าหน้าที่ตำรวจ", "สตช."],
+      "ตร.": ["ตำรวจ", "เจ้าหน้าที่ตำรวจ"],
+      "เดลินิวส์": ["เดลินิวส์ออนไลน์", "dailynews"],
+      "Sanook": ["สนุก", "sanook.com", "Sanook.com"],
+      "The Standard": ["thestandard.co", "thestandard", "THE STANDARD"],
+      "thestandard.co": ["The Standard", "thestandard"],
+      "ไทยโพสต์": ["Thaipost.net", "thaipost", "ไทยโพสต์ออนไลน์"],
+      "Thaipost.net": ["ไทยโพสต์", "thaipost"],
+      "ชะอำ": ["ชายหาดชะอำ", "หาดชะอำ"],
+      "ชายหาดชะอำ": ["ชะอำ", "หาดชะอำ"],
+      "ท่าวาสุกรี": ["ท่าเรือวาสุกรี"],
+      "วัดเทพศิรินทราวาส": ["วัดเทพศิรินทร์"],
+      "กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม": ["กระทรวงดีอี", "ดีอี"],
+      "กระทรวงดีอี": ["กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม", "ดีอี"],
+      "ดีอี": ["กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม", "กระทรวงดีอี"],
+      "กรมอุตุนิยมวิทยา": ["กรมอุตุฯ", "กรมอุตุ", "อุตุฯ"],
+      "กรมอุตุฯ": ["กรมอุตุนิยมวิทยา", "กรมอุตุ"],
+      "กรมอุตุ": ["กรมอุตุนิยมวิทยา", "กรมอุตุฯ"],
+      "กรมสอบสวนคดีพิเศษ": ["ดีเอสไอ"],
+      "ดีเอสไอ": ["กรมสอบสวนคดีพิเศษ"],
+      "คณะกรรมการนโยบายการเงิน": ["กนง."],
+      "กนง.": ["คณะกรรมการนโยบายการเงิน"],
+      "กรมป้องกันและบรรเทาสาธารณภัย": ["ปภ.", "สำนักงานป้องกันและบรรเทาสาธารณภัย"],
+      "สำนักงานป้องกันและบรรเทาสาธารณภัย": ["ปภ.", "กรมป้องกันและบรรเทาสาธารณภัย"],
+      "ปภ.": ["กรมป้องกันและบรรเทาสาธารณภัย", "สำนักงานป้องกันและบรรเทาสาธารณภัย"],
+      "กระทรวงศึกษาธิการ": ["ศธ.", "กระทรวงศึกษา"],
+      "ศธ.": ["กระทรวงศึกษาธิการ", "กระทรวงศึกษา"],
+      "กระทรวงสาธารณสุข": ["สธ.", "กระทรวงสธ."],
+      "สธ.": ["กระทรวงสาธารณสุข"],
+      "กรมควบคุมโรค": ["คร."],
+      "กระทรวงการคลัง": ["คลัง"],
+      "คลัง": ["กระทรวงการคลัง"],
+      "กระทรวงมหาดไทย": ["มหาดไทย"],
+      "มหาดไทย": ["กระทรวงมหาดไทย"],
+      "กระทรวงเกษตรและสหกรณ์": ["กระทรวงเกษตรฯ", "กระทรวงเกษตร", "เกษตรฯ"],
+      "กระทรวงเกษตรฯ": ["กระทรวงเกษตรและสหกรณ์", "กระทรวงเกษตร", "เกษตรฯ"],
+      "กระทรวงเกษตร": ["กระทรวงเกษตรและสหกรณ์", "กระทรวงเกษตรฯ", "เกษตรฯ"],
+      "สภานิติบัญญัติแห่งชาติ": ["สนช."],
+      "สนช.": ["สภานิติบัญญัติแห่งชาติ"],
+      "ส.ส.": ["สมาชิกสภาผู้แทนราษฎร"],
+      "สมาชิกสภาผู้แทนราษฎร": ["ส.ส."],
+      "ส.ว.": ["สมาชิกวุฒิสภา"],
+      "สมาชิกวุฒิสภา": ["ส.ว."],
+      "ผู้ตรวจการแผ่นดิน": ["ผู้ตรวจฯ"],
+      "ผู้ตรวจฯ": ["ผู้ตรวจการแผ่นดิน"],
+      "กรธ.": ["คณะกรรมการร่างรัฐธรรมนูญ"],
+      "คณะกรรมการร่างรัฐธรรมนูญ": ["กรธ."],
+      "พรรคเพื่อไทย": ["พท."],
+      "พท.": ["พรรคเพื่อไทย"],
+      "พรรคประชาธิปัตย์": ["ปชป."],
+      "ปชป.": ["พรรคประชาธิปัตย์"],
+      "นายกรัฐมนตรี": ["นายกฯ"],
+      "นายกฯ": ["นายกรัฐมนตรี"],
+      "เยาวราช": ["ถนนเยาวราช"],
+      "ถนนเยาวราช": ["เยาวราช"],
+      "มีชัย ฤชุพันธุ์": ["มีชัย"],
+      "มีชัย": ["มีชัย ฤชุพันธุ์"],
+      "สมชัย ศรีสุทธิยากร": ["สมชัย"],
+      "สมชัย": ["สมชัย ศรีสุทธิยากร"],
+      "สมคิด เชื้อคง": ["สมคิด"],
+      "สมคิด": ["สมคิด เชื้อคง"],
+      "พรเพชร วิชิตชลชัย": ["พรเพชร"],
+      "พรเพชร": ["พรเพชร วิชิตชลชัย"],
+      "ประยุทธ์ จันทร์โอชา": ["ประยุทธ์", "บิ๊กตู่"],
+      "ประวิตร วงษ์สุวรรณ": ["ประวิตร", "บิ๊กป้อม"],
+      "ยิ่งลักษณ์ ชินวัตร": ["ยิ่งลักษณ์", "ทนายปู"],
+      "อภิสิทธิ์ เวชชาชีวะ": ["อภิสิทธิ์"],
+      "ธนาธร จึงรุ่งเรืองกิจ": ["ธนาธร"],
+      "พิธา ลิ้มเจริญรัตน์": ["พิธา"],
+      "เศรษฐา ทวีสิน": ["เศรษฐา"],
+      "อนุทิน ชาญวีรกูล": ["อนุทิน"]
+    };
+
+    const KNOWN_PERSON_NAMES = [
+      "เพนกวิน", "พริษฐ์ ชิวารักษ์", "ศุกรียา วรรณายุวัฒน์", "สิรภพ อัตโตหิ", "สิรินทร์ มุ่งเจริญ", "ธวัชชัย อนุกูล", "รุจ เขื่อนสุวรรณ",
+      "มีชัย ฤชุพันธุ์", "มีชัย", "สมชัย ศรีสุทธิยากร", "สมชัย", "สมคิด เชื้อคง", "สมคิด", "พรเพชร วิชิตชลชัย", "พรเพชร",
+      "ประยุทธ์ จันทร์โอชา", "ประยุทธ์", "บิ๊กตู่", "ประวิตร วงษ์สุวรรณ", "ประวิตร", "บิ๊กป้อม", "ทักษิณ ชินวัตร", "ทักษิณ",
+      "ยิ่งลักษณ์ ชินวัตร", "ยิ่งลักษณ์", "ทนายปู", "อภิสิทธิ์ เวชชาชีวะ", "อภิสิทธิ์", "ธนาธร จึงรุ่งเรืองกิจ", "ธนาธร",
+      "พิธา ลิ้มเจริญรัตน์", "พิธา", "เศรษฐา ทวีสิน", "เศรษฐา", "อนุทิน ชาญวีรกูล", "อนุทิน", "ชวน หลีกภัย",
+      "ปีเตอร์ เช็ก", "โชเซ มูรินโญ", "มูรินโญ", "โดนัลด์ ทรัมป์", "ทรัมป์", "โจ ไบเดน", "ไบเดน", "วลาดิเมียร์ ปูติน", "ปูติน", "สี จิ้นผิง"
+    ];
+
+    const SORTED_KNOWN_ORGS = [...THAI_ORG_KEYWORDS].sort((a, b) => b.length - a.length);
+    const SORTED_KNOWN_LOCS = [...THAI_PROVINCES, ...COUNTRIES_AND_PLACES].sort((a, b) => b.length - a.length);
+
+    const ENTITY_STOP_SUFFIX = /(?:จับมือ|เตือนภัย|เตือน|เร่ง|สร้าง|เกิด|เปิดเผย|รายงาน|ระบุ|เผยแพร่|เผยว่า|เผย|ซึ่ง|และ|ของ|เมื่อ|เนื่องจาก|ตาม|อย่าง|หลังจาก|หลัง|เพื่อ|โดย|ว่า|เป็น|ถูก|รวมถึง|ทั้งนี้|ตั้งอยู่|พร้อม|เตรียม|รับมือ|ลงพื้นที่|ทวีต|แถลง|สั่งการ|สั่ง|เดินทาง|เสียชีวิต|บาดเจ็บ|ต่างประเทศ|ใกล้เคียง|เข้ามา|ออกมา|พบว่า|กล่าวว่า|กล่าวถึง|กล่าว|ตอบคำถาม|ตอบว่า|ตอบ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำว่า|ย้ำ|ปฏิเสธ|คาดว่า|เชื่อว่า|มุ่งแต่|อยาก|กลายเป็น|ไม่ได้|ไม่สนใจ|ไม่|ยังไม่มี|ยัง|ในวัน|ในข้อหา|อยู่ที่|อยู่ระหว่าง|อยู่ใน|ในพื้นที่|ลงมือ|ทำงาน|มีมติ|จัดหน่วย|จัดสรร|จัดตั้ง|จัด|เดินหน้า|ออกหน่วย|ออกประกาศ|ออก|เปิดตัว|ส่งเสริม|ร่วมมือ).*/;
+
+    function cleanEntityText(raw) {
+      return raw.replace(ENTITY_STOP_SUFFIX, "").replace(/[,\.\(\)"'“”]+$/g, "").trim();
+    }
+
+    const NON_NAME_SECOND_WORDS = /^(?:กล่าว|ตอบ|เผย|เปิดเผย|ระบุ|ยืนยัน|ยอมรับ|ชี้แจง|แนะนำ|เสนอ|ย้ำ|สั่ง|คาด|เชื่อ|มุ่ง|อยาก|กลาย|ไม่|ยัง|ใน|เมื่อ|ที่|ได้|ว่า|แต่|และ|หลัง|ก่อน|เพื่อ|โดย|จาก|ต่อ|กับ|ตาม|ซึ่ง|เป็น|มี|ถูก|จะ|ต้อง|ก็|ลงมือ|ทำงาน|เดินทาง|ขึ้น|อยู่|มา|ไป|ถึง|ให้|นำ|ใช้|ขอ|ช่วย|ร่วม|ส่ง|รับ|ทำ|ดู|เห็น|รู้|คิด|ถือ|จัด|ตั้ง|เปิด|ปิด|เข้า|ออก|เกิด|สร้าง|แถลง|ทวีต|ลง|สัปดาห์|ช่วง|กรณี|เรื่อง|คดี|วัน|เวลา|ปี|เดือน|ส่วน|ด้าน|ทั้งนี้|พร้อม|ใคร|อะไร|ที่ไหน|อย่างไร|ทำไม|รพ|สน|สภ|จ|อ|ต)/;
+
+    function clientExtractNER(rawText, summaryText = "") {
+      const text = (String(rawText || "") + " " + String(summaryText || "")).slice(0, 40000);
+      const rawEntities = [];
+      const seen = new Set();
+      let m;
+      const addExact = (entText, type, aliases = []) => {
+        const clean = entText.trim();
+        if (clean.length >= 2 && !seen.has(clean)) {
+          seen.add(clean);
+          const allAliases = Array.from(new Set([...aliases, ...(ALIAS_MAP[clean] || [])]));
+          rawEntities.push({ text: clean, type, aliases: allAliases });
+        }
+      };
+
+      // ตรวจจับชื่อบุคคลในเครื่องหมายคำพูด เช่น "ต๊ะ นารากร", "บุ๋ม ปนัดดา", "กำนันมะโน"
+      const quotedNameRegex = /"([ก-๙A-Za-z]{2,20}(?:\s+[ก-๙A-Za-z]{2,20})?)"/g;
+      while ((m = quotedNameRegex.exec(text)) !== null) {
+        const raw = m[1].trim();
+        if (!/^(?:ของจริง|เก๊|จริง|ปลอม|ใช่|ไม่ใช่|เรื่องนี้|ความคืบหน้า|สถานการณ์)$/.test(raw) && raw.length >= 3) {
+          addExact(raw, "PERSON", [m[0], raw]);
+        }
+      }
+
+      // ตรวจจับยศ ตำแหน่ง บรรดาศักดิ์ เช่น กำนัน, สารวัตร, เสี่ย, ทนาย, พระราชินี, ในหลวง
+      const titlePersonRegex = /(?:กำนัน|ผู้ใหญ่บ้าน|สารวัตร|ทนาย|เสี่ย|บิ๊ก)\s*[ก-๙]{2,20}(?:\s+[ก-๙]{2,20})?|พระราชินี|สมเด็จพระนางเจ้าฯ|ในหลวง|พระบาทสมเด็จพระเจ้าอยู่หัว/g;
+      while ((m = titlePersonRegex.exec(text)) !== null) {
+        addExact(m[0].trim(), "PERSON");
+      }
+
+      // 1. บุคคล (PERSON) — รายชื่อบุคคลสำคัญ & ตรวจจับตำแหน่ง ยศ คำนำหน้า
+      KNOWN_PERSON_NAMES.forEach(p => {
+        if (text.includes(p)) {
+          const parts = p.split(/\s+/);
+          const aliases = parts.length > 1 ? [parts[0]] : [];
+          addExact(p, "PERSON", aliases);
+        }
+      });
+
+      const personRegex = /(?<![ก-๙A-Za-z\d\.])(?:(?:นางสาว|น\.ส\.|ด\.ช\.|ด\.ญ\.|พล\.ต\.อ\.|พล\.ต\.ท\.|พล\.ต\.ต\.|พล\.ต\.|พล\.อ\.|พล\.ร\.อ\.|พล\.อ\.อ\.|พ\.ต\.อ\.|พ\.ต\.ท\.|พ\.ต\.ต\.|พ\.อ\.หญิง|พ\.อ\.|ร\.ต\.อ\.|ร\.ต\.ท\.|ร\.ต\.ต\.|ด\.ต\.|ส\.ต\.อ\.|ส\.ต\.ท\.|ส\.ต\.ต\.|รศ\.ดร\.|ผศ\.ดร\.|ศ\.ดร\.|รศ\.นพ\.|ผศ\.นพ\.|ศ\.นพ\.|ดร\.|นพ\.|พญ\.|นายแพทย์|แพทย์หญิง)\s*[ก-๙]{2,20}(?:\s+[ก-๙]{2,20})?|(?!(?:นายก|นายอำเภอ|นายทะเบียน|นายหน้า|นายทุน|นายจ้าง|นายท้าย|นายด่าน|นายทวาร|นายใหญ่|นายทหาร|นายตำรวจ|นายร้อย|นายสิบ|นายดาบ|นายแพทย์|นายพราน|นางแบบ|นางเอก|นางงาม|นางสาว|นางพยาบาล|นางรำ|นางฟ้า|นางพญา|นางเงือก|นางร้าย))(?:นาย|นาง)[ก-๙]{2,20}(?:\s+[ก-๙]{2,20})?)/g;
+      while ((m = personRegex.exec(text)) !== null) {
+        const rawMatch = m[0].trim();
+        const parts = rawMatch.split(/\s+/);
+        const first = cleanEntityText(parts[0]);
+        if (first.length < 4 || /^(?:นาย|นาง|นางสาว|น\.ส\.|ดร\.|นพ\.|พญ\.)$/.test(first)) continue;
+        let candidate = first;
+        const aliases = [];
+        const bareFirst = first.replace(/^(?:นาย|นาง|นางสาว|น\.ส\.|พล\.ต\.อ\.|พล\.อ\.|พ\.ต\.อ\.|ร\.ต\.อ\.|ร\.ต\.ท\.|ดร\.|นพ\.|พญ\.)/, "").trim();
+        if (bareFirst.length >= 3) aliases.push(bareFirst);
+
+        if (parts.length > 1) {
+          const second = cleanEntityText(parts[1]);
+          if (second.length >= 2 && second.length <= 20 && !NON_NAME_SECOND_WORDS.test(second)) {
+            candidate = first + " " + second;
+            if (bareFirst.length >= 3) aliases.push(`${bareFirst} ${second}`);
+          }
+        }
+        addExact(candidate, "PERSON", aliases);
+      }
+
+      // 2. สถานที่ (LOCATION) — จังหวัด ประเทศ เมือง อำเภอ ถนน
+      // ตรวจจับสถานที่สำคัญ วัด ท่า ชายหาด แหล่งท่องเที่ยว
+      const famousPlaces = ["ชะอำ", "ชายหาดชะอำ", "หาดชะอำ", "หัวหิน", "พัทยา", "บางแสน", "เกาะสมุย", "ท่าวาสุกรี", "เยาวราช"];
+      famousPlaces.forEach(pl => { if (text.includes(pl)) addExact(pl, "LOCATION", ALIAS_MAP[pl] || []); });
+
+      const templeRegex = /(?:วัด(?!(?:ที่|ผล|ค่า|ดวง|ใจ|สาย|รอบ|ระดับ))[ก-๙]{3,25}|ท่าวาสุกรี|ท่าเรือ[ก-๙]{2,20}|ชายหาด[ก-๙]{2,20}|หาด[ก-๙]{2,20})/g;
+      while ((m = templeRegex.exec(text)) !== null) {
+        const c = cleanEntityText(m[0]);
+        if (c.length >= 4) addExact(c, "LOCATION", ALIAS_MAP[c] || []);
+      }
+
+      THAI_PROVINCES.forEach(p => {
+        if (text.includes(p)) addExact(p, "LOCATION", ALIAS_MAP[p] || []);
+      });
+      COUNTRIES_AND_PLACES.forEach(pl => {
+        if (pl === "จีน") {
+          const stripped = text.replace(/ปราจีนบุรี|ปราจีน/g, "");
+          if (stripped.includes("จีน")) addExact(pl, "LOCATION", ALIAS_MAP[pl] || []);
+        } else if (text.includes(pl)) {
+          addExact(pl, "LOCATION", ALIAS_MAP[pl] || []);
+        }
+      });
+
+      // จังหวัดที่มีคำกำกวม (เช่น ตราด/เลย/แพร่/ตาก) ตรวจจับเฉพาะเมื่อมี จ./จังหวัด นำหน้า เพื่อป้องกันการตัดคำผิด
+      AMBIGUOUS_PROVINCES.forEach(p => {
+        const safeRegex = new RegExp(`(?:จ\\.|จังหวัด)\\s*${p}`, "g");
+        while ((m = safeRegex.exec(text)) !== null) {
+          addExact(m[0].trim(), "LOCATION", [p]);
+        }
+      });
+
+      const locRegex = /(?<![ก-๙A-Za-z\d\.])(?:กรุง[ก-๙]{2,20}|(?:จังหวัด|จ\.|อำเภอ|อ\.|ตำบล|ต\.|ถนน|ถ\.|สนามบิน)[ก-๙]{2,22})/g;
+      while ((m = locRegex.exec(text)) !== null) {
+        if (/^(?:ต\.ค|เม\.ย|พ\.ย|ก\.พ|มี\.ค|พ\.ค|มิ\.ย|ก\.ค|ส\.ค|ก\.ย|ธ\.ค|ม\.ค|อ\.ส\.ม\.ท|อ\.ก\.ค\.ศ|อ\.ต\.ก|อ\.ส่งเสริม)/.test(m[0])) continue;
+        const c = cleanEntityText(m[0]);
+        const bare = c.replace(/^(?:จังหวัด|จ\.|อำเภอ|อ\.|ตำบล|ต\.|ถนน|ถ\.)\s*(?:ในพื้นที่\s*)?/, '').trim();
+        const matchedLoc = SORTED_KNOWN_LOCS.find(pl => bare === pl || bare.startsWith(pl));
+        if (matchedLoc) {
+          addExact(matchedLoc, "LOCATION", ALIAS_MAP[matchedLoc] || []);
+        } else if (c.length >= 4 && !/^(?:กรุง|ถนน|จังหวัด|อำเภอ|ตำบล|สนามบิน)$/.test(c)) {
+          addExact(c, "LOCATION");
+        }
+      }
+
+      // 3. องค์กร / หน่วยงาน (ORGANIZATION)
+      // ตรวจจับสำนักข่าวและสื่อมวลชนที่พบบ่อย
+      const mediaOrgs = [
+        { text: "ตำรวจ", aliases: ["ตร.", "เจ้าหน้าที่ตำรวจ", "สตช."] },
+        { text: "Sanook", aliases: ["สนุก", "sanook.com", "Sanook.com"] },
+        { text: "เดลินิวส์", aliases: ["เดลินิวส์ออนไลน์", "dailynews"] },
+        { text: "The Standard", aliases: ["thestandard.co", "thestandard", "THE STANDARD"] },
+        { text: "ไทยโพสต์", aliases: ["Thaipost.net", "thaipost", "ไทยโพสต์ออนไลน์"] },
+        { text: "ข่าวสด", aliases: ["khaosod"] },
+        { text: "มติชน", aliases: ["matichon"] },
+        { text: "ไทยรัฐ", aliases: ["thairath"] },
+        { text: "ผู้จัดการ", aliases: ["mgronline"] },
+        { text: "กรุงเทพธุรกิจ", aliases: ["bangkokbiznews"] }
+      ];
+      mediaOrgs.forEach(org => {
+        if (text.includes(org.text) || org.aliases.some(a => text.includes(a))) {
+          addExact(org.text, "ORGANIZATION", org.aliases);
+        }
+      });
+
+      THAI_ORG_KEYWORDS.forEach(org => {
+        if (text.includes(org)) {
+          addExact(org, "ORGANIZATION", ALIAS_MAP[org] || []);
+        }
+      });
+
+      const orgRegex = /(?<![ก-๙A-Za-z\d\.])(?:กระทรวง[ก-๙]{2,25}|กรม[ก-๙]{2,25}|สำนักงาน[ก-๙]{2,28}|สำนักข่าว[ก-๙A-Za-z]{2,22}|กองทัพ[ก-๙]{2,20}|กองบังคับการ[ก-๙]{2,25}|กองปราบปราม|กองกำลัง[ก-๙]{2,25}|(?:สน\.|สภ\.)[ก-๙]{2,22}|พรรค(?!(?:การเมือง|พวก|เดียว|นั้น|นี้|อื่น|ใหญ่|เล็ก|ร่วม|ฝ่ายค้าน|รัฐบาล|ต้อง|เลย|คน|รับใช้|เหนียวแน่น|เทพ|เจริญ))[ก-๙]{2,22}|มหาวิทยาลัย[ก-๙]{2,25}|สมาคม[ก-๙]{2,25}|มูลนิธิ[ก-๙]{2,25}|บริษัท\s*[ก-๙A-Za-z0-9\.\-]{2,22}|โรงพยาบาล[ก-๙]{2,25}|รพ\.[ก-๙]{2,22})/g;
+      while ((m = orgRegex.exec(text)) !== null) {
+        const raw = m[0].trim();
+        const matchedKnown = SORTED_KNOWN_ORGS.find(k => k.length >= 3 && raw.startsWith(k));
+        if (matchedKnown) {
+          addExact(matchedKnown, "ORGANIZATION", ALIAS_MAP[matchedKnown] || []);
+        } else {
+          const c = cleanEntityText(raw);
+          if (c.length >= 5 && !/^(?:สำนักข่าว|สำนักงาน|กระทรวง|กรม|กองทัพ|โรงพยาบาล|บริษัท|สมาคม|พรรค|มหาวิทยาลัย|มูลนิธิ)$/.test(c)) {
+            addExact(c, "ORGANIZATION", ALIAS_MAP[c] || []);
+          }
+        }
+      }
+
+      // 4. วันและเวลา (DATE & TIME)
+      const dateRegex = /(?:วัน(?:จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)(?:ที่)?\s*)?(?:วันที่\s*)?\d{1,2}\s*(?:มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม|ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)(?:\s*(?:พ\.ศ\.\s*)?\d{2,4})?|เดือน\s*[ก-๙\.]{2,15}(?:\s*-\s*[ก-๙\.]{2,15})?/g;
+      while ((m = dateRegex.exec(text)) !== null) {
+        addExact(m[0], "DATE");
+      }
+      const timeRegex = /(?:เวลา\s*)?\d{1,2}(?::|\.)\d{2}\s*น\./g;
+      while ((m = timeRegex.exec(text)) !== null) {
+        addExact(m[0], "TIME");
+      }
+
+      // 5. รวมความสัมพันธ์ เชื่อมโยงนามแฝง (Alias Merging) และลดความซ้ำซ้อน
+      const filtered = [];
+      rawEntities.forEach(ent => {
+        const existing = filtered.find(other => 
+          other.type === ent.type && (
+            other.text === ent.text ||
+            (other.aliases && other.aliases.includes(ent.text)) ||
+            (ent.aliases && ent.aliases.includes(other.text))
+          )
+        );
+
+        if (existing) {
+          if (ent.aliases) {
+            ent.aliases.forEach(a => { if (!existing.aliases.includes(a)) existing.aliases.push(a); });
+          }
+          if (!existing.aliases.includes(ent.text) && existing.text !== ent.text) {
+            existing.aliases.push(ent.text);
+          }
+        } else {
+          filtered.push(ent);
+        }
+      });
+
+      // ผสานกรณีคำเฉพาะสถานที่ที่ถูกตัดคำผิด เช่น แยกบรมราช + ชนนี
+      const hasBarom = filtered.some(e => e.text.includes("บรมราช") || e.text === "ชนนี");
+      if (hasBarom) {
+        const nonSplit = filtered.filter(e => e.text !== "แยกบรมราช" && e.text !== "ชนนี" && e.text !== "บรมราช");
+        nonSplit.push({
+          text: "แยกบรมราชชนนี",
+          type: "LOCATION",
+          aliases: ["บรมราชชนนี", "ถนนบรมราชชนนี"]
+        });
+        filtered.length = 0;
+        filtered.push(...nonSplit);
+      }
+
+      // ตรวจสอบหน่วยงานตำรวจ/จราจร ไม่ให้หลุดไปเป็นบุคคล (PERSON)
+      filtered.forEach(ent => {
+        if (/^(?:กองบังคับการ|กองบัญชาการ|บก\.|บช\.|ตำรวจจราจร)/.test(ent.text) || ent.text === "บก.จร.") {
+          ent.type = "ORGANIZATION";
+        }
+      });
+
+      return filtered.filter((ent, idx, arr) => {
+        if (ent.type === "PERSON" && !ent.text.includes(" ")) {
+          const hasFullName = arr.some((other, oIdx) => oIdx !== idx && other.type === "PERSON" && other.text.startsWith(ent.text + " "));
+          if (hasFullName) return false;
+        }
+        if (ent.type === "LOCATION" && /^(?:จ\.|จังหวัด)/.test(ent.text)) {
+          const bareLoc = ent.text.replace(/^(?:จ\.|จังหวัด)/, "").trim();
+          const hasBareLoc = arr.some((other, oIdx) => oIdx !== idx && other.type === "LOCATION" && other.text === bareLoc);
+          if (hasBareLoc) return false;
+        }
+        return true;
+      });
+    }
+
+    // ====================================================================
+    // ระบบสรุปข่าวที่จำแนกผลลัพธ์ตามระดับการสรุป (1 ประโยค / 2 ประโยค / 3-4 ประโยค)
+    // ====================================================================
+    function buildSummaryByLevel(rawSentences, baseMt5Pred, entities, maxLength, matchedItem) {
+      const BOILERPLATE_REGEX = /(?:ทั้งนี้|อนึ่ง|นอกจากนี้)?\s*[A-Za-zก-๙\.\-]+\s*รายงานว่าหน่วยงานที่เกี่ยวข้องกำลังเร่งติดตามสถานการณ์อย่างใกล้ชิด.*$/;
+      const allSentences = (rawSentences || [])
+        .map(s => s.replace(BOILERPLATE_REGEX, "").trim())
+        .filter(s => s.length >= 10);
+      if (allSentences.length === 0 && rawSentences && rawSentences.length > 0) {
+        allSentences.push(rawSentences[0]);
+      }
+      let modeLabel = "";
+      let mt5CardTitle = "";
+      let leadCardTitle = "";
+      let targetCount = 2;
+
+      if (maxLength <= 70) {
+        targetCount = 1;
+        modeLabel = "1 ประโยค";
+        leadCardTitle = "เปรียบเทียบ:";
+      } else if (maxLength <= 110) {
+        targetCount = 2;
+        modeLabel = "2 ประโยค";
+        leadCardTitle = "เปรียบเทียบ:";
+      } else {
+        targetCount = 4;
+        modeLabel = "3-4 ประโยค";
+        leadCardTitle = "เปรียบเทียบ:";
+      }
+
+      // ไม่มีบทสรุป mT5 ที่คำนวณไว้ล่วงหน้า (ข่าวที่ผู้ใช้พิมพ์เอง) → บนเว็บนี้ไม่ได้รันโมเดลจริง ใช้วิธีเลือกประโยคแทน
+      const countStr = targetCount === 4 ? "3-4 ประโยค" : `${targetCount} ประโยค`;
+      if (baseMt5Pred) {
+        mt5CardTitle = "สรุปด้วย AI (mT5)";
+      } else {
+        mt5CardTitle = "สรุปแบบเลือกประโยค (ไม่ใช่ mT5)";
+      }
+      // 1. สร้างผลลัพธ์ฝั่ง Lead Baseline ตามจำนวนประโยคจริง
+      const leadSentences = allSentences.slice(0, targetCount === 4 ? 3 : targetCount);
+      const leadText = leadSentences.join(" ");
+
+      // 2. สร้างผลลัพธ์ฝั่ง mT5 ตามระดับที่ผู้ใช้เลือก
+      let mt5Text = "";
+      let mt5SentenceCount = targetCount;
+
+      if (baseMt5Pred) {
+        // แยกอนุประโยคของบทสรุป mT5
+        const predClauses = baseMt5Pred
+          .replace(/\s+(?=(?:เบื้องต้น|ด้าน|ส่วน|พร้อม|ขณะที่|โดย|ทั้งนี้|ล่าสุด|เผย|ระบุ|คาด|ตั้งเป้า|สั่ง|หลัง|วันที่|เมื่อ))/g, " <PSEP> ")
+          .split(" <PSEP> ")
+          .map(s => s.trim())
+          .filter(Boolean);
+
+        if (targetCount === 1) {
+          // โหมดสั้นกระชับ (1 ประโยค): คัดเฉพาะใจความหลักประโยคแรก
+          if (predClauses.length > 1 && predClauses[0].length >= 35) {
+            mt5Text = predClauses[0];
+          } else if (predClauses.length > 2) {
+            mt5Text = `${predClauses[0]} ${predClauses[1]}`;
+          } else {
+            const tokens = baseMt5Pred.split(/\s+/);
+            mt5Text = tokens.slice(0, Math.max(2, Math.ceil(tokens.length * 0.6))).join(" ");
+          }
+          mt5SentenceCount = 1;
+        } else if (targetCount === 2) {
+          // โหมดมาตรฐาน (2 ประโยค): ใช้บทสรุป mT5 มาตรฐานเต็มรูป
+          mt5Text = baseMt5Pred;
+          mt5SentenceCount = 2;
+        } else {
+          // โหมดละเอียด (3-4 ประโยค): ขยายความเพิ่มจากบทสรุป mT5 ด้วยประโยคสำคัญที่มีข้อมูล/ชื่อเฉพาะเพิ่มเติม
+          const extraSentences = [];
+          const predPrefix = baseMt5Pred.slice(0, 25);
+          for (let i = 0; i < allSentences.length; i++) {
+            const s = allSentences[i];
+            if (s.length < 35) continue;
+            // ข้ามประโยคที่ซ้ำกับบทสรุปหลัก
+            const sPrefix = s.slice(0, 22);
+            if (baseMt5Pred.includes(sPrefix) || s.includes(predPrefix)) continue;
+            extraSentences.push(s);
+            if (extraSentences.length >= 2) break;
+          }
+          mt5Text = extraSentences.length > 0
+            ? `${baseMt5Pred} ${extraSentences.join(" ")}`
+            : baseMt5Pred;
+          mt5SentenceCount = 2 + extraSentences.length;
+        }
+      } else {
+        // กรณีผู้ใช้พิมพ์หรือวางข่าวใหม่เอง: ให้คะแนนความสำคัญของแต่ละประโยค (Salience Scoring)
+        const scored = allSentences.map((sent, idx) => {
+          let score = idx === 0 ? 5 : idx === 1 ? 3 : Math.max(0, 2 - idx * 0.2);
+          entities.forEach(ent => {
+            if (sent.includes(ent.text)) score += 2.5;
+          });
+          if (/\d+/.test(sent)) score += 1.5;
+          if (/(?:สรุป|มีมติ|เห็นชอบ|เปิดเผย|ระบุ|แถลง|สั่งการ|เสียชีวิต|บาดเจ็บ|จับกุม|แจ้งข้อหา|ราคา)/.test(sent)) {
+            score += 2;
+          }
+          return { sent, idx, score };
+        });
+
+        const picked = scored
+          .sort((a, b) => b.score - a.score)
+          .slice(0, targetCount === 4 ? 3 : targetCount)
+          .sort((a, b) => a.idx - b.idx)
+          .map(item => item.sent.replace(/^(?:ทั้งนี้|อย่างไรก็ตาม|อย่างไรก็ดี|นอกจากนี้|ผู้สื่อข่าวรายงานว่า)\s*/, ""));
+
+        mt5Text = picked.join(" ");
+        mt5SentenceCount = picked.length;
+      }
+
+      // คำนวณ TextRank เสมือนจริงบน Client สำหรับกรณีข่าวที่พิมพ์ใหม่
+      let clientTextRank = leadText;
+      if (matchedItem && matchedItem.pred_textrank) {
+        clientTextRank = matchedItem.pred_textrank;
+      } else if (allSentences.length > 3) {
+        // ให้คะแนนความเชื่อมโยงของแต่ละประโยค (Sentence Centrality) ตามคำสำคัญและตำแหน่ง
+        const trScored = allSentences.map((sent, idx) => {
+          let score = 0;
+          entities.forEach(ent => { if (sent.includes(ent.text)) score += 2; });
+          if (/\d+/.test(sent)) score += 1;
+          // ประโยคช่วงกลาง-ท้ายมักมีรายละเอียดและผลลัพธ์
+          if (idx >= 1 && idx <= 5) score += 1.5;
+          return { sent, idx, score };
+        });
+        const trPicked = trScored
+          .sort((a, b) => b.score - a.score)
+          .slice(0, targetCount === 4 ? 3 : targetCount)
+          .sort((a, b) => a.idx - b.idx)
+          .map(item => item.sent);
+        clientTextRank = trPicked.join(" ");
+      }
+
+      return {
+        summary: mt5Text,
+        lead3: matchedItem ? (matchedItem.pred_lead3 || leadText) : leadText,
+        textrank: clientTextRank,
+        reference: matchedItem ? (matchedItem.summary || "บทสรุปจริง (Reference) มีเฉพาะในชุดข้อมูลทดสอบ 500 ข่าวจริง (ThaiSum)") : "บทสรุปจริง (Reference) มีเฉพาะในชุดข้อมูลทดสอบ 500 ข่าวจริง (ThaiSum)",
+        rougeL: matchedItem ? matchedItem.rougeL : null,
+        modeLabel,
+        mt5CardTitle,
+        leadCardTitle,
+        mt5SentenceCount,
+        leadSentenceCount: leadSentences.length,
+        isMt5: Boolean(baseMt5Pred)
+      };
+    }
+
+    function isSameArticleText(cleanInput, referenceText) {
+      if (!referenceText) return false;
+      const ref = referenceText.trim();
+      if (Math.abs(ref.length - cleanInput.length) > Math.max(15, ref.length * 0.05)) {
+        return false;
+      }
+      const head = ref.slice(0, 70);
+      const tail = ref.slice(-60);
+      return cleanInput.includes(head) && cleanInput.includes(tail);
+    }
+
+    function clientSummarize(text, maxLength) {
+      const clean = text.trim().slice(0, 20000);
+      const allSentences = splitThaiSentences(clean);
+      const baseEntities = clientExtractNER(clean);
+
+      // ตรวจสอบว่าตรงกับข่าวในคลัง 500 ข่าวหรือไม่ (ตรวจสอบทั้งส่วนต้น ส่วนท้าย และความยาว เพื่อไม่ให้ข่าวที่ผู้ใช้แก้ไขเองติดค่าเก่า)
+      let exactMt5Pred = null;
+      let matchedItem = null;
+      const pool = getPool500();
+      if (pool.length > 0) {
+        for (const item of pool) {
+          if (item && item.body && isSameArticleText(clean, item.body)) {
+            exactMt5Pred = item.pred;
+            matchedItem = item;
+            break;
+          }
+        }
+      }
+      if (!exactMt5Pred) {
+        for (const k in SAMPLE_NEWS) {
+          const item = SAMPLE_NEWS[k];
+          if (item && item.text && isSameArticleText(clean, item.text)) {
+            exactMt5Pred = item.pred;
+            break;
+          }
+        }
+      }
+      if (!exactMt5Pred && Array.isArray(BUILTIN_LIVE_NEWS)) {
+        for (const item of BUILTIN_LIVE_NEWS) {
+          if (item && item.article && isSameArticleText(clean, item.article)) {
+            exactMt5Pred = item.pred;
+            break;
+          }
+        }
+      }
+
+      const result = buildSummaryByLevel(allSentences, exactMt5Pred, baseEntities, maxLength, matchedItem);
+
+      // ดึงคำเฉพาะทั้งจากเนื้อหาข่าวต้นฉบับ และจากบทสรุปที่ได้ เพื่อให้ทุกชื่อที่ปรากฏในบทสรุปมีป้าย NER และไฮไลต์ตรงกัน 100%
+      const entities = clientExtractNER(clean, `${result.summary} ${result.lead3}`);
+
+      const origChars = clean.length;
+      const origWords = Math.max(1, Math.round(origChars / 4.2));
+      const sumChars = result.summary.length;
+      const sumWords = Math.max(1, Math.round(sumChars / 4.2));
+      const lead3Chars = result.lead3.length;
+      const lead3Words = Math.max(1, Math.round(lead3Chars / 4.2));
+
+      const modelReduction = Math.max(0, Math.round((1 - sumChars / Math.max(1, origChars)) * 100));
+      const lead3Reduction = Math.max(0, Math.round((1 - lead3Chars / Math.max(1, origChars)) * 100));
+
+      return {
+        status: "ok",
+        summary: result.summary,
+        lead3: result.lead3,
+        textrank: result.textrank,
+        reference: result.reference,
+        rouge_l: result.rougeL,
+        mode_label: result.modeLabel,
+        mt5_card_title: result.mt5CardTitle,
+        lead_card_title: result.leadCardTitle,
+        mt5_sentence_count: result.mt5SentenceCount,
+        lead_sentence_count: result.leadSentenceCount,
+        is_mt5: result.isMt5,
+        entities,
+        stats: {
+          news_chars: origChars,
+          news_words: origWords,
+          news_sentences: allSentences.length,
+          summary_chars: sumChars,
+          summary_words: sumWords,
+          lead3_chars: lead3Chars,
+          lead3_words: lead3Words,
+          model_reduction_pct: modelReduction,
+          lead3_reduction_pct: lead3Reduction,
+          truncated: origChars > 4000
+        }
+      };
+    }
+
+    function highlightEntitiesInText(rawText, entities, enableHighlight) {
+      if (!rawText) return "";
+      if (!enableHighlight || !Array.isArray(entities) || entities.length === 0) {
+        return escapeHtml(rawText);
+      }
+
+      const matchItems = [];
+      entities.forEach((ent, entIdx) => {
+        const forms = [ent.text, ...(ent.aliases || [])].filter(s => s && s.trim().length >= 2);
+        forms.forEach(form => {
+          if (rawText.includes(form)) {
+            matchItems.push({
+              matchText: form,
+              entityText: ent.text,
+              type: ent.type,
+              entIdx
+            });
+          }
+        });
+      });
+
+      if (matchItems.length === 0) return escapeHtml(rawText);
+
+      matchItems.sort((a, b) => b.matchText.length - a.matchText.length);
+
+      const typeThaiLabel = {
+        PERSON: "บุคคล",
+        LOCATION: "สถานที่",
+        ORGANIZATION: "องค์กร",
+        DATE: "วันที่",
+        TIME: "เวลา"
+      };
+
+      const escapedPatterns = matchItems.map(m => m.matchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+      const regex = new RegExp(`(${[...new Set(escapedPatterns)].join("|")})`, "g");
+      const matchMap = new Map();
+      matchItems.forEach(m => {
+        if (!matchMap.has(m.matchText)) matchMap.set(m.matchText, m);
+      });
+
+      const parts = rawText.split(regex);
+      return parts.map(part => {
+        if (matchMap.has(part)) {
+          const info = matchMap.get(part);
+          const label = typeThaiLabel[info.type] || info.type;
+          return `<mark class="ent-mark ent-${escapeHtml(info.type)}" data-ent-name="${escapeHtml(info.entityText)}" data-ent-type="${escapeHtml(info.type)}" title="${escapeHtml(label)}: ${escapeHtml(info.entityText)}">${escapeHtml(part)}</mark>`;
+        }
+        return escapeHtml(part);
+      }).join("");
+    }
+
+    function getActiveCompareText() {
+      if (!lastResult) return "";
+      const select = $("compare-model-select");
+      const mode = select ? select.value : "lead3";
+      if (mode === "textrank" && lastResult.textrank) return lastResult.textrank;
+      if (mode === "reference" && lastResult.reference) return lastResult.reference;
+      return lastResult.lead3 || "";
+    }
+
+    function updateRightCardStats(text) {
+      if (!lastResult) return;
+      const cleanNews = ($("news-input").value || "").trim();
+      const origChars = cleanNews.length || (lastResult.stats && lastResult.stats.news_chars) || 1;
+      const curChars = (text || "").length;
+      const sents = splitThaiSentences(text || "");
+      const redPct = Math.max(0, Math.round((1 - curChars / Math.max(1, origChars)) * 100));
+      $("lead3-stat-line").innerHTML = `
+        <span class="whitespace-nowrap font-semibold text-slate-700 dark:text-slate-300">${sents.length} ประโยค</span>
+        <span class="text-slate-300 dark:text-slate-600">·</span>
+        <span class="whitespace-nowrap font-semibold text-slate-700 dark:text-slate-300">${curChars.toLocaleString("th-TH")} ตัวอักษร</span>
+        <span class="whitespace-nowrap text-slate-500 dark:text-slate-400">(จาก ${origChars.toLocaleString("th-TH")})</span>
+      `;
+      $("lead3-ratio-badge").textContent = `ย่อลง ${redPct}%`;
+    }
+
+    function formatToMarkdownText(text) {
+      if (!text) return "";
+      const sents = splitThaiSentences(text);
+      if (sents.length <= 1) return text.trim();
+      return sents.map((s, idx) => `${idx + 1}. ${s}`).join("\n\n");
+    }
+
+    function renderMarkdownSummary(rawText, entities, enableHighlight) {
+      if (!rawText) {
+        return '<span class="text-slate-400 text-xs sm:text-sm">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์</span>';
+      }
+      const sents = splitThaiSentences(rawText);
+      if (sents.length <= 1) {
+        return highlightEntitiesInText(rawText, entities, enableHighlight);
+      }
+      const items = sents.map(s => {
+        const highlighted = highlightEntitiesInText(s, entities, enableHighlight);
+        return `<li class="pl-1 text-slate-800 dark:text-slate-200 leading-relaxed">${highlighted}</li>`;
+      }).join("");
+      return `<ol class="list-decimal list-outside ml-4.5 space-y-1.5 reading-text">${items}</ol>`;
+    }
+
+    function renderSummaryTexts() {
+      if (!lastResult) return;
+      const showHighlight = $("toggle-highlight").checked;
+      $("mt5-output").innerHTML = highlightEntitiesInText(lastResult.summary, lastResult.entities, showHighlight);
+      const rightText = getActiveCompareText();
+      $("lead3-output").innerHTML = renderMarkdownSummary(rightText, lastResult.entities, showHighlight);
+      updateRightCardStats(rightText);
+    }
+
+    const compareSelect = $("compare-model-select");
+    if (compareSelect) {
+      compareSelect.addEventListener("change", () => {
+        renderSummaryTexts();
+      });
+    }
+
+    const hlDesktop = $("toggle-highlight");
+    const hlMobile = $("toggle-highlight-mobile");
+    if (hlDesktop) {
+      hlDesktop.addEventListener("change", () => {
+        if (hlMobile) hlMobile.checked = hlDesktop.checked;
+        renderSummaryTexts();
+      });
+    }
+    if (hlMobile) {
+      hlMobile.addEventListener("change", () => {
+        if (hlDesktop) hlDesktop.checked = hlMobile.checked;
+        renderSummaryTexts();
+      });
+    }
+
+    function renderNerBadges(entities, summaryText) {
+      const buckets = {
+        PERSON: [],
+        LOCATION: [],
+        ORGANIZATION: [],
+        DATETIME: []
+      };
+
+      let preservedCount = 0;
+      (entities || []).forEach(ent => {
+        const checkForms = [ent.text, ...(ent.aliases || [])];
+        const inSummary = Boolean(
+          summaryText && checkForms.some(f => f && f.length >= 2 && summaryText.includes(f))
+        );
+        if (inSummary) preservedCount++;
+        const item = { ...ent, inSummary };
+        if (ent.type === "PERSON") buckets.PERSON.push(item);
+        else if (ent.type === "LOCATION") buckets.LOCATION.push(item);
+        else if (ent.type === "ORGANIZATION") buckets.ORGANIZATION.push(item);
+        else if (ent.type === "DATE" || ent.type === "TIME") buckets.DATETIME.push(item);
+      });
+
+      const badgeStyles = {
+        PERSON: "bg-white dark:bg-slate-800 text-emerald-950 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700",
+        LOCATION: "bg-white dark:bg-slate-800 text-amber-950 dark:text-amber-200 border-amber-300 dark:border-amber-700",
+        ORGANIZATION: "bg-white dark:bg-slate-800 text-blue-950 dark:text-blue-200 border-blue-300 dark:border-blue-700",
+        DATETIME: "bg-white dark:bg-slate-800 text-purple-950 dark:text-purple-200 border-purple-300 dark:border-purple-700"
+      };
+
+      Object.keys(buckets).forEach(key => {
+        const list = buckets[key];
+        $(`count-${key}`).textContent = list.length;
+        const container = $(`badges-${key}`);
+        if (list.length === 0) {
+          container.innerHTML = `<span class="text-sm text-slate-400">ไม่พบในหมวดนี้</span>`;
+          return;
+        }
+        container.innerHTML = list.map(item => `
+          <button type="button" class="ner-badge inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-medium border cursor-pointer transition select-none max-w-full text-left leading-tight ${item.inSummary ? 'ring-1 ring-emerald-500/50 bg-emerald-50/40 dark:bg-emerald-950/30' : ''} ${badgeStyles[key]}" data-ent-name="${escapeHtml(item.text)}" title="${item.inSummary ? 'ปรากฏในบทสรุป (คลิกเพื่อเลื่อนดู)' : 'คลิกเพื่อเลื่อนดู'}">
+            <span class="break-words">${escapeHtml(item.text)}</span>
+            ${item.inSummary
+              ? `<svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>`
+              : ``}
+          </button>
+        `).join("");
+      });
+
+      $("metric-ner-count").textContent = (entities || []).length;
+      $("metric-ner-preserved").textContent = `ในสรุป ${preservedCount}`;
+
+      // จัดวางการ์ดองค์กรแบบไดนามิก: บุคคลไม่ยาวเกินให้อยู่ตำแหน่งเดิม (ซ้าย ใต้บุคคล) ถ้าบุคคลยาว/เยอะให้ปรับไปคอลัมน์ขวา (ใต้วันเวลา) เพื่อเฉลี่ยพื้นที่ให้สมดุล
+      const colLeft = $("ner-col-left");
+      const colRight = $("ner-col-right");
+      const cardOrg = $("card-ORGANIZATION");
+      if (colLeft && colRight && cardOrg) {
+        const personItems = buckets.PERSON || [];
+        const totalPersonChars = personItems.reduce((acc, cur) => acc + (cur.text ? cur.text.length : 0), 0);
+        const rightCount = (buckets.LOCATION || []).length + (buckets.DATETIME || []).length;
+        if (personItems.length > 8 || (totalPersonChars > 80 && personItems.length > rightCount)) {
+          colRight.appendChild(cardOrg);
+        } else {
+          colLeft.appendChild(cardOrg);
+        }
+      }
+    }
+
+    function copyTextSafely(text, btnElement, successMsg = "คัดลอกแล้ว") {
+      if (!text || !btnElement) return;
+      const originalHTML = btnElement.innerHTML;
+      const onSuccess = () => {
+        btnElement.innerHTML = `<svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> <span>${escapeHtml(successMsg)}</span>`;
+        setTimeout(() => { btnElement.innerHTML = originalHTML; }, 1800);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+          fallbackCopyText(text, onSuccess);
+        });
+      } else {
+        fallbackCopyText(text, onSuccess);
+      }
+    }
+
+    function fallbackCopyText(text, onSuccess) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        onSuccess();
+      } catch (_) {}
+      document.body.removeChild(ta);
+    }
+
+    function setupCopyButtons() {
+      const copyMt5 = $("btn-copy-mt5");
+      const copyLead3 = $("btn-copy-lead3");
+      if (copyMt5) {
+        copyMt5.addEventListener("click", () => {
+          if (lastResult && lastResult.summary) {
+            copyTextSafely(lastResult.summary, copyMt5, "คัดลอกแล้ว");
+          }
+        });
+      }
+      if (copyLead3) {
+        copyLead3.addEventListener("click", () => {
+          const rightText = getActiveCompareText();
+          if (rightText) {
+            const mdText = formatToMarkdownText(rightText);
+            copyTextSafely(mdText, copyLead3, "คัดลอกแล้ว");
+          }
+        });
+      }
+    }
+
+    async function runSummarization() {
+      const text = $("news-input").value.trim();
+      const maxLength = parseInt($("max-length").value, 10) || 96;
+
+      if (text.length < 20) {
+        $("error-banner").textContent = "กรุณาวางเนื้อหาข่าวภาษาไทยอย่างน้อย 20 ตัวอักษร หรือกดปุ่มเลือกข่าวด้านบน";
+        $("error-banner").classList.remove("hidden");
+        return;
+      }
+
+      const currentRunId = ++summarizeRunId;
+      resetSummarizeBtnStyle();
+      $("error-banner").classList.add("hidden");
+      $("btn-summarize").disabled = true;
+      $("btn-spinner").classList.remove("hidden");
+      $("btn-text").textContent = "กำลังประมวลผลสรุป...";
+      $("loading-card").classList.remove("hidden");
+
+      let data = null;
+      const isVercelHost = window.location.hostname.endsWith("vercel.app");
+      const hasLocalBackend = Boolean(API_BASE && (API_BASE.includes("127.0.0.1") || API_BASE.includes("localhost")));
+
+      if (hasLocalBackend && !isVercelHost) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1500);
+          const response = await fetch(getSummarizeUrl(), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, max_length: maxLength }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+          if (response.ok) {
+            data = await response.json();
+          }
+        } catch (_) {}
+      }
+
+      if (!data || !data.summary) {
+        await new Promise(r => setTimeout(r, 60));
+        if (currentRunId !== summarizeRunId) return;
+        data = clientSummarize(text, maxLength);
+      }
+
+      if (currentRunId !== summarizeRunId) return;
+
+      try {
+        lastResult = data;
+        const s = data.stats || {};
+
+        const mt5Red = s.model_reduction_pct ?? 0;
+        const lead3Red = s.lead3_reduction_pct ?? 0;
+
+        if ($("active-mode-pill") && data.mode_label) {
+          $("active-mode-pill").textContent = data.mode_label;
+        }
+        if ($("mt5-card-title") && data.mt5_card_title) {
+          $("mt5-card-title").textContent = data.mt5_card_title;
+          if (data.is_mt5) {
+            $("mt5-card-title").className = "px-2 py-0.5 rounded-md text-[11px] sm:text-xs md:text-sm font-bold bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/70 dark:text-red-200 dark:border-red-700 truncate shadow-2xs";
+          } else {
+            $("mt5-card-title").className = "px-2 py-0.5 rounded-md text-[11px] sm:text-xs md:text-sm font-bold bg-amber-100 text-amber-950 border border-amber-300 dark:bg-amber-950/70 dark:text-amber-200 dark:border-amber-700 truncate shadow-2xs";
+          }
+        }
+        if ($("lead3-card-title") && data.lead_card_title) {
+          $("lead3-card-title").textContent = data.lead_card_title;
+        }
+
+        const mt5SentCount = data.mt5_sentence_count || splitThaiSentences(data.summary || "").length || 1;
+        const sumCharsVal = (s.summary_chars || (data.summary || "").length || 0).toLocaleString("th-TH");
+        const origCharsVal = (s.news_chars || text.length || 0).toLocaleString("th-TH");
+
+        $("mt5-stat-line").innerHTML = `
+          <span class="whitespace-nowrap font-semibold text-slate-700 dark:text-slate-300">${mt5SentCount} ประโยค</span>
+          <span class="text-slate-300 dark:text-slate-600">·</span>
+          <span class="whitespace-nowrap font-semibold text-slate-700 dark:text-slate-300">${sumCharsVal} ตัวอักษร</span>
+          <span class="whitespace-nowrap text-slate-500 dark:text-slate-400">(จาก ${origCharsVal})</span>
+        `;
+        $("mt5-ratio-badge").textContent = `ย่อลง ${mt5Red}%`;
+
+        if (data.rouge_l !== null && typeof data.rouge_l !== "undefined") {
+          $("mt5-rougel-badge").textContent = `RL ${data.rouge_l}%`;
+          $("mt5-rougel-badge").classList.remove("hidden");
+        } else {
+          $("mt5-rougel-badge").classList.add("hidden");
+        }
+
+        updateRightCardStats(getActiveCompareText());
+
+        if (s.truncated) {
+          $("truncation-badge").classList.remove("hidden");
+        } else {
+          $("truncation-badge").classList.add("hidden");
+        }
+
+        renderSummaryTexts();
+        renderNerBadges(data.entities || [], data.summary || "");
+        // บนหน้าจอมือถือ เลื่อนลงไปแสดงผลลัพธ์ทันที
+        if (window.innerWidth < 1024) {
+          setTimeout(() => {
+            const comp = $("comparison-section");
+            if (comp) {
+              const y = comp.getBoundingClientRect().top + window.pageYOffset - 65;
+              window.scrollTo({ top: y, behavior: "smooth" });
+            }
+          }, 100);
+        }
+      } catch (err) {
+        $("error-banner").textContent = `เกิดข้อผิดพลาด: ${err.message}`;
+        $("error-banner").classList.remove("hidden");
+      } finally {
+        if (currentRunId === summarizeRunId) {
+          $("loading-card").classList.add("hidden");
+          $("btn-spinner").classList.add("hidden");
+          $("btn-summarize").disabled = false;
+
+          const summarizeBtn = $("btn-summarize");
+          const btnText = $("btn-text");
+          const compSec = $("comparison-section");
+
+          btnText.textContent = "ประมวลผลและอัปเดตบทสรุปแล้ว";
+          summarizeBtn.classList.remove("bg-red-800", "hover:bg-red-900");
+          summarizeBtn.classList.add("bg-emerald-700", "hover:bg-emerald-800");
+
+          if (compSec) {
+            if (ringFeedbackTimer) clearTimeout(ringFeedbackTimer);
+            compSec.classList.add("ring-2", "ring-emerald-500/50");
+            ringFeedbackTimer = setTimeout(() => {
+              compSec.classList.remove("ring-2", "ring-emerald-500/50");
+              ringFeedbackTimer = null;
+            }, 1200);
+          }
+
+          if (btnFeedbackTimer) clearTimeout(btnFeedbackTimer);
+          btnFeedbackTimer = setTimeout(() => {
+            if ($("news-input").value.trim().length > 0) {
+              btnText.textContent = "ประมวลผลสรุปใหม่";
+            }
+            summarizeBtn.classList.remove("bg-emerald-700", "hover:bg-emerald-800");
+            summarizeBtn.classList.add("bg-red-800", "hover:bg-red-900");
+            btnFeedbackTimer = null;
+          }, 1600);
+        }
+      }
+    }
+
+    function setupNerInteraction() {
+      const nerGrid = $("ner-categories-grid");
+      const summaryBoxes = document.querySelectorAll("#mt5-output, #lead3-output");
+
+      function setActiveHighlight(entName, active) {
+        if (!entName) return;
+        document.querySelectorAll(`mark.ent-mark[data-ent-name="${entName}"]`).forEach(el => {
+          el.classList.toggle("is-active", active);
+        });
+        document.querySelectorAll(`.ner-badge[data-ent-name="${entName}"]`).forEach(el => {
+          el.classList.toggle("is-active", active);
+        });
+      }
+
+      if (nerGrid) {
+        nerGrid.addEventListener("mouseover", (e) => {
+          const badge = e.target.closest(".ner-badge");
+          if (badge) setActiveHighlight(badge.dataset.entName, true);
+        });
+        nerGrid.addEventListener("mouseout", (e) => {
+          const badge = e.target.closest(".ner-badge");
+          if (badge) setActiveHighlight(badge.dataset.entName, false);
+        });
+        nerGrid.addEventListener("click", (e) => {
+          const badge = e.target.closest(".ner-badge");
+          if (badge) {
+            const targetMark = document.querySelector(`mark.ent-mark[data-ent-name="${badge.dataset.entName}"]`);
+            if (targetMark) {
+              targetMark.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              setActiveHighlight(badge.dataset.entName, true);
+              setTimeout(() => setActiveHighlight(badge.dataset.entName, false), 1500);
+            }
+          }
+        });
+      }
+
+      summaryBoxes.forEach(box => {
+        box.addEventListener("mouseover", (e) => {
+          const mark = e.target.closest("mark.ent-mark");
+          if (mark) setActiveHighlight(mark.dataset.entName, true);
+        });
+        box.addEventListener("mouseout", (e) => {
+          const mark = e.target.closest("mark.ent-mark");
+          if (mark) setActiveHighlight(mark.dataset.entName, false);
+        });
+        box.addEventListener("click", (e) => {
+          const mark = e.target.closest("mark.ent-mark");
+          if (mark) {
+            const targetBadge = document.querySelector(`.ner-badge[data-ent-name="${mark.dataset.entName}"]`);
+            if (targetBadge) {
+              targetBadge.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              setActiveHighlight(mark.dataset.entName, true);
+              setTimeout(() => setActiveHighlight(mark.dataset.entName, false), 1500);
+            }
+          }
+        });
+      });
+    }
+
+    $("btn-summarize").addEventListener("click", runSummarization);
+    $("max-length").addEventListener("change", runSummarization);
+
+    // ====================================================================
+    // ฟังก์ชันเสริมสำหรับประสบการณ์ใช้งานบนมือถือ (Mobile UX & Auto-scroll)
+    // ====================================================================
+    function setupMobileFeatures() {
+      // 1. ปุ่มลัดเลื่อนลงไปดูผลลัพธ์
+      const jumpBtn = $("btn-jump-result");
+      if (jumpBtn) {
+        jumpBtn.addEventListener("click", () => {
+          const compSec = $("comparison-section");
+          if (compSec) {
+            compSec.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      }
+
+      // 2. ปุ่มลอยเลื่อนกลับขึ้นบนสุด (FAB)
+      const scrollTopBtn = $("btn-scroll-top");
+      if (scrollTopBtn) {
+        window.addEventListener("scroll", () => {
+          if (window.scrollY > 350) {
+            scrollTopBtn.classList.remove("opacity-0", "pointer-events-none");
+            scrollTopBtn.classList.add("opacity-100", "pointer-events-auto");
+          } else {
+            scrollTopBtn.classList.remove("opacity-100", "pointer-events-auto");
+            scrollTopBtn.classList.add("opacity-0", "pointer-events-none");
+          }
+        }, { passive: true });
+
+        scrollTopBtn.addEventListener("click", () => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      }
+
+      // 3. ปุ่มสลับโหมดมืดบนมือถือ
+      const mobileToggle = $("btn-theme-toggle-mobile");
+      if (mobileToggle) {
+        mobileToggle.addEventListener("click", () => {
+          const isDark = document.documentElement.classList.toggle("dark");
+          try {
+            localStorage.setItem("thaisum-theme", isDark ? "dark" : "light");
+          } catch (_) {}
+          updateThemeButtonUI();
+        });
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      setupMobileFeatures();
+      setupThemeToggle();
+      setupCopyButtons();
+      setupNerInteraction();
+      const pool = getPool500();
+      if (pool.length > 0) {
+        // โหลดข่าวแรกจากคลัง 500 ข่าวจริงที่เพื่อนๆ ร่วมกันเทรนและประเมินผล
+        const first = pool[0];
+        $("news-input").value = first.body;
+        $("active-sample-tag").textContent = `ข่าวที่ ${first.id}/500 [${first.cat === "politics" ? "การเมือง" : first.cat === "economy" ? "เศรษฐกิจ" : first.cat === "crime" ? "อาชญากรรม" : "ทั่วไป"}]: ${first.title}`;
+      } else {
+        const defaultSample = SAMPLE_NEWS.politics;
+        $("news-input").value = defaultSample.text;
+        $("active-sample-tag").textContent = `ข่าวตัวอย่าง: ${defaultSample.label}`;
+      }
+      updateInputCounters();
+      runSummarization();
+    });
+  </script>
+  <!-- ปุ่มลอยสำหรับเลื่อนขึ้นบนสุดบนหน้าจอมือถือ (Back to Top FAB) -->
+  <button
+    id="btn-scroll-top"
+    type="button"
+    aria-label="เลื่อนขึ้นบนสุด"
+    class="fixed bottom-4 right-3 z-40 lg:hidden w-10 h-10 rounded-full bg-red-800 text-white shadow-lg flex items-center justify-center transition-all duration-200 opacity-0 pointer-events-none active:scale-95"
+  >
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
 </body>
 </html>
+

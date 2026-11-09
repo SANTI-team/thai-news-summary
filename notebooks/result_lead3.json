@@ -1,0 +1,50 @@
+{
+  "model": "Lead-3 (Baseline)",
+  "rouge1": 64.58,
+  "rouge2": 61.51,
+  "rougeL": 63.23,
+  "lead_k_comparison": [
+    {
+      "method": "Lead-1",
+      "k": 1,
+      "rouge1": 37.71,
+      "rouge2": 34.18,
+      "rougeL": 36.94,
+      "avg_char_len": 78
+    },
+    {
+      "method": "Lead-2",
+      "k": 2,
+      "rouge1": 58.22,
+      "rouge2": 54.78,
+      "rougeL": 56.95,
+      "avg_char_len": 159
+    },
+    {
+      "method": "Lead-3",
+      "k": 3,
+      "rouge1": 64.58,
+      "rouge2": 61.51,
+      "rougeL": 63.23,
+      "avg_char_len": 244
+    },
+    {
+      "method": "Lead-4",
+      "k": 4,
+      "rouge1": 62.07,
+      "rouge2": 59.28,
+      "rougeL": 60.93,
+      "avg_char_len": 324
+    }
+  ],
+  "copying_analysis": {
+    "novel_1gram_pct_mean": 0.01,
+    "novel_2gram_pct_mean": 2.74,
+    "lead3_bigram_recall_pct_mean": 73.55,
+    "body_avg_chars": 3512.8,
+    "ref_summary_avg_chars": 176.2,
+    "lead3_pred_avg_chars": 243.7
+  },
+  "test_size": 500,
+  "sent_engine": "crfcut"
+}

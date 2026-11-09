@@ -1,0 +1,35 @@
+{
+  "model": "extractive-lead",
+  "rouge1": 64.58,
+  "rouge2": 61.51,
+  "rougeL": 63.23,
+  "k": 3,
+  "sent_engine": "crfcut",
+  "idf_size": 1000,
+  "val_size": 300,
+  "test_size": 500,
+  "baseline_lead": {
+    "lead3": {
+      "rouge1": 64.58,
+      "rouge2": 61.51,
+      "rougeL": 63.23
+    }
+  },
+  "all_methods_on_test": {
+    "lead": {
+      "rouge1": 64.58,
+      "rouge2": 61.51,
+      "rougeL": 63.23
+    },
+    "tfidf": {
+      "rouge1": 15.16,
+      "rouge2": 7.25,
+      "rougeL": 12.65
+    },
+    "textrank": {
+      "rouge1": 27.62,
+      "rouge2": 17.95,
+      "rougeL": 22.88
+    }
+  }
+}

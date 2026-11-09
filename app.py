@@ -92,6 +92,7 @@ except Exception:
 def extract_entities(text):
     if _ner is not None:
         spans = []
+        # pyrefly: ignore[bad-unpacking]
         for word, tag in _ner.tag(text):
             label = tag.split("-", 1)[1] if "-" in tag else None
             if spans and label and tag.startswith("I-") and spans[-1][1] == label:

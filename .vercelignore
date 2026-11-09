@@ -1,0 +1,15 @@
+.git
+.github
+notebooks
+models
+mt5-thaisum
+*.zip
+predictions_mt5.csv
+data
+reports
+team-roles
+sample_data.csv
+*.ipynb
+*.png
+requirements-dev.txt
+
