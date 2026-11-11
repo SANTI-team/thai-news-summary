@@ -10,6 +10,8 @@
 จากนั้นเทียบสองวิธี
 - **Extractive** หยิบประโยคจากข่าวเดิมมาใช้
 - **Abstractive** ให้โมเดลเขียนบทสรุปใหม่ด้วยตัวเอง
+## เว็บ
+https://thai-news-summarizer.vercel.app
 
 ## ข้อมูล
 [ThaiSum](https://huggingface.co/datasets/pythainlp/thaisum) ข่าวไทยราว 358,868 ข่าว (train) + 11,000 (val) + 11,000 (test) จากไทยรัฐ ไทยพีบีเอส ประชาไท และ The Standard แต่ละข่าวมีบทสรุปที่นักข่าวเขียนไว้ · สัญญาอนุญาต MIT
