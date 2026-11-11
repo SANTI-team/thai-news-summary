@@ -1,0 +1,13 @@
+{
+  "model": "facebook/mbart-large-50",
+  "rouge1": 35.43,
+  "rouge2": 23.15,
+  "rougeL": 31.22,
+  "train_size": 5000,
+  "test_size": 500,
+  "epochs": 2,
+  "lr": 3e-05,
+  "max_input": 512,
+  "num_beams": 4,
+  "training_loss": 9.0695
+}
