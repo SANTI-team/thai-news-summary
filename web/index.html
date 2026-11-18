@@ -1657,11 +1657,66 @@
       }
       const clientTextRank = trSentences.slice(0, compareTargetCount).join("\n");
 
+      // 4. ปรับบทสรุปจริง (Reference) ให้มีจำนวนประโยคสอดคล้องกับโหมดที่เลือก (1, 2 หรือ 3-4 ประโยค)
+      let finalReference = "บทสรุปจริง (Reference) มีเฉพาะในชุดข้อมูลทดสอบ 500 ข่าวจริง (ThaiSum)";
+      if (matchedItem && matchedItem.summary) {
+        const refRaw = matchedItem.summary.trim();
+        let refParts = splitThaiSentences(refRaw);
+        if (refParts.length < compareTargetCount && compareTargetCount > 1) {
+          const clauseSplit = refRaw
+            .replace(/\s+(?=(?:เบื้องต้น|ด้าน|ส่วน|พร้อม|ขณะที่|โดย|ทั้งนี้|ล่าสุด|เผย|ระบุ|คาด|ตั้งเป้า|สั่ง|หลัง|วันที่|เมื่อ|นัด|ประณาม|เตรียม|เร่ง|ลด|แนะ|และ|หรือ|เพื่อ|ซึ่ง|ก่อน))/g, " <RSEP> ")
+            .split(" <RSEP> ")
+            .map(s => s.trim())
+            .filter(s => s.length >= 12);
+          if (clauseSplit.length >= compareTargetCount) {
+            refParts = clauseSplit;
+          } else {
+            const words = refRaw.split(/\s+/).filter(Boolean);
+            if (words.length >= compareTargetCount * 2) {
+              const chunkSize = Math.ceil(words.length / compareTargetCount);
+              const grouped = [];
+              for (let i = 0; i < words.length; i += chunkSize) {
+                grouped.push(words.slice(i, i + chunkSize).join(" "));
+              }
+              if (grouped.length >= 2) refParts = grouped;
+            }
+          }
+        }
+        if (compareTargetCount === 1) {
+          if (refParts.length > 1 && refParts[0].length >= 25) {
+            finalReference = refParts[0];
+          } else {
+            const words = refRaw.split(/\s+/).filter(Boolean);
+            finalReference = words.length > 3
+              ? words.slice(0, Math.max(2, Math.ceil(words.length * 0.6))).join(" ")
+              : refRaw;
+          }
+        } else {
+          const pickedRef = refParts.slice(0, compareTargetCount);
+          if (pickedRef.length < compareTargetCount) {
+            for (const s of allSentences) {
+              if (pickedRef.length >= compareTargetCount) break;
+              if (s.length < 30) continue;
+              const prefix = s.slice(0, 20);
+              if (refRaw.includes(prefix) || pickedRef.some(p => p.includes(prefix))) continue;
+              pickedRef.push(s);
+            }
+          }
+          if (pickedRef.length < compareTargetCount) {
+            for (const s of allSentences) {
+              if (pickedRef.length >= compareTargetCount) break;
+              if (!pickedRef.includes(s)) pickedRef.push(s);
+            }
+          }
+          finalReference = pickedRef.slice(0, compareTargetCount).join("\n");
+        }
+      }
+
       return {
         summary: mt5Text,
         lead3: finalLead3,
         textrank: clientTextRank,
-        reference: matchedItem ? (matchedItem.summary || "บทสรุปจริง (Reference) มีเฉพาะในชุดข้อมูลทดสอบ 500 ข่าวจริง (ThaiSum)") : "บทสรุปจริง (Reference) มีเฉพาะในชุดข้อมูลทดสอบ 500 ข่าวจริง (ThaiSum)",
+        reference: finalReference,
         rougeL: matchedItem ? matchedItem.rougeL : null,
         modeLabel,
         mt5CardTitle,
@@ -1825,12 +1880,20 @@
       return lastResult.lead3 || "";
     }
 
+    function splitSummaryLines(rawText) {
+      if (!rawText) return [];
+      if (rawText.includes("\n")) {
+        return rawText.split(/\r?\n+/).map(s => s.trim()).filter(Boolean);
+      }
+      return splitThaiSentences(rawText);
+    }
+
     function updateRightCardStats(text) {
       if (!lastResult) return;
       const cleanNews = ($("news-input").value || "").trim();
       const origChars = cleanNews.length || (lastResult.stats && lastResult.stats.news_chars) || 1;
       const curChars = (text || "").length;
-      const sents = splitThaiSentences(text || "");
+      const sents = splitSummaryLines(text || "");
       const redPct = Math.max(0, Math.round((1 - curChars / Math.max(1, origChars)) * 100));
       $("lead3-stat-line").innerHTML = `
         <span class="whitespace-nowrap font-semibold text-slate-700 dark:text-slate-300">${sents.length} ประโยค</span>
@@ -1843,7 +1906,7 @@
 
     function formatToMarkdownText(text) {
       if (!text) return "";
-      const sents = splitThaiSentences(text);
+      const sents = splitSummaryLines(text);
       if (sents.length <= 1) return text.trim();
       return sents.map((s, idx) => `${idx + 1}. ${s}`).join("\n\n");
     }
@@ -1852,7 +1915,7 @@
       if (!rawText) {
         return '<span class="text-slate-400 text-xs sm:text-sm">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์</span>';
       }
-      const sents = splitThaiSentences(rawText);
+      const sents = splitSummaryLines(rawText);
       if (sents.length <= 1) {
         return highlightEntitiesInText(rawText, entities, enableHighlight);
       }
