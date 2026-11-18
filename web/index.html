@@ -1579,21 +1579,21 @@
           mt5SentenceCount = 2;
         } else {
           // โหมดละเอียด (3-4 ประโยค): ขยายความเพิ่มจากบทสรุป mT5 ด้วยประโยคสำคัญที่มีข้อมูล/ชื่อเฉพาะเพิ่มเติม
+          const maxExtra = Math.max(0, Math.min(2, allSentences.length - 2));
           const extraSentences = [];
           const predPrefix = baseMt5Pred.slice(0, 25);
-          for (let i = 0; i < allSentences.length; i++) {
+          for (let i = 0; i < allSentences.length && extraSentences.length < maxExtra; i++) {
             const s = allSentences[i];
             if (s.length < 35) continue;
             // ข้ามประโยคที่ซ้ำกับบทสรุปหลัก
             const sPrefix = s.slice(0, 22);
             if (baseMt5Pred.includes(sPrefix) || s.includes(predPrefix)) continue;
             extraSentences.push(s);
-            if (extraSentences.length >= 2) break;
           }
           mt5Text = extraSentences.length > 0
             ? `${baseMt5Pred} ${extraSentences.join(" ")}`
             : baseMt5Pred;
-          mt5SentenceCount = Math.min(4, 2 + extraSentences.length);
+          mt5SentenceCount = Math.min(4, Math.min(allSentences.length || 4, 2 + extraSentences.length));
         }
       } else {
         // กรณีผู้ใช้พิมพ์หรือวางข่าวใหม่เอง: ให้คะแนนความสำคัญของแต่ละประโยค (Salience Scoring)
