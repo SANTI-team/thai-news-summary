@@ -487,11 +487,27 @@ class NewsIn(BaseModel):
     max_length: int = Field(96, ge=16, le=256, description="ความยาวบทสรุปสูงสุด (จำนวน token)")
 
 
-@api.get("/")
-@api.get("/api")
-@api.get("/api/")
-@api.get("/index.py")
-@api.get("/api/index.py")
+@api.api_route("/", methods=["GET", "POST", "OPTIONS", "HEAD", "PUT"])
+@api.api_route("/api", methods=["GET", "POST", "OPTIONS", "HEAD", "PUT"])
+@api.api_route("/api/", methods=["GET", "POST", "OPTIONS", "HEAD", "PUT"])
+@api.api_route("/index.py", methods=["GET", "POST", "OPTIONS", "HEAD", "PUT"])
+@api.api_route("/api/index.py", methods=["GET", "POST", "OPTIONS", "HEAD", "PUT"])
+async def root_entry(request: Request):
+    """รองรับทั้งการเรียกดูข้อมูล API พื้นฐาน และการ Rewrite จาก Vercel มาที่ /api/index.py?__path__=..."""
+    query_path = (request.query_params.get("__path__") or request.query_params.get("path") or "").strip("/").lower()
+    matched = (request.headers.get("x-matched-path") or request.headers.get("x-forwarded-uri") or "").strip("/").lower()
+    if query_path or (matched and matched not in ("", "api", "index.py", "api/index.py")):
+        return await catch_all_router(request, full_path=query_path or matched)
+    if request.method == "POST":
+        try:
+            body = await request.json()
+            item = NewsIn(**body)
+            return summarize(item)
+        except Exception as e:
+            return JSONResponse(status_code=400, content={"status": "error", "message": str(e)})
+    return root_info()
+
+
 def root_info() -> Dict[str, Any]:
     """ข้อมูลภาพรวมและรายการ API ทั้งหมดของระบบสรุปข่าวภาษาไทย"""
     return {
