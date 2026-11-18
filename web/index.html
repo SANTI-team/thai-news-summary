@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>สรุปข่าววันนี้ — ระบบสรุปข่าวภาษาไทยอัตโนมัติ (mT5 & Lead-3)</title>
+  <title>สรุปข่าววันนี้ — ระบบ AI ย่อข่าวภาษาไทยอัตโนมัติ (mT5 & Lead-3)</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23991b1b'/%3E%3Cpath d='M13 14h22v3.5H13V14zm0 8h22v3.5H13V22zm0 8h14v3.5H13V30z' fill='%23fff'/%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -306,7 +306,7 @@
     <div class="w-full px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-3">
       <!-- ซ้าย: โลโก้ข่าว + ชื่อระบบ + ป้ายโมเดล -->
       <div class="flex items-center gap-2.5 min-w-0">
-        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-red-800 flex items-center justify-center text-white shadow-xs shrink-0" title="สรุปข่าววันนี้ — ระบบสรุปข่าวภาษาไทย">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-red-800 flex items-center justify-center text-white shadow-xs shrink-0" title="สรุปข่าววันนี้ — ระบบ AI ย่อข่าวภาษาไทยอัตโนมัติ">
           <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
             <path d="M18 14h-8"/>
@@ -315,9 +315,14 @@
           </svg>
         </div>
         <div class="flex items-center gap-2 min-w-0">
-          <h1 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
-            สรุปข่าววันนี้
-          </h1>
+          <div class="flex flex-col justify-center min-w-0">
+            <h1 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap leading-tight">
+              สรุปข่าววันนี้
+            </h1>
+            <span class="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 leading-tight whitespace-nowrap truncate">
+              ระบบ AI ย่อข่าวภาษาไทยอัตโนมัติ &amp; แยกชื่อสำคัญ
+            </span>
+          </div>
           <span class="inline-block px-2.5 py-0.5 text-xs sm:text-sm font-bold rounded-md bg-red-100 text-red-900 border border-red-300 dark:bg-red-950/70 dark:text-red-200 dark:border-red-700 whitespace-nowrap shrink-0 shadow-2xs">
             mT5
           </span>
@@ -364,7 +369,7 @@
         <div class="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-5 h-5 rounded-full bg-red-800 text-white text-[11px] font-bold flex items-center justify-center shrink-0">1</span>
-            <h2 class="text-sm sm:text-base font-bold text-slate-900">เนื้อหาข่าวภาษาไทย</h2>
+            <h2 class="text-sm sm:text-base font-bold text-slate-900">ข่าวต้นฉบับที่ต้องการสรุป</h2>
           </div>
           <button id="btn-clear" type="button" class="text-xs font-medium text-slate-500 hover:text-red-700 px-2.5 py-1 rounded-md border border-slate-300 hover:border-red-300 bg-white transition active:scale-95">
             ล้างข้อความ
@@ -374,7 +379,7 @@
         <!-- แถบเลือกข่าวตัวอย่าง (กระชับ สวยงาม พอดีจอมือถือ) -->
         <div class="p-3 sm:p-4 bg-slate-50/50 border-b border-slate-200 space-y-2.5">
           <div class="flex items-center justify-between text-xs text-slate-600 font-medium">
-            <span>แตะเลือกข่าวตัวอย่าง:</span>
+            <span>เลือกข่าวตัวอย่าง หรือวางเนื้อหาข่าวด้านล่าง:</span>
             <span class="text-slate-400">คลัง 500 ข่าว + ข่าวสด</span>
           </div>
 
@@ -420,7 +425,7 @@
               id="news-input"
               rows="7"
               maxlength="20000"
-              placeholder="วางเนื้อหาข่าวภาษาไทยที่นี่ หรือแตะเลือกข่าวตัวอย่างด้านบน..."
+              placeholder="วางเนื้อหาข่าวยาวๆ ที่ต้องการให้ AI ช่วยสรุปใจความสำคัญที่นี่ หรือเลือกข่าวตัวอย่างด้านบน..."
               class="w-full border-0 bg-transparent p-3.5 reading-text text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-0 resize-y text-sm sm:text-base leading-relaxed"
             ></textarea>
 
@@ -1976,7 +1981,7 @@
       const maxLength = parseInt($("max-length").value, 10) || 96;
 
       if (text.length < 20) {
-        $("error-banner").textContent = "กรุณาวางเนื้อหาข่าวภาษาไทยอย่างน้อย 20 ตัวอักษร หรือกดปุ่มเลือกข่าวด้านบน";
+        $("error-banner").textContent = "กรุณาวางเนื้อหาข่าวอย่างน้อย 20 ตัวอักษร หรือกดปุ่มเลือกข่าวตัวอย่างด้านบน";
         $("error-banner").classList.remove("hidden");
         return;
       }
