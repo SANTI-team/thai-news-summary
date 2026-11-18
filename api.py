@@ -693,6 +693,20 @@ async def catch_all_router(request: Request, full_path: str = ""):
     matched = (request.headers.get("x-matched-path") or request.headers.get("x-forwarded-uri") or "").strip("/").lower()
     combined = f"{raw_path} {query_path} {matched}".strip()
 
+    web_dir_local = HERE.parent / "web" if (HERE.parent / "web").exists() else HERE / "web"
+    filename = Path(raw_path).name if raw_path else ""
+    if filename in ("news_500.json", "news_500.js", "live_10.json", "web_samples.json", "web_live_news.json") or raw_path.endswith((".js", ".json")):
+        for candidate in (
+            web_dir_local / filename,
+            HERE.parent / "web" / filename,
+            HERE / "web" / filename,
+            HERE.parent / filename,
+            HERE / filename,
+        ):
+            if candidate.exists() and candidate.is_file():
+                media = "application/javascript; charset=utf-8" if filename.endswith(".js") else "application/json; charset=utf-8"
+                return Response(content=candidate.read_bytes(), media_type=media)
+
     if "summarize" in combined:
         if request.method == "POST":
             try:
@@ -706,7 +720,7 @@ async def catch_all_router(request: Request, full_path: str = ""):
     if "health" in combined:
         return health()
 
-    if "news" in combined:
+    if raw_path in ("news", "api/news", "latest-news", "api/latest-news") or query_path in ("news", "latest-news"):
         q = request.query_params.get("q")
         return get_latest_news(q=q)
 

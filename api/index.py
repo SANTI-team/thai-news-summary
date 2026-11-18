@@ -702,14 +702,21 @@ async def catch_all_router(request: Request, full_path: str = ""):
         if index_html_file.exists():
             return HTMLResponse(content=index_html_file.read_text(encoding="utf-8"), media_type="text/html")
 
-    # เสิร์ฟไฟล์ Static Data JSON / JS
-    if raw_path in ("news_500.json", "news_500.js", "live_10.json", "web_samples.json", "web_live_news.json"):
-        fpath = web_dir_local / raw_path
-        if not fpath.exists():
-            fpath = HERE.parent / raw_path
-        if fpath.exists():
-            media = "application/javascript" if raw_path.endswith(".js") else "application/json"
-            return Response(content=fpath.read_bytes(), media_type=media)
+    # เสิร์ฟไฟล์ Static Data JSON / JS (รองรับกรณีถูก rewrite มาเป็น web/news_500.js)
+    filename = Path(raw_path).name if raw_path else ""
+    if filename in ("news_500.json", "news_500.js", "live_10.json", "web_samples.json", "web_live_news.json") or raw_path.endswith((".js", ".json")):
+        for candidate in (
+            web_dir_local / filename,
+            HERE.parent / "web" / filename,
+            HERE / "web" / filename,
+            HERE.parent / filename,
+            HERE / filename,
+        ):
+            if candidate.exists() and candidate.is_file():
+                media = "application/javascript; charset=utf-8" if filename.endswith(".js") else "application/json; charset=utf-8"
+                return Response(content=candidate.read_bytes(), media_type=media)
+        if filename.endswith(".js"):
+            return Response(content=b"window.NEWS_500 = window.NEWS_500 || [];", media_type="application/javascript; charset=utf-8")
 
     if "summarize" in combined:
         if request.method == "POST":
@@ -724,7 +731,7 @@ async def catch_all_router(request: Request, full_path: str = ""):
     if "health" in combined:
         return health()
 
-    if "news" in combined:
+    if raw_path in ("news", "api/news", "latest-news", "api/latest-news") or query_path in ("news", "latest-news"):
         q = request.query_params.get("q")
         return get_latest_news(q=q)
 

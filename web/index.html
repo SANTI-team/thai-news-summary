@@ -933,6 +933,9 @@
       updateInputCounters();
       const val = $("news-input").value.trim();
       const btnText = $("btn-text");
+      if (val.length >= 20) {
+        $("error-banner").classList.add("hidden");
+      }
       if (val.length > 0 && !btnText.textContent.includes("กำลัง")) {
         btnText.textContent = "ประมวลผลสรุปข้อความนี้";
       }
@@ -941,9 +944,10 @@
     $("news-input").addEventListener("paste", () => {
       setTimeout(() => {
         const val = $("news-input").value.trim();
+        updateInputCounters();
         if (val.length >= 20) {
+          $("error-banner").classList.add("hidden");
           $("active-sample-tag").textContent = "ตรวจพบการวางข่าวใหม่ — กำลังประมวลผลสรุปอัตโนมัติ...";
-          updateInputCounters();
           runSummarization();
         }
       }, 100);
@@ -961,6 +965,16 @@
       $("news-input").value = "";
       $("active-sample-tag").textContent = "ล้างข้อความแล้ว — วางเนื้อหาข่าวใหม่หรือกดปุ่มเลือกข่าวจากคลังทดสอบ 500 ข่าวด้านบน";
       $("error-banner").classList.add("hidden");
+      lastResult = null;
+      $("mt5-output").innerHTML = '<span class="text-slate-400 text-xs sm:text-sm">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์</span>';
+      $("lead3-output").innerHTML = '<span class="text-slate-400 text-xs sm:text-sm">กดปุ่มสรุปข่าวเพื่อแสดงผลลัพธ์</span>';
+      $("mt5-stat-line").innerHTML = "ความยาว: — ตัวอักษร";
+      $("lead3-stat-line").innerHTML = "ความยาว: — ตัวอักษร";
+      $("mt5-ratio-badge").textContent = "ย่อลง —%";
+      $("lead3-ratio-badge").textContent = "ย่อลง —%";
+      if ($("mt5-rougel-badge")) $("mt5-rougel-badge").classList.add("hidden");
+      if ($("truncation-badge")) $("truncation-badge").classList.add("hidden");
+      renderNerBadges([], "");
       updateInputCounters();
       const colLeft = $("ner-col-left");
       const cardOrg = $("card-ORGANIZATION");
@@ -1601,6 +1615,7 @@
           const item = SAMPLE_NEWS[k];
           if (item && item.text && isSameArticleText(clean, item.text)) {
             exactMt5Pred = item.pred;
+            matchedItem = item;
             break;
           }
         }
@@ -1609,6 +1624,7 @@
         for (const item of BUILTIN_LIVE_NEWS) {
           if (item && item.article && isSameArticleText(clean, item.article)) {
             exactMt5Pred = item.pred;
+            matchedItem = item;
             break;
           }
         }
@@ -1773,16 +1789,8 @@
     }
 
     const hlDesktop = $("toggle-highlight");
-    const hlMobile = $("toggle-highlight-mobile");
     if (hlDesktop) {
       hlDesktop.addEventListener("change", () => {
-        if (hlMobile) hlMobile.checked = hlDesktop.checked;
-        renderSummaryTexts();
-      });
-    }
-    if (hlMobile) {
-      hlMobile.addEventListener("change", () => {
-        if (hlDesktop) hlDesktop.checked = hlMobile.checked;
         renderSummaryTexts();
       });
     }
@@ -2117,18 +2125,7 @@
     // ฟังก์ชันเสริมสำหรับประสบการณ์ใช้งานบนมือถือ (Mobile UX & Auto-scroll)
     // ====================================================================
     function setupMobileFeatures() {
-      // 1. ปุ่มลัดเลื่อนลงไปดูผลลัพธ์
-      const jumpBtn = $("btn-jump-result");
-      if (jumpBtn) {
-        jumpBtn.addEventListener("click", () => {
-          const compSec = $("comparison-section");
-          if (compSec) {
-            compSec.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        });
-      }
-
-      // 2. ปุ่มลอยเลื่อนกลับขึ้นบนสุด (FAB)
+      // ปุ่มลอยเลื่อนกลับขึ้นบนสุด (FAB)
       const scrollTopBtn = $("btn-scroll-top");
       if (scrollTopBtn) {
         window.addEventListener("scroll", () => {
@@ -2143,18 +2140,6 @@
 
         scrollTopBtn.addEventListener("click", () => {
           window.scrollTo({ top: 0, behavior: "smooth" });
-        });
-      }
-
-      // 3. ปุ่มสลับโหมดมืดบนมือถือ
-      const mobileToggle = $("btn-theme-toggle-mobile");
-      if (mobileToggle) {
-        mobileToggle.addEventListener("click", () => {
-          const isDark = document.documentElement.classList.toggle("dark");
-          try {
-            localStorage.setItem("thaisum-theme", isDark ? "dark" : "light");
-          } catch (_) {}
-          updateThemeButtonUI();
         });
       }
     }
