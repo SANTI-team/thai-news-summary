@@ -743,7 +743,7 @@ async def catch_all_router(request: Request, full_path: str = ""):
     if "health" in combined:
         return health()
 
-    if raw_path in ("news", "api/news", "latest-news", "api/latest-news") or query_path in ("news", "latest-news"):
+    if "news" in combined and not filename.endswith((".js", ".json")):
         q = request.query_params.get("q")
         return get_latest_news(q=q)
 
