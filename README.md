@@ -13,7 +13,7 @@
 ## เว็บ
 https://thai-news-summarizer.vercel.app
 
-## สไลด์นำเสนอ
+## สไลด์นำเสนองาน
 https://canva.link/vk41q574injj7f1
 
 ## ข้อมูล
