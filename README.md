@@ -13,6 +13,9 @@
 ## เว็บ
 https://thai-news-summarizer.vercel.app
 
+## สไลด์นำเสนอ
+https://canva.link/vk41q574injj7f1
+
 ## ข้อมูล
 [ThaiSum](https://huggingface.co/datasets/pythainlp/thaisum) ข่าวไทยราว 358,868 ข่าว (train) + 11,000 (val) + 11,000 (test) จากไทยรัฐ ไทยพีบีเอส ประชาไท และ The Standard แต่ละข่าวมีบทสรุปที่นักข่าวเขียนไว้ · สัญญาอนุญาต MIT
 คอลัมน์ที่ใช้: `body` (เนื้อข่าว), `summary` (บทสรุป)
