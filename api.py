@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -685,7 +685,7 @@ def summarize(item: NewsIn) -> Dict[str, Any]:
     }
 
 
-# Vercel catch-all router เพื่อป้องกัน 404 Not Found จากการ rewrite path
+# Vercel catch-all router เพื่อป้องกัน 404 Not Found จากการ rewrite path และเสิร์ฟหน้าเว็บอัตโนมัติ
 @api.api_route("/{full_path:path}", methods=["GET", "POST", "OPTIONS", "HEAD", "PUT"])
 async def catch_all_router(request: Request, full_path: str = ""):
     raw_path = (full_path or "").strip("/").lower()
@@ -694,6 +694,15 @@ async def catch_all_router(request: Request, full_path: str = ""):
     combined = f"{raw_path} {query_path} {matched}".strip()
 
     web_dir_local = HERE.parent / "web" if (HERE.parent / "web").exists() else HERE / "web"
+    index_html_file = web_dir_local / "index.html"
+
+    # เสิร์ฟไฟล์หน้าเว็บ HTML หากเปิดผ่านเบราว์เซอร์
+    accept_header = request.headers.get("accept", "")
+    if ("text/html" in accept_header or raw_path in ("", "index.html", "web", "web/index.html")) and "api" not in combined:
+        if index_html_file.exists():
+            return HTMLResponse(content=index_html_file.read_text(encoding="utf-8"), media_type="text/html")
+
+    # เสิร์ฟไฟล์ Static Data JSON / JS (รองรับกรณีถูก rewrite มาเป็น web/news_500.js)
     filename = Path(raw_path).name if raw_path else ""
     if filename in ("news_500.json", "news_500.js", "live_10.json", "web_samples.json", "web_live_news.json") or raw_path.endswith((".js", ".json")):
         for candidate in (
@@ -706,6 +715,8 @@ async def catch_all_router(request: Request, full_path: str = ""):
             if candidate.exists() and candidate.is_file():
                 media = "application/javascript; charset=utf-8" if filename.endswith(".js") else "application/json; charset=utf-8"
                 return Response(content=candidate.read_bytes(), media_type=media)
+        if filename.endswith(".js"):
+            return Response(content=b"window.NEWS_500 = window.NEWS_500 || [];", media_type="application/javascript; charset=utf-8")
 
     if "summarize" in combined:
         if request.method == "POST":
