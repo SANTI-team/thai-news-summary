@@ -324,8 +324,8 @@
           <span class="hidden sm:inline-block px-2.5 py-0.5 text-xs sm:text-sm font-bold rounded-md bg-emerald-100 text-emerald-950 border border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-200 dark:border-emerald-700 whitespace-nowrap shrink-0 shadow-2xs" title="โมเดล mT5 Fine-tuned">
             mT5 RL 30.8%
           </span>
-          <span class="hidden md:inline-block px-2.5 py-0.5 text-xs sm:text-sm font-semibold rounded-md bg-slate-200 text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 whitespace-nowrap shrink-0 shadow-2xs" title="เปรียบเทียบกับ mBART-50 (31.2%), Lead-3 Baseline (25.5%) และ TextRank (25.5%)">
-            mBART RL 31.2% · Lead-3 25.5% · TextRank 25.5%
+          <span class="hidden md:inline-block px-2.5 py-0.5 text-xs sm:text-sm font-semibold rounded-md bg-slate-200 text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 whitespace-nowrap shrink-0 shadow-2xs" title="เปรียบเทียบกับ mBART-50 (31.2%), Lead-3 Baseline (25.5%) และ TextRank (16.4%)">
+            mBART RL 31.2% · Lead-3 25.5% · TextRank 16.4%
           </span>
         </div>
       </div>
@@ -850,7 +850,7 @@
         .replace(/([^\d]),([^\d])/g, "$1 <SEP> $2")
         .replace(/\s{2,}/g, " <SEP> ")
         .replace(/\s+(?=(?:ทั้งนี้|อย่างไรก็ตาม|อย่างไรก็ดี|นอกจากนี้|ขณะที่|ขณะเดียวกัน|ส่วน|ด้าน|สำหรับ|โดยเฉพาะ|เบื้องต้น|ต่อมา|ล่าสุด|ส่งผลให้|ผู้สื่อข่าวรายงาน|สำนักข่าว|รายงานข่าวแจ้งว่า|จากการสอบสวน))/g, " <SEP> ")
-        .split(" <SEP> ")
+        .split(/\s*(?:<SEP>\s*)+/)
         .map(s => s.trim())
         .filter(Boolean);
 
@@ -860,7 +860,7 @@
         if (block.length > 190) {
           const subParts = block
             .replace(/\s+(?=(?:ว่า|โดย|ซึ่ง|แต่|และต่อมา|เมื่อวันที่|เมื่อเวลา|หลัง|เพื่อ|เนื่องจาก|เพราะ|พร้อมกันนี้|อีกทั้ง|รวมถึง))/g, " <SUB> ")
-            .split(" <SUB> ")
+            .split(/\s*(?:<SUB>\s*)+/)
             .map(s => s.trim())
             .filter(Boolean);
 
@@ -1470,7 +1470,7 @@
         // แยกอนุประโยคของบทสรุป mT5
         const predClauses = baseMt5Pred
           .replace(/\s+(?=(?:เบื้องต้น|ด้าน|ส่วน|พร้อม|ขณะที่|โดย|ทั้งนี้|ล่าสุด|เผย|ระบุ|คาด|ตั้งเป้า|สั่ง|หลัง|วันที่|เมื่อ))/g, " <PSEP> ")
-          .split(" <PSEP> ")
+          .split(/\s*(?:<PSEP>\s*)+/)
           .map(s => s.trim())
           .filter(Boolean);
 
